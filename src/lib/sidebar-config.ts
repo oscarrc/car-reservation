@@ -1,4 +1,4 @@
-import { BarChart3, Calendar, CarFront, FileText, HelpCircle, Home, Settings, Users } from "lucide-react"
+import { Calendar, CarFront, FileText, HelpCircle, Home, Settings, Users } from "lucide-react"
 
 import type { LucideIcon } from "lucide-react"
 
@@ -50,11 +50,6 @@ export const adminSidebarConfig: SidebarConfig = {
       title: "Reservations",
       url: "/admin/reservations",
       icon: Calendar
-    },
-    {
-      title: "Reports",
-      url: "/admin/reports",
-      icon: BarChart3
     },
     {
       title: "Settings",
