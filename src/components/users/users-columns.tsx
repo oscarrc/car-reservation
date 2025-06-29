@@ -15,7 +15,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { UserProfileWithId } from "@/lib/users-service";
 
-export const columns: ColumnDef<UserProfileWithId>[] = [
+interface ColumnsProps {
+  onEditUser: (user: UserProfileWithId) => void;
+}
+
+export const createColumns = ({ onEditUser }: ColumnsProps): ColumnDef<UserProfileWithId>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -96,6 +100,7 @@ export const columns: ColumnDef<UserProfileWithId>[] = [
       );
     },
   },
+
   {
     id: "actions",
     enableHiding: false,
@@ -113,7 +118,9 @@ export const columns: ColumnDef<UserProfileWithId>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem>View user details</DropdownMenuItem>
-            <DropdownMenuItem>Edit user</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEditUser(user)}>
+              Edit user
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-red-600">
               Delete user

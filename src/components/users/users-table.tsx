@@ -34,17 +34,20 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { columns } from "./users-columns";
+import { createColumns } from "./users-columns";
 import { useQuery } from "@tanstack/react-query";
+import type { UserProfileWithId } from "@/lib/users-service";
 
 interface UsersTableProps {
   searchTerm?: string;
   onSearchChange?: (searchTerm: string) => void;
+  onEditUser: (user: UserProfileWithId) => void;
 }
 
 export function UsersTable({
   searchTerm = "",
   onSearchChange,
+  onEditUser,
 }: UsersTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -99,6 +102,9 @@ export function UsersTable({
 
   const totalRows = usersData?.users.length || 0;
   const totalPages = Math.ceil(totalRows / pageSize);
+
+  // Create columns with edit callback
+  const columns = createColumns({ onEditUser });
 
   const table = useReactTable({
     data,
