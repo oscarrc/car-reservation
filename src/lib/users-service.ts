@@ -1,0 +1,169 @@
+import { 
+  collection, 
+  query, 
+  orderBy, 
+  limit, 
+  startAfter, 
+  getDocs, 
+  where,
+  QueryConstraint
+} from 'firebase/firestore';
+import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { db } from './firebase';
+import type { UserProfile } from '@/types/user';
+
+export interface UsersResponse {
+  users: UserProfileWithId[];
+  lastDoc: QueryDocumentSnapshot<DocumentData> | null;
+  hasMore: boolean;
+  total?: number;
+}
+
+export interface UserProfileWithId extends UserProfile {
+  id: string;
+}
+
+export interface UsersQueryParams {
+  pageSize?: number;
+  lastDoc?: QueryDocumentSnapshot<DocumentData> | null;
+  searchTerm?: string;
+}
+
+export async function fetchUsers({
+  pageSize = 10,
+  lastDoc = null,
+  searchTerm = ''
+}: UsersQueryParams): Promise<UsersResponse> {
+  try {
+    const usersCollection = collection(db, 'users');
+    const constraints: QueryConstraint[] = [];
+
+    // Add search constraints if searchTerm is provided
+    if (searchTerm.trim()) {
+      // For simple search, we'll search by name and email
+      // Note: Firestore doesn't support full-text search, so we use startsWith
+      const searchLower = searchTerm.toLowerCase();
+      constraints.push(
+        where('name', '>=', searchLower),
+        where('name', '<=', searchLower + '\uf8ff')
+      );
+    }
+
+    // Add ordering
+    constraints.push(orderBy('name'));
+    
+    // Add pagination
+    if (lastDoc) {
+      constraints.push(startAfter(lastDoc));
+    }
+    
+    constraints.push(limit(pageSize + 1)); // Get one extra to check if there are more
+
+    const q = query(usersCollection, ...constraints);
+    const querySnapshot = await getDocs(q);
+    
+    const users: UserProfileWithId[] = [];
+    const docs = querySnapshot.docs;
+    
+    // Process documents
+    docs.slice(0, pageSize).forEach((doc) => {
+      users.push({
+        id: doc.id,
+        ...doc.data() as UserProfile
+      });
+    });
+
+    // Check if there are more documents
+    const hasMore = docs.length > pageSize;
+    const newLastDoc = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : null;
+
+    return {
+      users,
+      lastDoc: newLastDoc,
+      hasMore
+    };
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
+}
+
+// Alternative search function for email search
+export async function searchUsersByEmail(email: string, pageSize = 10): Promise<UsersResponse> {
+  try {
+    const usersCollection = collection(db, 'users');
+    const emailLower = email.toLowerCase();
+    
+    const q = query(
+      usersCollection,
+      where('email', '>=', emailLower),
+      where('email', '<=', emailLower + '\uf8ff'),
+      orderBy('email'),
+      limit(pageSize + 1)
+    );
+
+    const querySnapshot = await getDocs(q);
+    const docs = querySnapshot.docs;
+    
+    const users: UserProfileWithId[] = [];
+    docs.slice(0, pageSize).forEach((doc) => {
+      users.push({
+        id: doc.id,
+        ...doc.data() as UserProfile
+      });
+    });
+
+    const hasMore = docs.length > pageSize;
+    const lastDoc = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : null;
+
+    return {
+      users,
+      lastDoc,
+      hasMore
+    };
+  } catch (error) {
+    console.error('Error searching users by email:', error);
+    throw error;
+  }
+}
+
+// Combined search function that searches both name and email
+export async function searchUsers(searchTerm: string, pageSize = 10): Promise<UsersResponse> {
+  if (!searchTerm.trim()) {
+    return fetchUsers({ pageSize });
+  }
+
+  try {
+    // Search by name
+    const nameResults = await fetchUsers({ 
+      pageSize: Math.ceil(pageSize / 2), 
+      searchTerm 
+    });
+    
+    // Search by email
+    const emailResults = await searchUsersByEmail(searchTerm, Math.ceil(pageSize / 2));
+    
+    // Combine and deduplicate results
+    const combinedUsers = [...nameResults.users];
+    emailResults.users.forEach(user => {
+      if (!combinedUsers.some(existing => existing.id === user.id)) {
+        combinedUsers.push(user);
+      }
+    });
+
+    // Sort combined results by name
+    combinedUsers.sort((a, b) => a.name.localeCompare(b.name));
+    
+    // Limit to requested page size
+    const users = combinedUsers.slice(0, pageSize);
+    
+    return {
+      users,
+      lastDoc: null, // For search, we don't use pagination
+      hasMore: combinedUsers.length > pageSize
+    };
+  } catch (error) {
+    console.error('Error searching users:', error);
+    throw error;
+  }
+} 

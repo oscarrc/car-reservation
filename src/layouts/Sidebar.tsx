@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function SidebarLayout({ config }: { config: SidebarConfig }) {
   const location = useLocation();
-  const { userProfile, currentUser } = useAuth();
+  const { userProfile } = useAuth();
 
   const getCurrentPageTitle = () => {
     const currentPath = location.pathname;
@@ -22,11 +22,11 @@ export default function SidebarLayout({ config }: { config: SidebarConfig }) {
       ...item,
       isActive: item.url === location.pathname,
     })),
-    // Use Firestore profile name and Firebase auth email
-    user: userProfile && currentUser
+    // Use Firestore profile name and email
+    user: userProfile
       ? {
           name: userProfile.name,
-          email: currentUser.email || "",
+          email: userProfile.email,
         }
       : config.user,
   };

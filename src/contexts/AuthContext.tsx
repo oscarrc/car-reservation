@@ -79,6 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true);
       setCurrentUser(user);
 
       if (user) {
@@ -88,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setAuthUser({
           uid: user.uid,
-          email: user.email || "",
+          email: profile?.email || user.email || "",
           profile: profile || undefined,
         });
       } else {

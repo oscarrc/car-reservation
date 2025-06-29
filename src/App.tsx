@@ -3,10 +3,10 @@ import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config";
 
 import AdminPage from "./pages/Admin";
 import AppPage from "./pages/App";
-import LoginPage from "./pages/Login";
-import SidebarLayout from "./layouts/Sidebar";
-import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
+import LoginPage from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
+import SidebarLayout from "./layouts/Sidebar";
 
 const App = () => {
   return (
