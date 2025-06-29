@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ChevronsUpDown, LogOut, UserCircle } from "lucide-react";
+import { ChevronsUpDown, LogOut, UserCircle, LayoutDashboard, Calendar } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +29,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  const { logout } = useAuth();
+  const { logout, hasRole } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -39,6 +39,10 @@ export function NavUser({
     } catch (error) {
       console.error("Failed to log out:", error);
     }
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
   };
 
   return (
@@ -86,6 +90,19 @@ export function NavUser({
               <UserCircle />
               Profile
             </DropdownMenuItem>
+            {hasRole("admin") && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleNavigation("/admin")}>
+                  <LayoutDashboard />
+                  Admin Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigation("/app")}>
+                  <Calendar />
+                  Reservations
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
