@@ -2,15 +2,15 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config";
 
 import AdminPage from "./pages/Admin";
-import FleetPage from "./pages/Admin/Fleet";
-import ReservationsPage from "./pages/Admin/Reservations";
-import UsersPage from "./pages/Admin/Users";
-import SettingsPage from "./pages/Admin/Settings";
 import AppPage from "./pages/App";
 import { AuthProvider } from "./contexts/AuthContext";
+import FleetPage from "./pages/Admin/Fleet";
 import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ReservationsPage from "./pages/Admin/Reservations";
+import SettingsPage from "./pages/Admin/Settings";
 import SidebarLayout from "./layouts/Sidebar";
+import UsersPage from "./pages/Admin/Users";
 
 const App = () => {
   return (

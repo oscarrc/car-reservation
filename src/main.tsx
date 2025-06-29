@@ -7,7 +7,7 @@ import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config.ts";
 import AdminPage from "./pages/Admin/index.tsx";
 import AppPage from "./pages/App/index.tsx";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
-import FleetPage from "./pages/Admin/Fleet.tsx";
+import FleetPage from "./pages/Admin/Fleet/index.tsx";
 import Login from "./pages/Login.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import ReservationsPage from "./pages/Admin/Reservations.tsx";
@@ -15,7 +15,7 @@ import SettingsPage from "./pages/Admin/Settings.tsx";
 import SidebarLayout from "./layouts/Sidebar.tsx";
 import { StrictMode } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import UsersPage from "./pages/Admin/Users.tsx";
+import UsersPage from "./pages/Admin/Users/index.tsx";
 import { createRoot } from "react-dom/client";
 
 // Create a client
