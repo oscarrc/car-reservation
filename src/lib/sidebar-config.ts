@@ -13,7 +13,6 @@ export interface SidebarConfig {
   user: {
     name: string
     email: string
-    avatar: string
   }
   items: SidebarItem[]
   company: {
@@ -25,8 +24,7 @@ export interface SidebarConfig {
 export const adminSidebarConfig: SidebarConfig = {
   user: {
     name: "Admin User",
-    email: "admin@company.com",
-    avatar: "/avatars/admin.jpg"
+    email: "admin@company.com"
   },
   company: {
     name: "Car Reservation System",
@@ -69,8 +67,7 @@ export const adminSidebarConfig: SidebarConfig = {
 export const appSidebarConfig: SidebarConfig = {
   user: {
     name: "John Doe",
-    email: "john@example.com",
-    avatar: "/avatars/user.jpg"
+    email: "john@example.com"
   },
   company: {
     name: "Car Reservation System",

@@ -23,13 +23,11 @@ export function AppSidebar({ config, ...props }: AppSidebarProps) {
   // Default data for when no config is provided
   const defaultData = {
     user: {
-      name: "shadcn",
-      email: "m@example.com",
-      avatar: "/avatars/shadcn.jpg",
+      name: "User",
+      email: "user@example.com",
     },
     company: {
       name: "Company Name",
-      access: "User portal",
     },
     items: [],
   };
@@ -62,7 +60,7 @@ export function AppSidebar({ config, ...props }: AppSidebarProps) {
                     {data.company.name}
                   </span>
                   <span className="truncate text-xs text-sidebar-foreground/70">
-                    {data.company.access}
+                    Internal System
                   </span>
                 </div>
               </a>
