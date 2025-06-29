@@ -58,11 +58,14 @@ export function FleetStatusChart() {
 
   const totalCars = useMemo(() => {
     if (!fleetData?.fleetStatus) return 0;
-    return fleetData.fleetStatus.reduce((acc: number, curr) => acc + curr.count, 0);
+    return fleetData.fleetStatus.reduce(
+      (acc: number, curr) => acc + curr.count,
+      0
+    );
   }, [fleetData?.fleetStatus]);
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col justify-between">
       <CardHeader className="items-center pb-0">
         <CardTitle>Fleet Status</CardTitle>
         <CardDescription>Current vehicle availability</CardDescription>
@@ -72,13 +75,17 @@ export function FleetStatusChart() {
           <div className="flex items-center justify-center h-[350px]">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Loading fleet data...</p>
+              <p className="text-sm text-muted-foreground">
+                Loading fleet data...
+              </p>
             </div>
           </div>
         ) : fleetError ? (
           <div className="flex items-center justify-center h-[350px]">
             <div className="text-center">
-              <p className="text-sm text-destructive">Error loading fleet data</p>
+              <p className="text-sm text-destructive">
+                Error loading fleet data
+              </p>
             </div>
           </div>
         ) : (
@@ -91,10 +98,17 @@ export function FleetStatusChart() {
                 cursor={false}
                 content={<ChartTooltipContent hideLabel />}
               />
-              <ChartLegend 
+              <ChartLegend
                 formatter={(value) => {
-                  const formatted = value.replace(/_/g, ' ');
-                  return <span className="capitalize" style={{ color: 'var(--foreground)' }}>{formatted}</span>;
+                  const formatted = value.replace(/_/g, " ");
+                  return (
+                    <span
+                      className="capitalize"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      {formatted}
+                    </span>
+                  );
                 }}
               />
               <Pie
@@ -139,10 +153,10 @@ export function FleetStatusChart() {
         )}
       </CardContent>
       <CardFooter className="justify-end">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => navigate('/admin/fleet')}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/admin/fleet")}
           className="cursor-pointer"
         >
           Manage Fleet

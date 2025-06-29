@@ -39,10 +39,13 @@ const reservationsChartConfig = {
 
 interface ReservationsChartProps {
   currentDate: { year: number; month: number };
-  onNavigateMonth: (direction: 'prev' | 'next') => void;
+  onNavigateMonth: (direction: "prev" | "next") => void;
 }
 
-export function ReservationsChart({ currentDate, onNavigateMonth }: ReservationsChartProps) {
+export function ReservationsChart({
+  currentDate,
+  onNavigateMonth,
+}: ReservationsChartProps) {
   const navigate = useNavigate();
 
   const {
@@ -55,13 +58,16 @@ export function ReservationsChart({ currentDate, onNavigateMonth }: Reservations
     refetchOnWindowFocus: false,
   });
 
-  const currentMonth = new Date(currentDate.year, currentDate.month).toLocaleDateString("en-US", {
+  const currentMonth = new Date(
+    currentDate.year,
+    currentDate.month
+  ).toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
   });
 
   return (
-    <Card>
+    <Card className="justify-between">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -69,18 +75,18 @@ export function ReservationsChart({ currentDate, onNavigateMonth }: Reservations
             <CardDescription>{currentMonth}</CardDescription>
           </div>
           <div className="flex items-center gap-1">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => onNavigateMonth('prev')}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onNavigateMonth("prev")}
               className="cursor-pointer h-8 w-8 p-0"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => onNavigateMonth('next')}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onNavigateMonth("next")}
               className="cursor-pointer h-8 w-8 p-0"
             >
               <ChevronRight className="h-4 w-4" />
@@ -93,13 +99,17 @@ export function ReservationsChart({ currentDate, onNavigateMonth }: Reservations
           <div className="flex items-center justify-center h-[300px]">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Loading reservations...</p>
+              <p className="text-sm text-muted-foreground">
+                Loading reservations...
+              </p>
             </div>
           </div>
         ) : reservationsError ? (
           <div className="flex items-center justify-center h-[300px]">
             <div className="text-center">
-              <p className="text-sm text-destructive">Error loading reservations</p>
+              <p className="text-sm text-destructive">
+                Error loading reservations
+              </p>
             </div>
           </div>
         ) : (
@@ -119,10 +129,17 @@ export function ReservationsChart({ currentDate, onNavigateMonth }: Reservations
                 axisLine={false}
               />
               <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-              <ChartLegend 
+              <ChartLegend
                 formatter={(value) => {
-                  const formatted = value.replace(/_/g, ' ');
-                  return <span className="capitalize" style={{ color: 'var(--foreground)' }}>{formatted}</span>;
+                  const formatted = value.replace(/_/g, " ");
+                  return (
+                    <span
+                      className="capitalize"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      {formatted}
+                    </span>
+                  );
                 }}
               />
               <Bar
@@ -148,10 +165,10 @@ export function ReservationsChart({ currentDate, onNavigateMonth }: Reservations
         )}
       </CardContent>
       <CardFooter className="justify-end">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => navigate('/admin/reservations')}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/admin/reservations")}
           className="cursor-pointer"
         >
           Manage Reservations
