@@ -1,6 +1,6 @@
 "use client";
 
-import type { Car, CarStatus, CarWithId } from "@/types/car";
+import type { Car, CarWithId } from "@/types/car";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import React, { useEffect, useState } from "react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -19,11 +26,27 @@ import {
 } from "@/components/ui/select";
 import { createCar, updateCar } from "@/lib/cars-service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const carSchema = z.object({
+  licensePlate: z.string().min(1, "License plate is required"),
+  model: z.string().min(1, "Model is required"),
+  color: z.string().min(1, "Color is required"),
+  seats: z
+    .number()
+    .min(1, "Seats must be between 1 and 20")
+    .max(20, "Seats must be between 1 and 20"),
+  status: z.enum(["available", "maintenance", "out_of_service"]),
+});
+
+type CarFormData = z.infer<typeof carSchema>;
 
 interface CarFormDialogProps {
   open: boolean;
@@ -32,61 +55,23 @@ interface CarFormDialogProps {
   car?: CarWithId;
 }
 
-interface CarFormData {
-  licensePlate: string;
-  model: string;
-  color: string;
-  seats: number;
-  status: CarStatus;
-}
-
-interface CarFormErrors {
-  licensePlate?: string;
-  model?: string;
-  color?: string;
-  seats?: string;
-  status?: string;
-}
-
-export function CarFormDialog({
-  open,
+function CreateCarForm({
   onOpenChange,
-  mode,
-  car,
-}: CarFormDialogProps) {
+}: {
+  onOpenChange: (open: boolean) => void;
+}) {
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState<CarFormData>({
-    licensePlate: "",
-    model: "",
-    color: "",
-    seats: 4,
-    status: "available",
-  });
-  const [errors, setErrors] = useState<Partial<CarFormErrors>>({});
 
-  // Reset form when dialog opens/closes or mode changes
-  useEffect(() => {
-    if (open) {
-      if (mode === "edit" && car) {
-        setFormData({
-          licensePlate: car.licensePlate,
-          model: car.model,
-          color: car.color,
-          seats: car.seats,
-          status: car.status,
-        });
-      } else {
-        setFormData({
-          licensePlate: "",
-          model: "",
-          color: "",
-          seats: 4,
-          status: "available",
-        });
-      }
-      setErrors({});
-    }
-  }, [open, mode, car]);
+  const form = useForm<CarFormData>({
+    resolver: zodResolver(carSchema),
+    defaultValues: {
+      licensePlate: "",
+      model: "",
+      color: "",
+      seats: 4,
+      status: "available",
+    },
+  });
 
   const createMutation = useMutation({
     mutationFn: async (data: Car) => {
@@ -96,14 +81,175 @@ export function CarFormDialog({
       queryClient.invalidateQueries({ queryKey: ["cars"] });
       onOpenChange(false);
       toast.success("Car added successfully", {
-        description: `${formData.model} (${formData.licensePlate}) has been added to the fleet.`,
+        description: `${form.getValues("model")} (${form.getValues(
+          "licensePlate"
+        )}) has been added to the fleet.`,
       });
     },
     onError: (error) => {
       console.error("Failed to create car:", error);
       toast.error("Failed to add car", {
-        description: "Please try again or contact support if the problem persists.",
+        description:
+          "Please try again or contact support if the problem persists.",
       });
+    },
+  });
+
+  const onSubmit = (data: CarFormData) => {
+    const carData: Car = {
+      ...data,
+      licensePlate: data.licensePlate.trim().toUpperCase(),
+      model: data.model.trim(),
+      color: data.color.trim(),
+    };
+    createMutation.mutate(carData);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid gap-4 py-4">
+          <FormField
+            control={form.control}
+            name="licensePlate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>License Plate</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="ABC-1234"
+                    style={{ textTransform: "uppercase" }}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="model"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Model</FormLabel>
+                <FormControl>
+                  <Input placeholder="Toyota Camry" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="color"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Color</FormLabel>
+                <FormControl>
+                  <Input placeholder="White" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="seats"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Number of Seats</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="20"
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(parseInt(e.target.value) || 4)
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="available">Available</SelectItem>
+                    <SelectItem value="maintenance">Maintenance</SelectItem>
+                    <SelectItem value="out_of_service">
+                      Out of Service
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={createMutation.isPending}
+            className="cursor-pointer"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={createMutation.isPending}
+            className="cursor-pointer"
+          >
+            {createMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              "Add Car"
+            )}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+}
+
+function EditCarForm({
+  car,
+  onOpenChange,
+}: {
+  car: CarWithId;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const queryClient = useQueryClient();
+
+  const form = useForm<CarFormData>({
+    resolver: zodResolver(carSchema),
+    defaultValues: {
+      licensePlate: car.licensePlate,
+      model: car.model,
+      color: car.color,
+      seats: car.seats,
+      status: car.status,
     },
   });
 
@@ -115,84 +261,164 @@ export function CarFormDialog({
       queryClient.invalidateQueries({ queryKey: ["cars"] });
       onOpenChange(false);
       toast.success("Car updated successfully", {
-        description: `${formData.model} (${formData.licensePlate}) has been updated.`,
+        description: `${form.getValues("model")} (${form.getValues(
+          "licensePlate"
+        )}) has been updated.`,
       });
     },
     onError: (error) => {
       console.error("Failed to update car:", error);
       toast.error("Failed to update car", {
-        description: "Please try again or contact support if the problem persists.",
+        description:
+          "Please try again or contact support if the problem persists.",
       });
     },
   });
 
-  const validateForm = (): boolean => {
-    const newErrors: Partial<CarFormErrors> = {};
-
-    if (!formData.licensePlate.trim()) {
-      newErrors.licensePlate = "License plate is required";
-    }
-
-    if (!formData.model.trim()) {
-      newErrors.model = "Model is required";
-    }
-
-    if (!formData.color.trim()) {
-      newErrors.color = "Color is required";
-    }
-
-    if (formData.seats < 1 || formData.seats > 20) {
-      newErrors.seats = "Seats must be between 1 and 20";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+  const onSubmit = (data: CarFormData) => {
     const carData: Car = {
-      licensePlate: formData.licensePlate.trim().toUpperCase(),
-      model: formData.model.trim(),
-      color: formData.color.trim(),
-      seats: formData.seats,
-      status: formData.status,
+      ...data,
+      licensePlate: data.licensePlate.trim().toUpperCase(),
+      model: data.model.trim(),
+      color: data.color.trim(),
     };
-
-    if (mode === "create") {
-      createMutation.mutate(carData);
-    } else if (mode === "edit" && car) {
-      updateMutation.mutate({
-        carId: car.id,
-        carData,
-      });
-    }
+    updateMutation.mutate({ carId: car.id, carData });
   };
 
-  const handleInputChange = (
-    field: keyof CarFormData,
-    value: string | number | CarStatus
-  ) => {
-    setFormData(
-      (prev) =>
-        ({
-          ...prev,
-          [field]: value,
-        } as CarFormData)
-    );
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid gap-4 py-4">
+          <FormField
+            control={form.control}
+            name="licensePlate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>License Plate</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="ABC-1234"
+                    style={{ textTransform: "uppercase" }}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-  const isLoading = createMutation.isPending || updateMutation.isPending;
+          <FormField
+            control={form.control}
+            name="model"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Model</FormLabel>
+                <FormControl>
+                  <Input placeholder="Toyota Camry" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
+          <FormField
+            control={form.control}
+            name="color"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Color</FormLabel>
+                <FormControl>
+                  <Input placeholder="White" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="seats"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Number of Seats</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="20"
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(parseInt(e.target.value) || 4)
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="available">Available</SelectItem>
+                    <SelectItem value="maintenance">Maintenance</SelectItem>
+                    <SelectItem value="out_of_service">
+                      Out of Service
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={updateMutation.isPending}
+            className="cursor-pointer"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={updateMutation.isPending}
+            className="cursor-pointer"
+          >
+            {updateMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              "Update Car"
+            )}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+}
+
+export function CarFormDialog({
+  open,
+  onOpenChange,
+  mode,
+  car,
+}: CarFormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -206,127 +432,13 @@ export function CarFormDialog({
               : "Update the car information. You can modify any field."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-4 py-4">
-            {/* License Plate */}
-            <div className="grid gap-2">
-              <Label htmlFor="licensePlate">License Plate</Label>
-              <Input
-                id="licensePlate"
-                value={formData.licensePlate}
-                onChange={(e) =>
-                  handleInputChange("licensePlate", e.target.value)
-                }
-                placeholder="ABC-1234"
-                className={errors.licensePlate ? "border-red-500" : ""}
-                style={{ textTransform: "uppercase" }}
-              />
-              {errors.licensePlate && (
-                <p className="text-sm text-red-500">{errors.licensePlate}</p>
-              )}
-            </div>
 
-            {/* Model */}
-            <div className="grid gap-2">
-              <Label htmlFor="model">Model</Label>
-              <Input
-                id="model"
-                value={formData.model}
-                onChange={(e) => handleInputChange("model", e.target.value)}
-                placeholder="Toyota Camry"
-                className={errors.model ? "border-red-500" : ""}
-              />
-              {errors.model && (
-                <p className="text-sm text-red-500">{errors.model}</p>
-              )}
-            </div>
-
-            {/* Color */}
-            <div className="grid gap-2">
-              <Label htmlFor="color">Color</Label>
-              <Input
-                id="color"
-                value={formData.color}
-                onChange={(e) => handleInputChange("color", e.target.value)}
-                placeholder="White"
-                className={errors.color ? "border-red-500" : ""}
-              />
-              {errors.color && (
-                <p className="text-sm text-red-500">{errors.color}</p>
-              )}
-            </div>
-
-            {/* Seats */}
-            <div className="grid gap-2">
-              <Label htmlFor="seats">Number of Seats</Label>
-              <Input
-                id="seats"
-                type="number"
-                min="1"
-                max="20"
-                value={formData.seats.toString()}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value);
-                  handleInputChange("seats", isNaN(value) ? 4 : value);
-                }}
-                className={errors.seats ? "border-red-500" : ""}
-              />
-              {errors.seats && (
-                <p className="text-sm text-red-500">{errors.seats}</p>
-              )}
-            </div>
-
-            {/* Status */}
-            <div className="grid gap-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: CarStatus) =>
-                  handleInputChange("status", value)
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
-                  <SelectItem value="out_of_service">Out of Service</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.status && (
-                <p className="text-sm text-red-500">{errors.status}</p>
-              )}
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-              className="cursor-pointer"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="cursor-pointer"
-            >
-              {isLoading
-                ? mode === "create"
-                  ? "Adding..."
-                  : "Updating..."
-                : mode === "create"
-                ? "Add Car"
-                : "Update Car"}
-            </Button>
-          </DialogFooter>
-        </form>
+        {mode === "create" ? (
+          <CreateCarForm onOpenChange={onOpenChange} />
+        ) : car ? (
+          <EditCarForm car={car} onOpenChange={onOpenChange} />
+        ) : null}
       </DialogContent>
     </Dialog>
   );
 }
- 
