@@ -4,9 +4,11 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Outlet, useLocation } from "react-router-dom";
 import type { SidebarConfig } from "@/lib/sidebar-config";
 import { SiteHeader } from "@/components/site-header";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function SidebarLayout({ config }: { config: SidebarConfig }) {
   const location = useLocation();
+  const { userProfile } = useAuth();
 
   // Find the current page title based on the route
   const getCurrentPageTitle = () => {
@@ -18,13 +20,19 @@ export default function SidebarLayout({ config }: { config: SidebarConfig }) {
     return currentItem ? currentItem.title : "Dashboard";
   };
 
-  // Update config to set active state based on current route
+  // Update config to set active state based on current route and use profile data
   const updatedConfig = {
     ...config,
     items: config.items.map(item => ({
       ...item,
       isActive: item.url === location.pathname
-    }))
+    })),
+    // Use Firestore profile data
+    user: userProfile ? {
+      name: userProfile.name,
+      email: userProfile.email,
+      avatar: '/avatars/default.jpg' // Default avatar since we don't store avatar URLs in profile
+    } : config.user
   };
 
   const currentPageTitle = getCurrentPageTitle();
