@@ -91,7 +91,12 @@ export function FleetStatusChart() {
                 cursor={false}
                 content={<ChartTooltipContent hideLabel />}
               />
-              <ChartLegend />
+              <ChartLegend 
+                formatter={(value) => {
+                  const formatted = value.replace(/_/g, ' ');
+                  return <span className="capitalize" style={{ color: 'var(--foreground)' }}>{formatted}</span>;
+                }}
+              />
               <Pie
                 data={fleetData?.fleetStatus || []}
                 dataKey="count"
