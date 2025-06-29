@@ -42,7 +42,7 @@ export const adminSidebarConfig: SidebarConfig = {
       icon: Users
     },
     {
-      title: "Car Fleet",
+      title: "Fleet Management",
       url: "/admin/fleet",
       icon: CarFront
     },

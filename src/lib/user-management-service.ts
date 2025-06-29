@@ -122,4 +122,23 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   }
 }
 
+export async function deleteUser(userId: string): Promise<void> {
+  try {
+    // Note: This only deletes the Firestore profile
+    // Firebase Auth user deletion requires Admin SDK or the user to be signed in
+    const userDocRef = doc(db, 'users', userId);
+    await updateDoc(userDocRef, { 
+      deleted: true,
+      deletedAt: new Date()
+    });
+    
+    // TODO: Implement proper user deletion with Firebase Admin SDK
+    // For now, we just mark the user as deleted
+    throw new Error('User deletion is not fully implemented. Please contact an administrator.');
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw error;
+  }
+}
+
  

@@ -17,9 +17,10 @@ import type { UserProfileWithId } from "@/lib/users-service";
 
 interface ColumnsProps {
   onEditUser: (user: UserProfileWithId) => void;
+  onDeleteUser?: (user: UserProfileWithId) => void;
 }
 
-export const createColumns = ({ onEditUser }: ColumnsProps): ColumnDef<UserProfileWithId>[] => [
+export const createColumns = ({ onEditUser, onDeleteUser }: ColumnsProps): ColumnDef<UserProfileWithId>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -121,10 +122,17 @@ export const createColumns = ({ onEditUser }: ColumnsProps): ColumnDef<UserProfi
             <DropdownMenuItem onClick={() => onEditUser(user)}>
               Edit user
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600">
-              Delete user
-            </DropdownMenuItem>
+            {onDeleteUser && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => onDeleteUser(user)}
+                  className="text-red-600"
+                >
+                  Delete user
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

@@ -118,3 +118,105 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Enhanced Sonner Toast Styling */
+[data-sonner-toaster] [data-sonner-toast] {
+  @apply shadow-lg border;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="success"] {
+  @apply bg-green-50 border-green-200 text-green-900;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-title] {
+  @apply text-green-900 font-semibold;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-description] {
+  @apply text-green-800;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="error"] {
+  @apply bg-red-50 border-red-200 text-red-900;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-title] {
+  @apply text-red-900 font-semibold;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-description] {
+  @apply text-red-800;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="info"] {
+  @apply bg-blue-50 border-blue-200 text-blue-900;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="info"] [data-title] {
+  @apply text-blue-900 font-semibold;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="info"] [data-description] {
+  @apply text-blue-800;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="warning"] {
+  @apply bg-yellow-50 border-yellow-200 text-yellow-900;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-title] {
+  @apply text-yellow-900 font-semibold;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-description] {
+  @apply text-yellow-800;
+}
+
+/* Dark mode toast styling */
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="success"] {
+  @apply bg-green-950 border-green-800 text-green-100;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-title] {
+  @apply text-green-100 font-semibold;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-description] {
+  @apply text-green-200;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="error"] {
+  @apply bg-red-950 border-red-800 text-red-100;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-title] {
+  @apply text-red-100 font-semibold;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-description] {
+  @apply text-red-200;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="info"] {
+  @apply bg-blue-950 border-blue-800 text-blue-100;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="info"] [data-title] {
+  @apply text-blue-100 font-semibold;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="info"] [data-description] {
+  @apply text-blue-200;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="warning"] {
+  @apply bg-yellow-950 border-yellow-800 text-yellow-100;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-title] {
+  @apply text-yellow-100 font-semibold;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-description] {
+  @apply text-yellow-200;
+}

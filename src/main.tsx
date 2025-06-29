@@ -1,20 +1,23 @@
 import "./index.css";
 
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext.tsx'
-import Login from './pages/Login.tsx'
-import ProtectedRoute from './components/ProtectedRoute.tsx'
-import AdminPage from './pages/Admin/index.tsx'
-import UsersPage from './pages/Admin/Users.tsx'
-import AppPage from './pages/App/index.tsx'
-import SidebarLayout from './layouts/Sidebar.tsx'
-import { adminSidebarConfig, appSidebarConfig } from './lib/sidebar-config.ts'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config.ts";
+
+import AdminPage from "./pages/Admin/index.tsx";
+import AppPage from "./pages/App/index.tsx";
+import { AuthProvider } from "./contexts/AuthContext.tsx";
+import FleetPage from "./pages/Admin/Fleet.tsx";
+import Login from "./pages/Login.tsx";
+import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import SidebarLayout from "./layouts/Sidebar.tsx";
+import { StrictMode } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import UsersPage from "./pages/Admin/Users.tsx";
+import { createRoot } from "react-dom/client";
 
 // Create a client
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
   {
@@ -41,6 +44,10 @@ const router = createBrowserRouter([
         path: "users",
         element: <UsersPage />,
       },
+      {
+        path: "fleet",
+        element: <FleetPage />,
+      },
     ],
   },
   {
@@ -57,14 +64,15 @@ const router = createBrowserRouter([
       },
     ],
   },
-])
+]);
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <RouterProvider router={router} />
+        <Toaster />
       </AuthProvider>
     </QueryClientProvider>
-  </StrictMode>,
-)
+  </StrictMode>
+);

@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fetchUsers, searchUsers } from "@/lib/users-service";
+import { fetchCars, searchCars, updateCarStatus } from "@/lib/cars-service";
 import {
   flexRender,
   getCoreRowModel,
@@ -34,23 +34,25 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createColumns } from "./users-columns";
-import { useQuery } from "@tanstack/react-query";
-import type { UserProfileWithId } from "@/lib/users-service";
+import { createColumns } from "./cars-columns";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { CarWithId, CarStatus } from "@/types/car";
+import { toast } from "sonner";
 
-interface UsersTableProps {
+interface CarsTableProps {
   searchTerm?: string;
   onSearchChange?: (searchTerm: string) => void;
-  onEditUser: (user: UserProfileWithId) => void;
-  onDeleteUser?: (user: UserProfileWithId) => void;
+  onEditCar: (car: CarWithId) => void;
+  onDeleteCar?: (car: CarWithId) => void;
 }
 
-export function UsersTable({
+export function CarsTable({
   searchTerm = "",
   onSearchChange,
-  onEditUser,
-  onDeleteUser,
-}: UsersTableProps) {
+  onEditCar,
+  onDeleteCar,
+}: CarsTableProps) {
+  const queryClient = useQueryClient();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -76,37 +78,71 @@ export function UsersTable({
     return () => clearTimeout(timer);
   }, [localSearchTerm, onSearchChange]);
 
-  // Fetch users with React Query
+  // Status update mutation
+  const statusMutation = useMutation({
+    mutationFn: async ({
+      carId,
+      status,
+    }: {
+      carId: string;
+      status: CarStatus;
+    }) => {
+      return await updateCarStatus(carId, status);
+    },
+    onSuccess: (_, { status }) => {
+      queryClient.invalidateQueries({ queryKey: ["cars"] });
+      toast.success("Status updated", {
+        description: `Car status changed to ${status.replace("_", " ")}.`,
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to update car status:", error);
+      toast.error("Failed to update status", {
+        description: "Please try again or contact support if the problem persists.",
+      });
+    },
+  });
+
+  const handleStatusChange = (carId: string, newStatus: CarStatus) => {
+    statusMutation.mutate({ carId, status: newStatus });
+  };
+
+  // Fetch cars with React Query
   const {
-    data: usersData,
+    data: carsData,
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["users", debouncedSearchTerm, pageSize],
+    queryKey: ["cars", debouncedSearchTerm, pageSize],
     queryFn: async () => {
       if (debouncedSearchTerm.trim()) {
-        return searchUsers(debouncedSearchTerm, pageSize * 5); // Get more results for search
+        return searchCars(debouncedSearchTerm, pageSize * 5); // Get more results for search
       }
-      return fetchUsers({ pageSize: pageSize * 5 }); // Get more for pagination
+      return fetchCars({ pageSize: pageSize * 5 }); // Get more for pagination
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const data = React.useMemo(() => {
-    if (!usersData?.users) return [];
+    if (!carsData?.cars) return [];
 
     // Handle client-side pagination for search results
     const start = pageIndex * pageSize;
     const end = start + pageSize;
-    return usersData.users.slice(start, end);
-  }, [usersData?.users, pageIndex, pageSize]);
+    return carsData.cars.slice(start, end);
+  }, [carsData?.cars, pageIndex, pageSize]);
 
-  const totalRows = usersData?.users.length || 0;
+  const totalRows = carsData?.cars.length || 0;
   const totalPages = Math.ceil(totalRows / pageSize);
 
-  // Create columns with edit callback
-  const columns = createColumns({ onEditUser, onDeleteUser });
+  // Create columns with callbacks
+  const columns = createColumns({ 
+    onEditCar, 
+    onDeleteCar,
+    onStatusChange: handleStatusChange,
+    isUpdatingStatus: statusMutation.isPending,
+  });
 
   const table = useReactTable({
     data,
@@ -154,7 +190,7 @@ export function UsersTable({
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-red-600 mb-2">Error loading users</p>
+          <p className="text-red-600 mb-2">Error loading cars</p>
           <Button onClick={() => refetch()} className="cursor-pointer">Retry</Button>
         </div>
       </div>
@@ -168,7 +204,7 @@ export function UsersTable({
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search by name or email..."
+            placeholder="Search by model or license plate..."
             value={localSearchTerm}
             onChange={(event) => handleSearchChange(event.target.value)}
             className="pl-10"
@@ -228,13 +264,10 @@ export function UsersTable({
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-64 text-center"
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   <div className="flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                    Loading users...
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <span className="ml-2">Loading cars...</span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -256,11 +289,8 @@ export function UsersTable({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No users found.
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  {debouncedSearchTerm ? "No cars found matching your search." : "No cars found."}
                 </TableCell>
               </TableRow>
             )}
@@ -269,69 +299,45 @@ export function UsersTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of {data.length}{" "}
-          row(s) selected.
+      <div className="flex items-center justify-between space-x-2 py-4">
+        <div className="text-sm text-muted-foreground">
+          Showing {data.length > 0 ? pageIndex * pageSize + 1 : 0} to{" "}
+          {Math.min((pageIndex + 1) * pageSize, totalRows)} of {totalRows} car(s)
         </div>
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Rows per page</p>
-            <select
-              value={pageSize}
-              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-              className="h-8 w-[70px] rounded border border-input bg-background px-2 text-sm"
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={30}>30</option>
-              <option value={40}>40</option>
-              <option value={50}>50</option>
-            </select>
-          </div>
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-            Page {pageIndex + 1} of {Math.max(1, totalPages)}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageIndex(0)}
-              disabled={pageIndex === 0}
-              className="cursor-pointer"
-            >
-              First
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePreviousPage}
-              disabled={pageIndex === 0}
-              className="cursor-pointer"
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={pageIndex >= totalPages - 1}
-              className="cursor-pointer"
-            >
-              Next
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageIndex(totalPages - 1)}
-              disabled={pageIndex >= totalPages - 1}
-              className="cursor-pointer"
-            >
-              Last
-            </Button>
-          </div>
+        <div className="flex items-center space-x-2">
+          <select
+            value={pageSize}
+            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            className="px-3 py-1 border rounded text-sm"
+          >
+            <option value={5}>5 per page</option>
+            <option value={10}>10 per page</option>
+            <option value={20}>20 per page</option>
+            <option value={50}>50 per page</option>
+          </select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePreviousPage}
+            disabled={pageIndex === 0}
+            className="cursor-pointer"
+          >
+            Previous
+          </Button>
+          <span className="text-sm">
+            Page {pageIndex + 1} of {totalPages || 1}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={pageIndex >= totalPages - 1}
+            className="cursor-pointer"
+          >
+            Next
+          </Button>
         </div>
       </div>
     </div>
   );
-}
+} 

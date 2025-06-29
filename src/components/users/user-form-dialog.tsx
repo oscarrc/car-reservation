@@ -22,6 +22,7 @@ import {
 import { createUser, updateUser } from "@/lib/user-management-service";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,6 +88,9 @@ export function UserFormDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       onOpenChange(false);
+      toast.success("User created successfully", {
+        description: `${formData.name} has been added to the system.`,
+      });
       // User creation was successful
       // The user will be automatically signed out due to Firebase behavior
       // They will need to log back in, which is expected
@@ -94,6 +98,9 @@ export function UserFormDialog({
     onError: (error) => {
       console.error("Error creating user:", error);
       setErrors({ submit: error.message || "Failed to create user" });
+      toast.error("Failed to create user", {
+        description: "Please try again or contact support if the problem persists.",
+      });
     },
   });
 
@@ -106,10 +113,16 @@ export function UserFormDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       onOpenChange(false);
+      toast.success("User updated successfully", {
+        description: `${formData.name}'s information has been updated.`,
+      });
     },
     onError: (error) => {
       console.error("Error updating user:", error);
       setErrors({ submit: error.message || "Failed to update user" });
+      toast.error("Failed to update user", {
+        description: "Please try again or contact support if the problem persists.",
+      });
     },
   });
 
