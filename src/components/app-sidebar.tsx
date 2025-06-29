@@ -17,9 +17,10 @@ import type { SidebarConfig } from "@/lib/sidebar-config";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   config?: SidebarConfig;
+  variant?: "sidebar" | "floating" | "inset";
 }
 
-export function AppSidebar({ config, ...props }: AppSidebarProps) {
+export function AppSidebar({ config, variant = "sidebar", ...props }: AppSidebarProps) {
   // Default data for when no config is provided
   const defaultData = {
     user: {
@@ -44,7 +45,7 @@ export function AppSidebar({ config, ...props }: AppSidebarProps) {
 
   return (
     <Sidebar
-      className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
+      variant={variant}
       {...props}
     >
       <SidebarHeader>

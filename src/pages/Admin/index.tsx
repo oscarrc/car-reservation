@@ -1,21 +1,20 @@
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminPage() {
   const { userProfile } = useAuth();
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
-      <div className="mb-4">
+    <>
+      <div className="mb-4 px-4 lg:px-6">
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         {userProfile && (
           <p className="text-sm text-muted-foreground">
-            Welcome, {userProfile.name} <Badge>{userProfile.role}</Badge>
+            Welcome, {userProfile.name} ({userProfile.role})
           </p>
         )}
       </div>
-
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+      
+      <div className="grid auto-rows-min gap-4 md:grid-cols-3 px-4 lg:px-6">
         <div className="bg-muted/50 aspect-video rounded-xl flex items-center justify-center">
           <div className="text-center">
             <h3 className="text-lg font-semibold">Total Users</h3>
@@ -35,16 +34,15 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
-      <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min flex items-center justify-center">
+      
+      <div className="bg-muted/50 min-h-[400px] flex-1 rounded-xl mx-4 lg:mx-6 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-muted-foreground mb-2">
-            Admin Panel
-          </h2>
+          <h2 className="text-2xl font-bold text-muted-foreground mb-2">Admin Panel</h2>
           <p className="text-muted-foreground">
             Administrative functions and system management
           </p>
         </div>
       </div>
-    </div>
+    </>
   );
 }
