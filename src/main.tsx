@@ -11,6 +11,7 @@ import FleetPage from "./pages/Admin/Fleet.tsx";
 import Login from "./pages/Login.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import ReservationsPage from "./pages/Admin/Reservations.tsx";
+import SettingsPage from "./pages/Admin/Settings.tsx";
 import SidebarLayout from "./layouts/Sidebar.tsx";
 import { StrictMode } from "react";
 import { Toaster } from "@/components/ui/sonner";
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: "reservations",
         element: <ReservationsPage />,
+      },
+      {
+        path: "settings",
+        element: <SettingsPage />,
       },
     ],
   },

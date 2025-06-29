@@ -2,6 +2,10 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config";
 
 import AdminPage from "./pages/Admin";
+import FleetPage from "./pages/Admin/Fleet";
+import ReservationsPage from "./pages/Admin/Reservations";
+import UsersPage from "./pages/Admin/Users";
+import SettingsPage from "./pages/Admin/Settings";
 import AppPage from "./pages/App";
 import { AuthProvider } from "./contexts/AuthContext";
 import LoginPage from "./pages/Login";
@@ -24,6 +28,10 @@ const App = () => {
             }
           >
             <Route index element={<AdminPage />} />
+            <Route path="fleet" element={<FleetPage />} />
+            <Route path="reservations" element={<ReservationsPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
 
           <Route
