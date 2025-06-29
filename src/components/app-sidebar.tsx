@@ -78,3 +78,4 @@ export function AppSidebar({ config, variant = "sidebar", ...props }: AppSidebar
     </Sidebar>
   );
 }
+ 

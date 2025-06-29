@@ -1,7 +1,29 @@
+"use client";
+
 import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { FleetStatusChart } from "@/components/dashboard/fleet-status-chart";
+import { ReservationsChart } from "@/components/dashboard/reservations-chart";
 
 export default function AdminPage() {
   const { userProfile } = useAuth();
+  
+  const [currentDate, setCurrentDate] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  });
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev.year, prev.month);
+      if (direction === 'prev') {
+        newDate.setMonth(newDate.getMonth() - 1);
+      } else {
+        newDate.setMonth(newDate.getMonth() + 1);
+      }
+      return { year: newDate.getFullYear(), month: newDate.getMonth() };
+    });
+  };
 
   return (
     <>
@@ -13,35 +35,13 @@ export default function AdminPage() {
           </p>
         )}
       </div>
-      
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3 px-4 lg:px-6">
-        <div className="bg-muted/50 aspect-video rounded-xl flex items-center justify-center">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold">Total Users</h3>
-            <p className="text-sm text-muted-foreground">Manage system users</p>
-          </div>
-        </div>
-        <div className="bg-muted/50 aspect-video rounded-xl flex items-center justify-center">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold">Active Reservations</h3>
-            <p className="text-sm text-muted-foreground">Monitor bookings</p>
-          </div>
-        </div>
-        <div className="bg-muted/50 aspect-video rounded-xl flex items-center justify-center">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold">Fleet Status</h3>
-            <p className="text-sm text-muted-foreground">Car availability</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-muted/50 min-h-[400px] flex-1 rounded-xl mx-4 lg:mx-6 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-muted-foreground mb-2">Admin Panel</h2>
-          <p className="text-muted-foreground">
-            Administrative functions and system management
-          </p>
-        </div>
+
+      <div className="grid gap-4 md:grid-cols-2 px-4 lg:px-6">
+        <FleetStatusChart />
+        <ReservationsChart 
+          currentDate={currentDate}
+          onNavigateMonth={navigateMonth}
+        />
       </div>
     </>
   );

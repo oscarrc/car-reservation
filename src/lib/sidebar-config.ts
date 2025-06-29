@@ -37,19 +37,19 @@ export const adminSidebarConfig: SidebarConfig = {
       icon: Home
     },
     {
-      title: "Users Management",
-      url: "/admin/users",
-      icon: Users
+      title: "Reservations",
+      url: "/admin/reservations",
+      icon: Calendar
     },
     {
-      title: "Fleet Management",
+      title: "Fleet",
       url: "/admin/fleet",
       icon: CarFront
     },
     {
-      title: "Reservations",
-      url: "/admin/reservations",
-      icon: Calendar
+      title: "Users",
+      url: "/admin/users",
+      icon: Users
     },
     {
       title: "Settings",

@@ -37,3 +37,4 @@ export function SiteHeader({ companyName, currentPageTitle }: SiteHeaderProps) {
     </header>
   )
 }
+ 

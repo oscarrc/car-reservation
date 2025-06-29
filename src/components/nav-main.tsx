@@ -29,11 +29,11 @@ export function NavMain({
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton asChild isActive={item.isActive} tooltip={item.title}>
               <Link to={item.url}>
-                <item.icon />
-                <span>{item.title}</span>
+                  <item.icon />
+                  <span>{item.title}</span>
               </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
         ))}
       </SidebarMenu>
     </SidebarGroup>

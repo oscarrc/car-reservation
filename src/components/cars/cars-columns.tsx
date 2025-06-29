@@ -39,13 +39,13 @@ export function createColumns({
   const getStatusVariant = (status: CarStatus) => {
     switch (status) {
       case "available":
-        return "default";
+        return "success";
       case "maintenance":
-        return "secondary";
+        return "warning";
       case "out_of_service":
-        return "destructive";
+        return "error";
       default:
-        return "secondary";
+        return "warning";
     }
   };
 

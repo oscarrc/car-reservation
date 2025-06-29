@@ -31,10 +31,17 @@ interface ColumnsProps {
   ) => void;
 }
 
-const statusColors: Record<ReservationStatus, string> = {
-  pending: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
-  confirmed: "bg-green-500/10 text-green-600 border-green-500/20",
-  cancelled: "bg-red-500/10 text-red-600 border-red-500/20",
+const getStatusVariant = (status: ReservationStatus) => {
+  switch (status) {
+    case "confirmed":
+      return "success";
+    case "pending":
+      return "warning";
+    case "cancelled":
+      return "error";
+    default:
+      return "warning";
+  }
 };
 
 const statusLabels: Record<ReservationStatus, string> = {
@@ -194,24 +201,24 @@ export const createColumns = ({
         >
           <SelectTrigger className="w-[130px] border-0 focus:ring-0 h-8">
             <SelectValue>
-              <Badge variant="outline" className={statusColors[currentStatus]}>
+              <Badge variant={getStatusVariant(currentStatus)}>
                 {statusLabels[currentStatus]}
               </Badge>
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="pending">
-              <Badge variant="outline" className={statusColors.pending}>
+              <Badge variant={getStatusVariant("pending")}>
                 Pending
               </Badge>
             </SelectItem>
             <SelectItem value="confirmed">
-              <Badge variant="outline" className={statusColors.confirmed}>
+              <Badge variant={getStatusVariant("confirmed")}>
                 Confirmed
               </Badge>
             </SelectItem>
             <SelectItem value="cancelled">
-              <Badge variant="outline" className={statusColors.cancelled}>
+              <Badge variant={getStatusVariant("cancelled")}>
                 Cancelled
               </Badge>
             </SelectItem>

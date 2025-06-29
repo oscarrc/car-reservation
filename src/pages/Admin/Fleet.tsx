@@ -82,12 +82,12 @@ export default function FleetPage() {
         />
       </div>
 
-      <CarFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        mode={dialogMode}
-        car={selectedCar}
-      />
+        <CarFormDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          mode={dialogMode}
+          car={selectedCar}
+        />
 
       <DeleteConfirmationDialog
         open={deleteDialogOpen}

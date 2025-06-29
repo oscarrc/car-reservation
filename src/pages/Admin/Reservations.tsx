@@ -82,7 +82,7 @@ export default function ReservationsPage() {
     return (
       <>
         <SectionHeader
-          title="Reservations"
+          title="Reservations Management"
           subtitle="Manage car reservations and bookings"
         />
         <div className="px-4 lg:px-6">

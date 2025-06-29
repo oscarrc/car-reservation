@@ -86,21 +86,21 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+              <DropdownMenuItem>
               <UserCircle />
               Profile
-            </DropdownMenuItem>
+              </DropdownMenuItem>
             {hasRole("admin") && (
               <>
-                <DropdownMenuSeparator />
+            <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => handleNavigation("/admin")}>
                   <LayoutDashboard />
                   Admin Dashboard
-                </DropdownMenuItem>
+              </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleNavigation("/app")}>
                   <Calendar />
                   Reservations
-                </DropdownMenuItem>
+              </DropdownMenuItem>
               </>
             )}
             <DropdownMenuSeparator />

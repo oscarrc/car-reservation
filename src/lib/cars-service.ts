@@ -1,21 +1,21 @@
-import { 
-  collection, 
-  query, 
-  orderBy, 
-  limit, 
-  startAfter, 
-  getDocs, 
-  where,
+import type { Car, CarStatus, CarWithId } from '@/types/car';
+import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import {
   QueryConstraint,
-  doc,
-  setDoc,
-  updateDoc,
+  addDoc,
+  collection,
   deleteDoc,
-  addDoc
+  doc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  startAfter,
+  updateDoc,
+  where
 } from 'firebase/firestore';
-import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+
 import { db } from './firebase';
-import type { Car, CarWithId, CarStatus } from '@/types/car';
 
 export interface CarsResponse {
   cars: CarWithId[];
