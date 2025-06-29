@@ -5,9 +5,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -161,20 +163,26 @@ export function createColumns({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem className="cursor-pointer">
+                <Eye className="mr-2 h-4 w-4" />
+                Car details
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onEditCar(car)}
                 className="cursor-pointer"
               >
                 <Edit className="mr-2 h-4 w-4" />
-                Edit
+                Edit Car
               </DropdownMenuItem>
+              {onDeleteCar && <DropdownMenuSeparator />}
               {onDeleteCar && (
                 <DropdownMenuItem
                   onClick={() => onDeleteCar(car)}
                   className="cursor-pointer text-red-600"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
+                  Delete Car
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>

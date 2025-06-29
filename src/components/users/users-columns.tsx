@@ -1,9 +1,6 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowUpDown, Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { UserProfileWithId } from "@/lib/users-service";
 
 interface ColumnsProps {
@@ -20,7 +21,10 @@ interface ColumnsProps {
   onDeleteUser?: (user: UserProfileWithId) => void;
 }
 
-export const createColumns = ({ onEditUser, onDeleteUser }: ColumnsProps): ColumnDef<UserProfileWithId>[] => [
+export const createColumns = ({
+  onEditUser,
+  onDeleteUser,
+}: ColumnsProps): ColumnDef<UserProfileWithId>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -118,17 +122,25 @@ export const createColumns = ({ onEditUser, onDeleteUser }: ColumnsProps): Colum
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>View user details</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEditUser(user)}>
+            <DropdownMenuItem className="cursor-pointer">
+              <Eye className="mr-2 h-4 w-4" />
+              User details
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => onEditUser(user)}
+              className="cursor-pointer"
+            >
+              <Edit className="mr-2 h-4 w-4" />
               Edit user
             </DropdownMenuItem>
             {onDeleteUser && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => onDeleteUser(user)}
-                  className="text-red-600"
+                  className="cursor-pointer text-red-600"
                 >
+                  <Trash2 className="mr-2 h-4 w-4" />
                   Delete user
                 </DropdownMenuItem>
               </>
@@ -138,4 +150,4 @@ export const createColumns = ({ onEditUser, onDeleteUser }: ColumnsProps): Colum
       );
     },
   },
-]; 
+];
