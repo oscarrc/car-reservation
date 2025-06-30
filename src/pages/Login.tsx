@@ -1,13 +1,17 @@
 import { Link, Navigate } from "react-router-dom";
+
+import { Car } from "lucide-react";
 import { LoginForm } from "@/components/login-form";
 import { useAuth } from "@/contexts/AuthContext";
-import { Car } from "lucide-react";
 
 const Login = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, userProfile } = useAuth();
 
   // If user is already logged in, redirect to app
   if (currentUser) {
+    if (userProfile?.role === "admin") {
+      return <Navigate to="/admin" />;
+    }
     return <Navigate to="/app" />;
   }
 
