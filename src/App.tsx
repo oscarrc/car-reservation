@@ -5,7 +5,7 @@ import AdminPage from "./pages/Admin";
 import AppPage from "./pages/App";
 import { AuthProvider } from "./contexts/AuthContext";
 import FleetPage from "./pages/Admin/Fleet";
-import LoginPage from "./pages/Login";
+import LoginPage from "./pages/Auth/Login";
 import ProfilePage from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ReservationsPage from "./pages/Admin/Reservations";

@@ -8,7 +8,7 @@ import AdminPage from "./pages/Admin/index.tsx";
 import AppPage from "./pages/App/index.tsx";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
 import FleetPage from "./pages/Admin/Fleet/index.tsx";
-import Login from "./pages/Login.tsx";
+import Login from "./pages/Auth/Login.tsx";
 import ProfilePage from "./pages/Profile.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import ReservationsPage from "./pages/Admin/Reservations.tsx";
