@@ -8,10 +8,12 @@ import AdminPage from "./pages/Admin/index.tsx";
 import AppPage from "./pages/App/index.tsx";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
 import FleetPage from "./pages/Admin/Fleet/index.tsx";
+import Forgot from "./pages/Auth/Forgot.tsx";
 import Login from "./pages/Auth/Login.tsx";
 import ProfilePage from "./pages/Profile.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import ReservationsPage from "./pages/Admin/Reservations.tsx";
+import Reset from "./pages/Auth/Reset.tsx";
 import SettingsPage from "./pages/Admin/Settings.tsx";
 import SidebarLayout from "./layouts/Sidebar.tsx";
 import { StrictMode } from "react";
@@ -30,6 +32,14 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/forgot",
+    element: <Forgot />,
+  },
+  {
+    path: "/reset",
+    element: <Reset />,
   },
   {
     path: "/admin",

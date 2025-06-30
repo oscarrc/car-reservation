@@ -6,6 +6,8 @@ import AppPage from "./pages/App";
 import { AuthProvider } from "./contexts/AuthContext";
 import FleetPage from "./pages/Admin/Fleet";
 import LoginPage from "./pages/Auth/Login";
+import ForgotPage from "./pages/Auth/Forgot";
+import ResetPage from "./pages/Auth/Reset";
 import ProfilePage from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ReservationsPage from "./pages/Admin/Reservations";
@@ -20,6 +22,8 @@ const App = () => {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot" element={<ForgotPage />} />
+          <Route path="/reset" element={<ResetPage />} />
           <Route
             path="/admin"
             element={
