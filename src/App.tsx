@@ -6,6 +6,7 @@ import AppPage from "./pages/App";
 import { AuthProvider } from "./contexts/AuthContext";
 import FleetPage from "./pages/Admin/Fleet";
 import LoginPage from "./pages/Login";
+import ProfilePage from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ReservationsPage from "./pages/Admin/Reservations";
 import SettingsPage from "./pages/Admin/Settings";
@@ -43,6 +44,17 @@ const App = () => {
             }
           >
             <Route index element={<AppPage />} />
+          </Route>
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <SidebarLayout config={appSidebarConfig} />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<ProfilePage />} />
           </Route>
         </Routes>
       </Router>

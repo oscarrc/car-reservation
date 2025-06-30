@@ -1,7 +1,13 @@
 "use client";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ChevronsUpDown, LogOut, UserCircle, LayoutDashboard, Calendar } from "lucide-react";
+import {
+  Calendar,
+  ChevronsUpDown,
+  LayoutDashboard,
+  LogOut,
+  UserCircle,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -86,21 +92,21 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-              <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleNavigation("/profile")}>
               <UserCircle />
               Profile
-              </DropdownMenuItem>
+            </DropdownMenuItem>
             {hasRole("admin") && (
               <>
-            <DropdownMenuSeparator />
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => handleNavigation("/admin")}>
                   <LayoutDashboard />
                   Admin Dashboard
-              </DropdownMenuItem>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleNavigation("/app")}>
                   <Calendar />
                   Reservations
-              </DropdownMenuItem>
+                </DropdownMenuItem>
               </>
             )}
             <DropdownMenuSeparator />

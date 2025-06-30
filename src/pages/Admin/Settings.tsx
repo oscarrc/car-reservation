@@ -27,7 +27,11 @@ import {
 } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { SectionHeader } from "@/components/ui/section-header";
-import { fetchSettings, updateSettings, type AppSettings } from "@/lib/settings-service";
+import {
+  fetchSettings,
+  updateSettings,
+  type AppSettings,
+} from "@/lib/settings-service";
 
 const settingsSchema = z.object({
   // Reservation Management
@@ -38,7 +42,7 @@ const settingsSchema = z.object({
   advanceCancellationTime: z.number().min(1).max(168), // max 1 week
   maxConcurrentReservations: z.number().min(1).max(10),
   minTimeBetweenReservations: z.number().min(0).max(72), // max 3 days
-  
+
   // System Configuration
   weekendReservationsEnabled: z.boolean(),
   emailNotificationsEnabled: z.boolean(),
@@ -63,10 +67,12 @@ export default function SettingsPage() {
 
   const form = useForm<SettingsFormData>({
     resolver: zodResolver(settingsSchema),
-    values: settings ? {
-      ...settings,
-      supportEmails: settings.supportEmails?.join('\n') || '',
-    } : undefined,
+    values: settings
+      ? {
+          ...settings,
+          supportEmails: settings.supportEmails?.join("\n") || "",
+        }
+      : undefined,
   });
 
   const updateMutation = useMutation({
@@ -84,8 +90,11 @@ export default function SettingsPage() {
   const onSubmit = (data: SettingsFormData) => {
     const settingsToUpdate: AppSettings = {
       ...data,
-      supportEmails: data.supportEmails 
-        ? data.supportEmails.split('\n').map(email => email.trim()).filter(email => email.length > 0)
+      supportEmails: data.supportEmails
+        ? data.supportEmails
+            .split("\n")
+            .map((email) => email.trim())
+            .filter((email) => email.length > 0)
         : [],
     };
     updateMutation.mutate(settingsToUpdate);
@@ -134,9 +143,9 @@ export default function SettingsPage() {
         actionIcon={updateMutation.isPending ? Loader2 : Save}
       />
 
-      <div className="px-4 lg:px-6 max-w-6xl mx-auto">
+      <div className="px-4 lg:px-6">
         <Form {...form}>
-          <form className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <form className="grid gap-6 lg:grid-cols-2">
             {/* Reservation Management */}
             <Card>
               <CardHeader>
@@ -159,11 +168,14 @@ export default function SettingsPage() {
                             min="0"
                             max="30"
                             {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value) || 0)
+                            }
                           />
                         </FormControl>
                         <FormDescription>
-                          Minimum days before a reservation can be made (Mon-Fri)
+                          Minimum days before a reservation can be made
+                          (Mon-Fri)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -175,14 +187,18 @@ export default function SettingsPage() {
                     name="maxReservationDuration"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Maximum Reservation Duration (Days)</FormLabel>
+                        <FormLabel>
+                          Maximum Reservation Duration (Days)
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             min="1"
                             max="30"
                             {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value) || 1)
+                            }
                           />
                         </FormControl>
                         <FormDescription>
@@ -205,7 +221,9 @@ export default function SettingsPage() {
                             min="1"
                             max="168"
                             {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value) || 1)
+                            }
                           />
                         </FormControl>
                         <FormDescription>
@@ -228,7 +246,9 @@ export default function SettingsPage() {
                             min="1"
                             max="10"
                             {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value) || 1)
+                            }
                           />
                         </FormControl>
                         <FormDescription>
@@ -244,14 +264,18 @@ export default function SettingsPage() {
                     name="minTimeBetweenReservations"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Min Time Between Reservations (Hours)</FormLabel>
+                        <FormLabel>
+                          Min Time Between Reservations (Hours)
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             min="0"
                             max="72"
                             {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value) || 0)
+                            }
                           />
                         </FormControl>
                         <FormDescription>
@@ -272,9 +296,12 @@ export default function SettingsPage() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">Auto-approve Reservations</FormLabel>
+                          <FormLabel className="text-base">
+                            Auto-approve Reservations
+                          </FormLabel>
                           <FormDescription>
-                            Automatically approve new reservations without admin confirmation
+                            Automatically approve new reservations without admin
+                            confirmation
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -293,9 +320,12 @@ export default function SettingsPage() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">Auto-approve Cancellations</FormLabel>
+                          <FormLabel className="text-base">
+                            Auto-approve Cancellations
+                          </FormLabel>
                           <FormDescription>
-                            Automatically approve cancellation requests without admin confirmation
+                            Automatically approve cancellation requests without
+                            admin confirmation
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -328,10 +358,7 @@ export default function SettingsPage() {
                       <FormItem>
                         <FormLabel>Business Hours Start</FormLabel>
                         <FormControl>
-                          <Input
-                            type="time"
-                            {...field}
-                          />
+                          <Input type="time" {...field} />
                         </FormControl>
                         <FormDescription>
                           Start time for business operations
@@ -348,10 +375,7 @@ export default function SettingsPage() {
                       <FormItem>
                         <FormLabel>Business Hours End</FormLabel>
                         <FormControl>
-                          <Input
-                            type="time"
-                            {...field}
-                          />
+                          <Input type="time" {...field} />
                         </FormControl>
                         <FormDescription>
                           End time for business operations
@@ -376,7 +400,7 @@ export default function SettingsPage() {
                         />
                       </FormControl>
                       <FormDescription>
-                        Enter email addresses for support notifications, one per line
+                        Enter email addresses for support inquires, one per line
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -392,7 +416,9 @@ export default function SettingsPage() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">Weekend Reservations</FormLabel>
+                          <FormLabel className="text-base">
+                            Weekend Reservations
+                          </FormLabel>
                           <FormDescription>
                             Allow users to make reservations for weekends
                           </FormDescription>
@@ -413,7 +439,9 @@ export default function SettingsPage() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">Email Notifications</FormLabel>
+                          <FormLabel className="text-base">
+                            Email Notifications
+                          </FormLabel>
                           <FormDescription>
                             Send email notifications for reservation updates
                           </FormDescription>
@@ -435,4 +463,4 @@ export default function SettingsPage() {
       </div>
     </>
   );
-} 
+}

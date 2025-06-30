@@ -9,6 +9,7 @@ import AppPage from "./pages/App/index.tsx";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
 import FleetPage from "./pages/Admin/Fleet/index.tsx";
 import Login from "./pages/Login.tsx";
+import ProfilePage from "./pages/Profile.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import ReservationsPage from "./pages/Admin/Reservations.tsx";
 import SettingsPage from "./pages/Admin/Settings.tsx";
@@ -71,6 +72,20 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <AppPage />,
+      },
+    ],
+  },
+  {
+    path: "/profile",
+    element: (
+      <ProtectedRoute>
+        <SidebarLayout config={appSidebarConfig} />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <ProfilePage />,
       },
     ],
   },
