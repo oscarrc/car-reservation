@@ -5,6 +5,8 @@ import {
   ChevronRightIcon,
 } from "lucide-react"
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
+import { useTranslation } from "react-i18next"
+import { getCurrentLocale, getLocaleString } from "@/lib/date-locale"
 
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -17,14 +19,20 @@ function Calendar({
   buttonVariant = "ghost",
   formatters,
   components,
+  locale,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
 }) {
+  const { i18n } = useTranslation();
   const defaultClassNames = getDefaultClassNames()
+
+  // Use the current locale from our date-locale utility
+  const currentLocale = locale || getCurrentLocale();
 
   return (
     <DayPicker
+      locale={currentLocale}
       showOutsideDays={showOutsideDays}
       className={cn(
         "bg-background group/calendar p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
@@ -35,9 +43,15 @@ function Calendar({
       captionLayout={captionLayout}
       formatters={{
         formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "short" }),
+          date.toLocaleString(getLocaleString(), { month: "short" }),
+        formatWeekdayName: (date) =>
+          date.toLocaleDateString(getLocaleString(), { weekday: "short" }),
+        formatCaption: (date) =>
+          date.toLocaleDateString(getLocaleString(), { month: "long", year: "numeric" }),
         ...formatters,
       }}
+      // Force re-render when language changes
+      key={i18n.language}
       classNames={{
         root: cn("w-fit", defaultClassNames.root),
         months: cn(
@@ -185,7 +199,7 @@ function CalendarDayButton({
       ref={ref}
       variant="ghost"
       size="icon"
-      data-day={day.date.toLocaleDateString()}
+      data-day={day.date.toLocaleDateString(getLocaleString())}
       data-selected-single={
         modifiers.selected &&
         !modifiers.range_start &&

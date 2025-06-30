@@ -22,6 +22,7 @@ import {
   ChartLegend,
 } from "@/components/ui/chart";
 import { fetchDailyReservations } from "@/lib/dashboard-service";
+import { getLocaleString } from "@/lib/date-locale";
 
 const reservationsChartConfig = {
   confirmed: {
@@ -63,7 +64,7 @@ export function ReservationsChart({
   const currentMonth = new Date(
     currentDate.year,
     currentDate.month
-  ).toLocaleDateString("en-US", {
+  ).toLocaleDateString(getLocaleString(), {
     month: "long",
     year: "numeric",
   });

@@ -43,7 +43,12 @@
     "company": "Company",
     "role": "Role",
     "createdAt": "Created At",
-    "updatedAt": "Updated At"
+    "updatedAt": "Updated At",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "selectDate": "Select date",
+    "pickDate": "Pick a date"
   },
   "auth": {
     "welcome": "Welcome back",

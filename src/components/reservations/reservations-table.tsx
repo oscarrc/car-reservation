@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { format } from "date-fns";
+import { format, getLocalizedFormats } from "@/lib/date-locale";
 import { Calendar as CalendarIcon, FilterX, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -145,7 +145,7 @@ export function ReservationsTable({
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDateFilter ? format(startDateFilter, "PPP") : <span>{t("reservations.startDate")}</span>}
+                {startDateFilter ? format(startDateFilter, getLocalizedFormats().dateShort) : <span>{t("reservations.startDate")}</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -168,7 +168,7 @@ export function ReservationsTable({
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDateFilter ? format(endDateFilter, "PPP") : <span>{t("reservations.endDate")}</span>}
+                {endDateFilter ? format(endDateFilter, getLocalizedFormats().dateShort) : <span>{t("reservations.endDate")}</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">

@@ -22,8 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { format, getLocalizedFormats } from "@/lib/date-locale";
 
 interface ColumnsProps {
   onStatusChange: (
@@ -145,13 +145,15 @@ export const createColumns = ({
       },
       cell: ({ row }) => {
         const startDateTime = row.getValue("startDateTime") as Date;
+        const formats = getLocalizedFormats();
+        
         return (
           <div className="text-sm">
             <div className="font-medium">
-              {format(startDateTime, "MMM dd, yyyy")}
+              {format(startDateTime, formats.dayMonth)}
             </div>
             <div className="text-muted-foreground">
-              {format(startDateTime, "HH:mm")}
+              {format(startDateTime, formats.time)}
             </div>
           </div>
         );
@@ -172,13 +174,15 @@ export const createColumns = ({
       },
       cell: ({ row }) => {
         const endDateTime = row.getValue("endDateTime") as Date;
+        const formats = getLocalizedFormats();
+        
         return (
           <div className="text-sm">
             <div className="font-medium">
-              {format(endDateTime, "MMM dd, yyyy")}
+              {format(endDateTime, formats.dayMonth)}
             </div>
             <div className="text-muted-foreground">
-              {format(endDateTime, "HH:mm")}
+              {format(endDateTime, formats.time)}
             </div>
           </div>
         );
