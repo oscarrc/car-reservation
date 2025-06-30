@@ -20,7 +20,11 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   variant?: "sidebar" | "floating" | "inset";
 }
 
-export function AppSidebar({ config, variant = "sidebar", ...props }: AppSidebarProps) {
+export function AppSidebar({
+  config,
+  variant = "sidebar",
+  ...props
+}: AppSidebarProps) {
   // Default data for when no config is provided
   const defaultData = {
     user: {
@@ -29,6 +33,7 @@ export function AppSidebar({ config, variant = "sidebar", ...props }: AppSidebar
     },
     company: {
       name: "Company Name",
+      access: "Internal Access",
     },
     items: [],
   };
@@ -44,10 +49,7 @@ export function AppSidebar({ config, variant = "sidebar", ...props }: AppSidebar
   }));
 
   return (
-    <Sidebar
-      variant={variant}
-      {...props}
-    >
+    <Sidebar variant={variant} {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -61,7 +63,7 @@ export function AppSidebar({ config, variant = "sidebar", ...props }: AppSidebar
                     {data.company.name}
                   </span>
                   <span className="truncate text-xs text-sidebar-foreground/70">
-                    Internal System
+                    {data.company.access}
                   </span>
                 </div>
               </a>
@@ -78,4 +80,3 @@ export function AppSidebar({ config, variant = "sidebar", ...props }: AppSidebar
     </Sidebar>
   );
 }
- 
