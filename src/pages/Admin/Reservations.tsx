@@ -2,21 +2,30 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { Plus } from "lucide-react";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
-import { createColumns } from "@/components/reservations/reservations-columns";
+import { createAdminColumns, type ReservationWithCarAndUser } from "@/components/reservations/admin-reservations-columns";
 import {
   fetchReservations,
   updateReservationStatus,
   type ReservationsQueryParams,
 } from "@/lib/reservations-service";
-import type { ReservationWithId, ReservationStatus } from "@/types/reservation";
+import { fetchCarsByIds } from "@/lib/cars-service";
+import { fetchUsersByIds } from "@/lib/users-service";
+import type { ReservationStatus } from "@/types/reservation";
 
-export default function ReservationsPage() {
+export default function AdminReservationsPage() {
   const { t } = useTranslation();
-  const [statusFilter, setStatusFilter] = useState<ReservationStatus | "all">("all");
-  const [startDateFilter, setStartDateFilter] = useState<Date | undefined>(undefined);
-  const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<ReservationStatus | "all">(
+    "all"
+  );
+  const [startDateFilter, setStartDateFilter] = useState<Date | undefined>(
+    undefined
+  );
+  const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(
+    undefined
+  );
   const queryClient = useQueryClient();
 
   const queryParams: ReservationsQueryParams = {
@@ -26,22 +35,60 @@ export default function ReservationsPage() {
     endDate: endDateFilter,
   };
 
+  // Fetch all reservations (admin view)
   const {
     data: reservationsResponse,
-    isLoading,
-    error,
+    isLoading: reservationsLoading,
+    error: reservationsError,
   } = useQuery({
     queryKey: ["reservations", queryParams],
     queryFn: () => fetchReservations(queryParams),
   });
 
-  const updateStatusMutation = useMutation({
+  const reservations = reservationsResponse?.reservations || [];
+
+  // Extract unique car and user IDs from reservations
+  const carIds = [...new Set(reservations.map((r) => r.carId).filter(Boolean))];
+  const userIds = [...new Set(reservations.map((r) => r.userId).filter(Boolean))];
+
+  // Fetch cars and users data for the reservations
+  const {
+    data: carsData,
+    isLoading: carsLoading,
+    error: carsError,
+  } = useQuery({
+    queryKey: ["reservationCars", carIds],
+    queryFn: () => fetchCarsByIds(carIds),
+    enabled: carIds.length > 0,
+  });
+
+  const {
+    data: usersData,
+    isLoading: usersLoading,
+    error: usersError,
+  } = useQuery({
+    queryKey: ["reservationUsers", userIds],
+    queryFn: () => fetchUsersByIds(userIds),
+    enabled: userIds.length > 0,
+  });
+
+  // Merge reservations with car and user data
+  const reservationsWithData: ReservationWithCarAndUser[] = reservations.map(
+    (reservation) => ({
+      ...reservation,
+      carInfo: carsData?.find((car) => car.id === reservation.carId),
+      userInfo: usersData?.find((user) => user.id === reservation.userId),
+    })
+  );
+
+  // Status update mutation
+  const statusMutation = useMutation({
     mutationFn: ({ reservationId, status }: { reservationId: string; status: ReservationStatus }) =>
       updateReservationStatus(reservationId, status),
     onSuccess: (_, { status }) => {
       toast.success(t("reservations.statusUpdated"), {
-        description: t("reservations.statusUpdatedDesc", { 
-          status: t(`reservations.${status}`) 
+        description: t("reservations.statusUpdatedDesc", {
+          status: t(`reservations.${status}`)
         }),
       });
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
@@ -54,13 +101,16 @@ export default function ReservationsPage() {
     },
   });
 
-  const handleStatusChange = (reservation: ReservationWithId, status: ReservationStatus) => {
-    if (status === reservation.status) return;
-    
-    updateStatusMutation.mutate({
-      reservationId: reservation.id,
-      status,
-    });
+  const handleStatusChange = (
+    reservation: ReservationWithCarAndUser,
+    status: ReservationStatus
+  ) => {
+    statusMutation.mutate({ reservationId: reservation.id, status });
+  };
+
+  const handleNewReservation = () => {
+    // TODO: Implement new reservation dialog
+    console.log("New reservation");
   };
 
   const handleStatusFilterChange = (status: ReservationStatus | "all") => {
@@ -75,13 +125,15 @@ export default function ReservationsPage() {
     setEndDateFilter(date);
   };
 
-  const columns = createColumns({
+  const columns = createAdminColumns({
     onStatusChange: handleStatusChange,
+    t,
   });
 
-  const reservations = reservationsResponse?.reservations || [];
+  const isLoading = reservationsLoading || carsLoading || usersLoading;
+  const hasError = reservationsError || carsError || usersError;
 
-  if (error) {
+  if (hasError) {
     return (
       <>
         <SectionHeader
@@ -90,7 +142,9 @@ export default function ReservationsPage() {
         />
         <div className="px-4 lg:px-6">
           <div className="text-center">
-            <p className="text-destructive">{t("reservations.errorLoadingReservations")}</p>
+            <p className="text-destructive">
+              {t("reservations.errorLoadingReservations")}
+            </p>
           </div>
         </div>
       </>
@@ -102,12 +156,15 @@ export default function ReservationsPage() {
       <SectionHeader
         title={t("reservations.management")}
         subtitle={t("reservations.subtitle")}
+        action={handleNewReservation}
+        actionText={t("reservations.newReservation")}
+        actionIcon={Plus}
       />
-      
+
       <div className="px-4 lg:px-6">
         <ReservationsTable
           columns={columns}
-          data={reservations}
+          data={reservationsWithData}
           loading={isLoading}
           onStatusFilterChange={handleStatusFilterChange}
           onStartDateFilterChange={handleStartDateFilterChange}

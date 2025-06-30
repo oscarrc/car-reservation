@@ -5,15 +5,16 @@ import AdminPage from "./pages/Admin";
 import AppPage from "./pages/App";
 import { AuthProvider } from "./contexts/AuthContext";
 import FleetPage from "./pages/Admin/Fleet";
-import LoginPage from "./pages/Auth/Login";
 import ForgotPage from "./pages/Auth/Forgot";
-import ResetPage from "./pages/Auth/Reset";
+import LoginPage from "./pages/Auth/Login";
 import NotFoundPage from "./pages/NotFound";
 import ProfilePage from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ReservationsPage from "./pages/Admin/Reservations";
+import ResetPage from "./pages/Auth/Reset";
 import SettingsPage from "./pages/Admin/Settings";
 import SidebarLayout from "./layouts/Sidebar";
+import UserReservationsPage from "./pages/App/Reservations";
 import UsersPage from "./pages/Admin/Users";
 
 const App = () => {
@@ -49,6 +50,7 @@ const App = () => {
             }
           >
             <Route index element={<AppPage />} />
+            <Route path="reservations" element={<UserReservationsPage />} />
           </Route>
 
           <Route

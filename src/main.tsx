@@ -20,11 +20,20 @@ import SettingsPage from "./pages/Admin/Settings.tsx";
 import SidebarLayout from "./layouts/Sidebar.tsx";
 import { StrictMode } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import UserReservationsPage from "./pages/App/Reservations.tsx";
 import UsersPage from "./pages/Admin/Users/index.tsx";
 import { createRoot } from "react-dom/client";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 
 // Create a client
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const router = createBrowserRouter([
   {
@@ -85,6 +94,10 @@ const router = createBrowserRouter([
         index: true,
         element: <AppPage />,
       },
+      {
+        path: "reservations",
+        element: <UserReservationsPage />,
+      },
     ],
   },
   {
@@ -111,8 +124,10 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <RouterProvider router={router} />
-        <Toaster />
+        <SettingsProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </SettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>

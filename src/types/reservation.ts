@@ -1,4 +1,4 @@
-export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled';
+export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled' | 'cancellation_pending';
 
 export interface Reservation {
   userId: string;
@@ -10,6 +10,8 @@ export interface Reservation {
   status: ReservationStatus;
   createdAt: Date;
   updatedAt: Date;
+  driver?: string;
+  comments?: string;
 }
 
 export interface ReservationWithId extends Reservation {

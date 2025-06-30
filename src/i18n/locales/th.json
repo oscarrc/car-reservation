@@ -131,12 +131,13 @@
     "returnToWebsite": "กลับไปยังเว็บไซต์"
   },
   "loading": {
-    "authenticating": "กำลังตรวจสอบตัวตน...",
-    "preparingDashboard": "กำลังเตรียมแดชบอร์ดของคุณ...",
+    "loading": "กำลังโหลด...",
+    "authenticating": "กำลังตรวจสอบสิทธิ์...",
     "loadingCars": "กำลังโหลดรถยนต์...",
-    "loadingUsers": "กำลังโหลดผู้ใช้...",
     "loadingReservations": "กำลังโหลดการจอง...",
+    "loadingUsers": "กำลังโหลดผู้ใช้...",
     "loadingSettings": "กำลังโหลดการตั้งค่า...",
+    "loadingDashboard": "กำลังโหลดแดชบอร์ด...",
     "loadingProfile": "กำลังโหลดโปรไฟล์..."
   },
   "profile": {
@@ -220,16 +221,56 @@
     "failedToUpdateStatus": "ไม่สามารถอัปเดตสถานะได้"
   },
   "reservations": {
-    "management": "การจอง",
-    "subtitle": "จัดการการจองรถยนต์และการจอง",
-    "confirmed": "ยืนยันแล้ว",
-    "pending": "รอดำเนินการ",
-    "cancelled": "ยกเลิกแล้ว",
-    "filterByStatus": "กรองตามสถานะ",
+    "management": "การจัดการการจอง",
+    "subtitle": "จัดการและติดตามการจองรถยนต์ทั้งหมด",
+    "userSubtitle": "ดูและจัดการการจองรถยนต์ของคุณ",
+    "myReservations": "การจองของฉัน",
+    "newReservation": "การจองใหม่",
+    "createReservation": "สร้างการจอง",
+    "editReservation": "แก้ไขการจอง",
     "startDate": "วันที่เริ่มต้น",
     "endDate": "วันที่สิ้นสุด",
+    "startDateTime": "วันและเวลาเริ่มต้น",
+    "endDateTime": "วันและเวลาสิ้นสุด",
+    "status": "สถานะ",
+    "driver": "ผู้ขับขี่",
+    "comments": "ความคิดเห็น",
+    "car": "รถยนต์",
+    "carModel": "รุ่นรถยนต์",
+    "licensePlate": "ป้ายทะเบียน",
+    "userName": "ชื่อผู้ใช้",
+    "userEmail": "อีเมลผู้ใช้",
+    "pending": "รอดำเนินการ",
+    "confirmed": "ยืนยันแล้ว",
+    "cancelled": "ยกเลิกแล้ว",
+    "cancellationPending": "รอยกเลิก",
+    "filterByStatus": "กรองตามสถานะ",
     "clearFilters": "ล้างตัวกรอง",
-    "noReservationsFound": "ไม่พบการจอง"
+    "viewDetails": "ดูรายละเอียด",
+    "editDetails": "แก้ไขรายละเอียด",
+    "confirmReservation": "ยืนยัน",
+    "cancelReservation": "ยกเลิกการจอง",
+    "deleteReservation": "ลบ",
+    "statusUpdated": "อัปเดตสถานะการจองแล้ว",
+    "statusUpdatedDesc": "เปลี่ยนสถานะการจองเป็น {{status}}",
+    "failedToUpdateStatus": "ไม่สามารถอัปเดตสถานะการจองได้",
+    "errorLoadingReservations": "เกิดข้อผิดพลาดในการโหลดการจอง",
+    "noReservationsFound": "ไม่พบการจอง",
+    "upcomingReservations": "การจองที่กำลังจะมาถึง",
+    "pastReservations": "การจองที่ผ่านมา",
+    "reservationDetails": "รายละเอียดการจอง",
+    "duration": "ระยะเวลา",
+    "days": "วัน",
+    "hours": "ชั่วโมง",
+    "createdOn": "สร้างเมื่อ",
+    "lastUpdated": "อัปเดตล่าสุด",
+    "cancellationSuccess": "ยกเลิกการจองสำเร็จ",
+    "cancellationSuccessDesc": "การจอง {{car}} ของคุณถูกยกเลิกแล้ว",
+    "cancellationRequested": "ส่งคำขอยกเลิกแล้ว",
+    "cancellationRequestedDesc": "คำขอยกเลิกการจอง {{car}} ของคุณได้ถูกส่งให้ผู้ดูแลระบบพิจารณาแล้ว",
+    "failedToCancel": "ไม่สามารถยกเลิกการจองได้",
+    "cancellationTooLate": "ไม่สามารถยกเลิกได้",
+    "cancellationTooLateDesc": "การจองสามารถยกเลิกได้เฉพาะล่วงหน้าอย่างน้อย {{hours}} ชั่วโมงเท่านั้น"
   },
   "users": {
     "management": "จัดการผู้ใช้",
@@ -317,7 +358,10 @@
     "cancelReservation": "ยกเลิกการจอง",
     "selectAll": "เลือกทั้งหมด",
     "selectRow": "เลือกแถว",
-    "openMenu": "เปิดเมนู"
+    "openMenu": "เปิดเมนู",
+    "noData": "ไม่มีข้อมูล",
+    "loading": "กำลังโหลดข้อมูล...",
+    "error": "เกิดข้อผิดพลาดในการโหลดข้อมูล"
   },
   "charts": {
     "fleetStatusTitle": "ภาพรวมสถานะกลุ่มรถ",
@@ -333,5 +377,14 @@
     "pageNotFound": "ไม่พบหน้า",
     "pageNotFoundDesc": "ขออภัย หน้าที่คุณกำลังมองหาไม่มีอยู่",
     "returnHome": "กลับหน้าหลัก"
+  },
+  "validation": {
+    "nameMinLength": "ชื่อต้องมีอย่างน้อย 2 ตัวอักษร",
+    "phoneMinLength": "หมายเลขโทรศัพท์ต้องมีอย่างน้อย 9 หลัก",
+    "currentPasswordRequired": "จำเป็นต้องระบุรหัสผ่านปัจจุบัน",
+    "invalidEmail": "อีเมลไม่ถูกต้อง",
+    "emailsDontMatch": "อีเมลไม่ตรงกัน",
+    "passwordMinLength": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+    "passwordsDontMatch": "รหัสผ่านไม่ตรงกัน"
   }
 }

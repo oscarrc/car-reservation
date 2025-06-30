@@ -34,48 +34,48 @@ import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// Profile form schema
-const profileSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  phone: z.string().min(9, "Phone number must be at least 9 characters"),
-});
-
-// Email form schema
-const emailSchema = z
-  .object({
-    currentPassword: z.string().min(1, "Current password is required"),
-    newEmail: z.string().email("Invalid email address"),
-    confirmEmail: z.string().email("Invalid email address"),
-  })
-  .refine((data) => data.newEmail === data.confirmEmail, {
-    message: "Email addresses don't match",
-    path: ["confirmEmail"],
-  });
-
-// Password form schema
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z
-      .string()
-      .min(6, "Password must be at least 6 characters"),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-
-type ProfileFormData = z.infer<typeof profileSchema>;
-type EmailFormData = z.infer<typeof emailSchema>;
-type PasswordFormData = z.infer<typeof passwordSchema>;
-
 export default function ProfilePage() {
   const { t } = useTranslation();
   const { currentUser, userProfile } = useAuth();
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  // Profile form schema
+  const profileSchema = z.object({
+    name: z.string().min(2, t("validation.nameMinLength")),
+    phone: z.string().min(9, t("validation.phoneMinLength")),
+  });
+
+  // Email form schema
+  const emailSchema = z
+    .object({
+      currentPassword: z.string().min(1, t("validation.currentPasswordRequired")),
+      newEmail: z.string().email(t("validation.invalidEmail")),
+      confirmEmail: z.string().email(t("validation.invalidEmail")),
+    })
+    .refine((data) => data.newEmail === data.confirmEmail, {
+      message: t("validation.emailsDontMatch"),
+      path: ["confirmEmail"],
+    });
+
+  // Password form schema
+  const passwordSchema = z
+    .object({
+      currentPassword: z.string().min(1, t("validation.currentPasswordRequired")),
+      newPassword: z.string().min(6, t("validation.passwordMinLength")),
+      confirmPassword: z
+        .string()
+        .min(6, t("validation.passwordMinLength")),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: t("validation.passwordsDontMatch"),
+      path: ["confirmPassword"],
+    });
+
+  type ProfileFormData = z.infer<typeof profileSchema>;
+  type EmailFormData = z.infer<typeof emailSchema>;
+  type PasswordFormData = z.infer<typeof passwordSchema>;
 
   // Profile form
   const profileForm = useForm<ProfileFormData>({
@@ -137,9 +137,8 @@ export default function ProfilePage() {
         currentPassword: data.currentPassword,
         newEmail: data.newEmail,
       });
-
-      emailForm.reset();
       toast.success(t("profile.emailUpdated"));
+      emailForm.reset();
     } catch (error) {
       console.error("Error updating email:", error);
       toast.error(
@@ -159,9 +158,8 @@ export default function ProfilePage() {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
-
-      passwordForm.reset();
       toast.success(t("profile.passwordUpdated"));
+      passwordForm.reset();
     } catch (error) {
       console.error("Error updating password:", error);
       toast.error(
@@ -188,7 +186,7 @@ export default function ProfilePage() {
   return (
     <>
       <SectionHeader
-        title={t("profile.settings")}
+        title={t("profile.title")}
         subtitle={t("profile.subtitle")}
       />
 
@@ -199,72 +197,66 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                {t("profile.information")}
+                {t("profile.personalInformation")}
               </CardTitle>
               <CardDescription>
-                {t("profile.informationDesc")}
+                {t("profile.personalInformationDesc")}
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col h-full">
+            <CardContent>
               <Form {...profileForm}>
                 <form
                   onSubmit={profileForm.handleSubmit(onUpdateProfile)}
-                  className="flex flex-col justify-between h-full"
+                  className="space-y-4"
                 >
-                  <div className="space-y-4">
-                    <FormField
-                      control={profileForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("profile.fullName")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t("profile.fullNamePlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={profileForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("profile.name")}</FormLabel>
+                        <FormControl>
+                          <Input placeholder={t("profile.namePlaceholder")} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    <FormField
-                      control={profileForm.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("profile.phoneNumber")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t("profile.phoneNumberPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={profileForm.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("profile.phone")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="tel"
+                            placeholder={t("profile.phonePlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                  <div className="pt-4">
-                    <Button
-                      type="submit"
-                      disabled={isUpdatingProfile}
-                      className="w-full"
-                    >
-                      {isUpdatingProfile && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      {t("profile.updateProfile")}
-                    </Button>
-                  </div>
+                  <Button
+                    type="submit"
+                    disabled={isUpdatingProfile}
+                    className="w-full"
+                  >
+                    {isUpdatingProfile && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {t("profile.updateProfile")}
+                  </Button>
                 </form>
               </Form>
             </CardContent>
           </Card>
 
-          {/* Change Email */}
+          {/* Email Change */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -275,92 +267,82 @@ export default function ProfilePage() {
                 {t("profile.changeEmailDesc")}
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col h-full">
+            <CardContent>
               <Form {...emailForm}>
                 <form
                   onSubmit={emailForm.handleSubmit(onUpdateEmail)}
-                  className="flex flex-col justify-between h-full"
+                  className="space-y-4"
                 >
-                  <div className="space-y-4">
-                    <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-sm text-muted-foreground">{t("profile.currentEmail")}</p>
-                      <p className="font-medium">{currentUser.email}</p>
-                    </div>
+                  <FormField
+                    control={emailForm.control}
+                    name="currentPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("profile.currentPassword")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t("profile.currentPasswordPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    <FormField
-                      control={emailForm.control}
-                      name="currentPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("profile.currentPassword")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder={t("profile.currentPasswordPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={emailForm.control}
+                    name="newEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("profile.newEmail")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder={t("profile.newEmailPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    <FormField
-                      control={emailForm.control}
-                      name="newEmail"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("profile.newEmail")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder={t("profile.newEmailPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={emailForm.control}
+                    name="confirmEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("profile.confirmEmail")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder={t("profile.confirmEmailPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    <FormField
-                      control={emailForm.control}
-                      name="confirmEmail"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("profile.confirmEmail")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder={t("profile.confirmEmailPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="pt-4">
-                    <Button
-                      type="submit"
-                      disabled={isUpdatingEmail}
-                      className="w-full"
-                      variant="outline"
-                    >
-                      {isUpdatingEmail && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      {t("profile.updateEmail")}
-                    </Button>
-                  </div>
+                  <Button
+                    type="submit"
+                    disabled={isUpdatingEmail}
+                    className="w-full"
+                  >
+                    {isUpdatingEmail && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {t("profile.updateEmail")}
+                  </Button>
                 </form>
               </Form>
             </CardContent>
           </Card>
 
-          {/* Change Password */}
+          {/* Password Change */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -371,73 +353,71 @@ export default function ProfilePage() {
                 {t("profile.changePasswordDesc")}
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col h-full">
+            <CardContent>
               <Form {...passwordForm}>
                 <form
                   onSubmit={passwordForm.handleSubmit(onUpdatePassword)}
-                  className="flex flex-col justify-between h-full"
+                  className="grid gap-4 lg:grid-cols-3"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={passwordForm.control}
-                      name="currentPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("profile.currentPassword")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder={t("profile.currentPasswordPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={passwordForm.control}
+                    name="currentPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("profile.currentPassword")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t("profile.currentPasswordPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    <FormField
-                      control={passwordForm.control}
-                      name="newPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("profile.newPassword")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder={t("profile.newPasswordPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={passwordForm.control}
+                    name="newPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("profile.newPassword")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t("profile.newPasswordPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    <FormField
-                      control={passwordForm.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("profile.confirmNewPassword")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder={t("profile.confirmNewPasswordPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={passwordForm.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("profile.confirmPassword")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t("profile.confirmPasswordPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                  <div className="pt-4 flex justify-end">
+                  <div className="lg:col-span-3">
                     <Button
                       type="submit"
                       disabled={isUpdatingPassword}
-                      variant="outline"
+                      className="w-full lg:w-auto"
                     >
                       {isUpdatingPassword && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

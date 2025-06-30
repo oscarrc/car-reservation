@@ -202,6 +202,42 @@ export async function updateCarStatus(carId: string, status: CarStatus): Promise
   }
 }
 
+// New function to fetch multiple cars by their IDs
+export async function fetchCarsByIds(carIds: string[]): Promise<CarWithId[]> {
+  try {
+    if (carIds.length === 0) {
+      return [];
+    }
+
+    // Firestore 'in' queries are limited to 10 items, so we need to batch them
+    const batches: Promise<CarWithId[]>[] = [];
+    const batchSize = 10;
+    
+    for (let i = 0; i < carIds.length; i += batchSize) {
+      const batchIds = carIds.slice(i, i + batchSize);
+      
+      const batchPromise = (async () => {
+        const carsCollection = collection(db, 'cars');
+        const q = query(carsCollection, where('__name__', 'in', batchIds));
+        const querySnapshot = await getDocs(q);
+        
+        return querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data() as Car
+        }));
+      })();
+      
+      batches.push(batchPromise);
+    }
+    
+    const batchResults = await Promise.all(batches);
+    return batchResults.flat();
+  } catch (error) {
+    console.error('Error fetching cars by IDs:', error);
+    throw error;
+  }
+}
+
 // Delete a car
 export async function deleteCar(carId: string): Promise<void> {
   try {

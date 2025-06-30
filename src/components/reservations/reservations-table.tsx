@@ -105,10 +105,15 @@ export function ReservationsTable({
     const columnMap: Record<string, string> = {
       select: t("table.selectAll"),
       userName: t("table.userName"),
+      userInfo: t("table.userName"),
       carLicensePlate: t("table.carLicensePlate"),
-      startDateTime: t("reservations.startDate"),
-      endDateTime: t("reservations.endDate"),
+      carInfo: t("reservations.car"),
+      startDateTime: t("reservations.startDateTime"),
+      endDateTime: t("reservations.endDateTime"),
       status: t("common.status"),
+      driver: t("reservations.driver"),
+      comments: t("reservations.comments"),
+      createdAt: t("reservations.createdOn"),
       actions: t("common.actions"),
     };
     return columnMap[columnId] || columnId;
@@ -131,6 +136,7 @@ export function ReservationsTable({
               <SelectItem value="pending">{t("reservations.pending")}</SelectItem>
               <SelectItem value="confirmed">{t("reservations.confirmed")}</SelectItem>
               <SelectItem value="cancelled">{t("reservations.cancelled")}</SelectItem>
+              <SelectItem value="cancellation_pending">{t("reservations.cancellationPending")}</SelectItem>
             </SelectContent>
           </Select>
 

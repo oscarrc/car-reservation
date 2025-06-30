@@ -1,19 +1,20 @@
-import { 
-  collection, 
-  query, 
-  orderBy, 
-  limit, 
-  startAfter, 
-  getDocs, 
-  where,
+import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import {
   QueryConstraint,
+  Timestamp,
+  collection,
   doc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  startAfter,
   updateDoc,
-  Timestamp
+  where
 } from 'firebase/firestore';
-import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import type { ReservationStatus, ReservationWithId } from '@/types/reservation';
+
 import { db } from './firebase';
-import type { Reservation, ReservationWithId, ReservationStatus } from '@/types/reservation';
 
 export interface ReservationsResponse {
   reservations: ReservationWithId[];
@@ -28,6 +29,7 @@ export interface ReservationsQueryParams {
   statusFilter?: ReservationStatus | 'all';
   startDate?: Date;
   endDate?: Date;
+  userId?: string;
 }
 
 export async function fetchReservations({
@@ -35,11 +37,17 @@ export async function fetchReservations({
   lastDoc = null,
   statusFilter = 'all',
   startDate,
-  endDate
+  endDate,
+  userId
 }: ReservationsQueryParams): Promise<ReservationsResponse> {
   try {
     const reservationsCollection = collection(db, 'reservations');
     const constraints: QueryConstraint[] = [];
+
+    // Add user filter if specified (for user-specific reservations)
+    if (userId) {
+      constraints.push(where('userId', '==', userId));
+    }
 
     // Add status filter if specified
     if (statusFilter && statusFilter !== 'all') {
@@ -109,6 +117,25 @@ export async function fetchReservations({
   }
 }
 
+// New function specifically for fetching user reservations
+export async function fetchUserReservations({
+  userId,
+  pageSize = 10,
+  lastDoc = null,
+  statusFilter = 'all',
+  startDate,
+  endDate
+}: ReservationsQueryParams & { userId: string }): Promise<ReservationsResponse> {
+  return fetchReservations({
+    userId,
+    pageSize,
+    lastDoc,
+    statusFilter,
+    startDate,
+    endDate
+  });
+}
+
 export async function updateReservationStatus(
   reservationId: string, 
   status: ReservationStatus
@@ -121,6 +148,34 @@ export async function updateReservationStatus(
     });
   } catch (error) {
     console.error('Error updating reservation status:', error);
+    throw error;
+  }
+}
+
+// New function to handle user cancellation requests
+export async function requestCancellation(
+  reservationId: string,
+  autoApproveCancellation: boolean
+): Promise<{ status: ReservationStatus; message: string }> {
+  try {
+    const newStatus: ReservationStatus = autoApproveCancellation 
+      ? 'cancelled' 
+      : 'cancellation_pending';
+    
+    const reservationDoc = doc(db, 'reservations', reservationId);
+    await updateDoc(reservationDoc, {
+      status: newStatus,
+      updatedAt: Timestamp.fromDate(new Date())
+    });
+
+    return {
+      status: newStatus,
+      message: autoApproveCancellation 
+        ? 'Reservation cancelled successfully'
+        : 'Cancellation request submitted for admin approval'
+    };
+  } catch (error) {
+    console.error('Error requesting cancellation:', error);
     throw error;
   }
 } 

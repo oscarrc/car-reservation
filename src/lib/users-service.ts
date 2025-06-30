@@ -166,4 +166,40 @@ export async function searchUsers(searchTerm: string, pageSize = 10): Promise<Us
     console.error('Error searching users:', error);
     throw error;
   }
+}
+
+// New function to fetch multiple users by their IDs
+export async function fetchUsersByIds(userIds: string[]): Promise<UserProfileWithId[]> {
+  try {
+    if (userIds.length === 0) {
+      return [];
+    }
+
+    // Firestore 'in' queries are limited to 10 items, so we need to batch them
+    const batches: Promise<UserProfileWithId[]>[] = [];
+    const batchSize = 10;
+    
+    for (let i = 0; i < userIds.length; i += batchSize) {
+      const batchIds = userIds.slice(i, i + batchSize);
+      
+      const batchPromise = (async () => {
+        const usersCollection = collection(db, 'users');
+        const q = query(usersCollection, where('__name__', 'in', batchIds));
+        const querySnapshot = await getDocs(q);
+        
+        return querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data() as UserProfile
+        }));
+      })();
+      
+      batches.push(batchPromise);
+    }
+    
+    const batchResults = await Promise.all(batches);
+    return batchResults.flat();
+  } catch (error) {
+    console.error('Error fetching users by IDs:', error);
+    throw error;
+  }
 } 
