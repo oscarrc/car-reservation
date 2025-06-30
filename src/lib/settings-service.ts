@@ -16,6 +16,7 @@ export interface AppSettings {
   maxConcurrentReservations: number; // maximum concurrent reservations per user
   businessHoursStart: string; // business hours start time (HH:mm format)
   businessHoursEnd: string; // business hours end time (HH:mm format)
+  supportEmails: string[]; // support email addresses
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -30,6 +31,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   maxConcurrentReservations: 2,
   businessHoursStart: "08:00",
   businessHoursEnd: "18:00",
+  supportEmails: [],
 };
 
 const SETTINGS_DOC_ID = 'app-settings';

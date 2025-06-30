@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
   Form,
@@ -43,6 +44,7 @@ const settingsSchema = z.object({
   emailNotificationsEnabled: z.boolean(),
   businessHoursStart: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/),
   businessHoursEnd: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/),
+  supportEmails: z.string().optional(),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -61,7 +63,10 @@ export default function SettingsPage() {
 
   const form = useForm<SettingsFormData>({
     resolver: zodResolver(settingsSchema),
-    values: settings || undefined,
+    values: settings ? {
+      ...settings,
+      supportEmails: settings.supportEmails?.join('\n') || '',
+    } : undefined,
   });
 
   const updateMutation = useMutation({
@@ -77,7 +82,13 @@ export default function SettingsPage() {
   });
 
   const onSubmit = (data: SettingsFormData) => {
-    updateMutation.mutate(data as AppSettings);
+    const settingsToUpdate: AppSettings = {
+      ...data,
+      supportEmails: data.supportEmails 
+        ? data.supportEmails.split('\n').map(email => email.trim()).filter(email => email.length > 0)
+        : [],
+    };
+    updateMutation.mutate(settingsToUpdate);
   };
 
   const handleSaveSettings = () => {
@@ -350,6 +361,27 @@ export default function SettingsPage() {
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="supportEmails"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Support Email Addresses</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter support email addresses, one per line&#10;support@company.com&#10;help@company.com"
+                          className="resize-none min-h-[100px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter email addresses for support notifications, one per line
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <Separator />
 
