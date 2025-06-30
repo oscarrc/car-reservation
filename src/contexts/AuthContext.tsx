@@ -7,6 +7,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 import type { User } from "firebase/auth";
 
@@ -115,7 +116,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {loading ? (
+        <LoadingScreen text="Authenticating..." />
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 }

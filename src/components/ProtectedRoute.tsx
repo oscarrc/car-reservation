@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,11 +17,7 @@ export default function ProtectedRoute({
 
   // Show loading while checking auth state
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
+    return <LoadingScreen text="Preparing your dashboard..." />;
   }
 
   // If not authenticated, redirect to login
