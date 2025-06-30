@@ -1,4 +1,4 @@
-import { Calendar, CarFront, FileText, HelpCircle, Home, Settings, Users } from "lucide-react"
+import { Calendar, CarFront, Home, Settings, Users } from "lucide-react"
 
 import type { LucideIcon } from "lucide-react"
 
@@ -84,7 +84,7 @@ export const appSidebarConfig: SidebarConfig = {
       url: "/app/browse",
       icon: CarFront
     },
-    {
+    /* {
       title: "navigation.history",
       url: "/app/history",
       icon: FileText
@@ -93,6 +93,6 @@ export const appSidebarConfig: SidebarConfig = {
       title: "navigation.support",
       url: "/app/support",
       icon: HelpCircle
-    }
+    } */
   ]
 } 
