@@ -118,36 +118,33 @@ export function FleetStatusChart() {
                 dataKey="count"
                 nameKey="status"
                 innerRadius={80}
+                outerRadius={120}
                 strokeWidth={5}
               >
                 <Label
-                  content={({ viewBox }) => {
-                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                      return (
-                        <text
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                        >
-                          <tspan
-                            x={viewBox.cx}
-                            y={viewBox.cy}
-                            className="fill-foreground text-3xl font-bold"
-                          >
-                            {totalCars.toLocaleString()}
-                          </tspan>
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) + 24}
-                            className="fill-muted-foreground"
-                          >
-                            {t("dashboard.totalCars")}
-                          </tspan>
-                        </text>
-                      );
-                    }
-                  }}
+                  content={() => (
+                    <text
+                      x="50%"
+                      y="50%"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                    >
+                      <tspan
+                        x="50%"
+                        y="45%"
+                        className="fill-foreground text-3xl font-bold"
+                      >
+                        {totalCars.toLocaleString()}
+                      </tspan>
+                      <tspan
+                        x="50%"
+                        y="55%"
+                        className="text-lg fill-muted-foreground"
+                      >
+                        {t("dashboard.totalCars")}
+                      </tspan>
+                    </text>
+                  )}
                 />
               </Pie>
             </PieChart>
