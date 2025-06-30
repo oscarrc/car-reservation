@@ -8,6 +8,7 @@ import FleetPage from "./pages/Admin/Fleet";
 import LoginPage from "./pages/Auth/Login";
 import ForgotPage from "./pages/Auth/Forgot";
 import ResetPage from "./pages/Auth/Reset";
+import NotFoundPage from "./pages/NotFound";
 import ProfilePage from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ReservationsPage from "./pages/Admin/Reservations";
@@ -60,6 +61,7 @@ const App = () => {
           >
             <Route index element={<ProfilePage />} />
           </Route>
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
     </AuthProvider>

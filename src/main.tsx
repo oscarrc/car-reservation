@@ -10,6 +10,7 @@ import { AuthProvider } from "./contexts/AuthContext.tsx";
 import FleetPage from "./pages/Admin/Fleet/index.tsx";
 import Forgot from "./pages/Auth/Forgot.tsx";
 import Login from "./pages/Auth/Login.tsx";
+import NotFound from "./pages/NotFound.tsx";
 import ProfilePage from "./pages/Profile.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import ReservationsPage from "./pages/Admin/Reservations.tsx";
@@ -98,6 +99,10 @@ const router = createBrowserRouter([
         element: <ProfilePage />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ]);
 
