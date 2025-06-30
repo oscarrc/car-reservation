@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useTranslation } from "react-i18next";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import type { SidebarConfig } from "@/lib/sidebar-config";
@@ -9,11 +10,12 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function SidebarLayout({ config }: { config: SidebarConfig }) {
   const location = useLocation();
   const { userProfile } = useAuth();
+  const { t } = useTranslation();
 
   const getCurrentPageTitle = () => {
     const currentPath = location.pathname;
     const currentItem = config.items.find((item) => item.url === currentPath);
-    return currentItem ? currentItem.title : "Dashboard";
+    return currentItem ? t(currentItem.title) : t("navigation.dashboard");
   };
 
   const updatedConfig = {
@@ -32,7 +34,7 @@ export default function SidebarLayout({ config }: { config: SidebarConfig }) {
   };
 
   const currentPageTitle = getCurrentPageTitle();
-  const companyName = config.company.name;
+  const companyName = t(config.company.name);
 
   return (
     <SidebarProvider

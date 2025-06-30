@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
 import { createColumns } from "@/components/reservations/reservations-columns";
@@ -12,6 +13,7 @@ import {
 import type { ReservationWithId, ReservationStatus } from "@/types/reservation";
 
 export default function ReservationsPage() {
+  const { t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState<ReservationStatus | "all">("all");
   const [startDateFilter, setStartDateFilter] = useState<Date | undefined>(undefined);
   const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(undefined);
@@ -37,16 +39,17 @@ export default function ReservationsPage() {
     mutationFn: ({ reservationId, status }: { reservationId: string; status: ReservationStatus }) =>
       updateReservationStatus(reservationId, status),
     onSuccess: (_, { status }) => {
-      const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
-      toast.success("Status updated", {
-        description: `Reservation status changed to ${statusLabel}`,
+      toast.success(t("reservations.statusUpdated"), {
+        description: t("reservations.statusUpdatedDesc", { 
+          status: t(`reservations.${status}`) 
+        }),
       });
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
     },
     onError: (error) => {
       console.error("Error updating reservation status:", error);
-      toast.error("Failed to update status", {
-        description: "Please try again or contact support if the problem persists.",
+      toast.error(t("reservations.failedToUpdateStatus"), {
+        description: t("common.retry"),
       });
     },
   });
@@ -82,12 +85,12 @@ export default function ReservationsPage() {
     return (
       <>
         <SectionHeader
-          title="Reservations Management"
-          subtitle="Manage car reservations and bookings"
+          title={t("reservations.management")}
+          subtitle={t("reservations.subtitle")}
         />
         <div className="px-4 lg:px-6">
           <div className="text-center">
-            <p className="text-destructive">Error loading reservations. Please try again.</p>
+            <p className="text-destructive">{t("reservations.errorLoadingReservations")}</p>
           </div>
         </div>
       </>
@@ -97,8 +100,8 @@ export default function ReservationsPage() {
   return (
     <>
       <SectionHeader
-        title="Reservations"
-        subtitle="Manage car reservations and bookings"
+        title={t("reservations.management")}
+        subtitle={t("reservations.subtitle")}
       />
       
       <div className="px-4 lg:px-6">

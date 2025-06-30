@@ -8,6 +8,8 @@ import {
   signOut,
 } from "firebase/auth";
 import { LoadingScreen } from "@/components/ui/loading-screen";
+import { saveLanguageToStorage } from "@/i18n";
+import i18n from "@/i18n";
 
 import type { User } from "firebase/auth";
 
@@ -93,6 +95,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: profile?.email || user.email || "",
           profile: profile || undefined,
         });
+
+        // Sync user's language preference to localStorage and i18n
+        if (profile?.language) {
+          saveLanguageToStorage(profile.language);
+          await i18n.changeLanguage(profile.language);
+        }
       } else {
         setUserProfile(null);
         setAuthUser(null);
@@ -117,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={value}>
       {loading ? (
-        <LoadingScreen text="Authenticating..." />
+        <LoadingScreen text={i18n.t("loading.authenticating")} />
       ) : (
         children
       )}

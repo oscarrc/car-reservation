@@ -3,9 +3,12 @@ import { Link, Navigate } from "react-router-dom";
 import { Car } from "lucide-react";
 import { LoginForm } from "@/components/login-form";
 import { useAuth } from "@/contexts/AuthContext";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useTranslation } from "react-i18next";
 
 const Login = () => {
   const { currentUser, userProfile } = useAuth();
+  const { t } = useTranslation();
 
   // If user is already logged in, redirect to app
   if (currentUser) {
@@ -25,9 +28,12 @@ const Login = () => {
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <Car className="size-4" />
           </div>
-          Car Reservation System
+          {t("brand.name")}
         </Link>
         <LoginForm />
+        <div className="flex justify-center">
+          <LanguageSwitcher authOnly={true} />
+        </div>
       </section>
     </main>
   );

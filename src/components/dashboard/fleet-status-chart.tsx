@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Label, Pie, PieChart } from "recharts";
 import {
   Card,
@@ -43,6 +44,7 @@ const fleetChartConfig = {
 
 export function FleetStatusChart() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const {
     data: fleetData,
@@ -67,8 +69,8 @@ export function FleetStatusChart() {
   return (
     <Card className="flex flex-col justify-between">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Fleet Status</CardTitle>
-        <CardDescription>Current vehicle availability</CardDescription>
+        <CardTitle>{t("dashboard.fleetStatus")}</CardTitle>
+        <CardDescription>{t("dashboard.fleetSubtitle")}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         {isFleetLoading ? (
@@ -76,7 +78,7 @@ export function FleetStatusChart() {
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
-                Loading fleet data...
+                {t("dashboard.loadingFleet")}
               </p>
             </div>
           </div>
@@ -84,7 +86,7 @@ export function FleetStatusChart() {
           <div className="flex items-center justify-center h-[350px]">
             <div className="text-center">
               <p className="text-sm text-destructive">
-                Error loading fleet data
+                {t("dashboard.errorLoadingFleet")}
               </p>
             </div>
           </div>
@@ -140,7 +142,7 @@ export function FleetStatusChart() {
                             y={(viewBox.cy || 0) + 24}
                             className="fill-muted-foreground"
                           >
-                            Total Cars
+                            {t("dashboard.totalCars")}
                           </tspan>
                         </text>
                       );
@@ -159,7 +161,7 @@ export function FleetStatusChart() {
           onClick={() => navigate("/admin/fleet")}
           className="cursor-pointer"
         >
-          Manage Fleet
+          {t("navigation.manageFleet")}
         </Button>
       </CardFooter>
     </Card>

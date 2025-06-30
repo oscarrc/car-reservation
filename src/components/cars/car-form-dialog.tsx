@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { createCar, updateCar } from "@/lib/cars-service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +61,7 @@ function CreateCarForm({
 }: {
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const form = useForm<CarFormData>({
@@ -80,17 +82,17 @@ function CreateCarForm({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
       onOpenChange(false);
-      toast.success("Car added successfully", {
-        description: `${form.getValues("model")} (${form.getValues(
-          "licensePlate"
-        )}) has been added to the fleet.`,
+      toast.success(t("fleet.carAdded"), {
+        description: t("fleet.carAddedDesc", {
+          model: form.getValues("model"),
+          licensePlate: form.getValues("licensePlate"),
+        }),
       });
     },
     onError: (error) => {
       console.error("Failed to create car:", error);
-      toast.error("Failed to add car", {
-        description:
-          "Please try again or contact support if the problem persists.",
+      toast.error(t("fleet.failedToAddCar"), {
+        description: t("common.retry"),
       });
     },
   });
@@ -114,10 +116,10 @@ function CreateCarForm({
             name="licensePlate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>License Plate</FormLabel>
+                <FormLabel>{t("fleet.licensePlate")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="ABC-1234"
+                    placeholder={t("fleet.licensePlatePlaceholder")}
                     style={{ textTransform: "uppercase" }}
                     {...field}
                   />
@@ -132,9 +134,9 @@ function CreateCarForm({
             name="model"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Model</FormLabel>
+                <FormLabel>{t("fleet.model")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Toyota Camry" {...field} />
+                  <Input placeholder={t("fleet.modelPlaceholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -146,9 +148,9 @@ function CreateCarForm({
             name="color"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Color</FormLabel>
+                <FormLabel>{t("fleet.color")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="White" {...field} />
+                  <Input placeholder={t("fleet.colorPlaceholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -160,7 +162,7 @@ function CreateCarForm({
             name="seats"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Number of Seats</FormLabel>
+                <FormLabel>{t("fleet.numberOfSeats")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -182,18 +184,18 @@ function CreateCarForm({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status</FormLabel>
+                <FormLabel>{t("common.status")}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select status" />
+                      <SelectValue placeholder={t("fleet.selectStatus")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="available">Available</SelectItem>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
+                    <SelectItem value="available">{t("fleet.available")}</SelectItem>
+                    <SelectItem value="maintenance">{t("fleet.maintenance")}</SelectItem>
                     <SelectItem value="out_of_service">
-                      Out of Service
+                      {t("fleet.outOfService")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -208,24 +210,14 @@ function CreateCarForm({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={createMutation.isPending}
-            className="cursor-pointer"
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
-          <Button
-            type="submit"
-            disabled={createMutation.isPending}
-            className="cursor-pointer"
-          >
-            {createMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Adding...
-              </>
-            ) : (
-              "Add Car"
+          <Button type="submit" disabled={createMutation.isPending}>
+            {createMutation.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
+            {t("fleet.addCar")}
           </Button>
         </DialogFooter>
       </form>
@@ -240,6 +232,7 @@ function EditCarForm({
   car: CarWithId;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const form = useForm<CarFormData>({
@@ -254,23 +247,23 @@ function EditCarForm({
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (data: { carId: string; carData: Partial<Car> }) => {
-      return await updateCar(data.carId, data.carData);
+    mutationFn: async (data: Car) => {
+      return await updateCar(car.id, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
       onOpenChange(false);
-      toast.success("Car updated successfully", {
-        description: `${form.getValues("model")} (${form.getValues(
-          "licensePlate"
-        )}) has been updated.`,
+      toast.success(t("fleet.carUpdated"), {
+        description: t("fleet.carUpdatedDesc", {
+          model: form.getValues("model"),
+          licensePlate: form.getValues("licensePlate"),
+        }),
       });
     },
     onError: (error) => {
       console.error("Failed to update car:", error);
-      toast.error("Failed to update car", {
-        description:
-          "Please try again or contact support if the problem persists.",
+      toast.error(t("fleet.failedToUpdateCar"), {
+        description: t("common.retry"),
       });
     },
   });
@@ -282,7 +275,7 @@ function EditCarForm({
       model: data.model.trim(),
       color: data.color.trim(),
     };
-    updateMutation.mutate({ carId: car.id, carData });
+    updateMutation.mutate(carData);
   };
 
   return (
@@ -294,10 +287,10 @@ function EditCarForm({
             name="licensePlate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>License Plate</FormLabel>
+                <FormLabel>{t("fleet.licensePlate")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="ABC-1234"
+                    placeholder={t("fleet.licensePlatePlaceholder")}
                     style={{ textTransform: "uppercase" }}
                     {...field}
                   />
@@ -312,9 +305,9 @@ function EditCarForm({
             name="model"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Model</FormLabel>
+                <FormLabel>{t("fleet.model")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Toyota Camry" {...field} />
+                  <Input placeholder={t("fleet.modelPlaceholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -326,9 +319,9 @@ function EditCarForm({
             name="color"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Color</FormLabel>
+                <FormLabel>{t("fleet.color")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="White" {...field} />
+                  <Input placeholder={t("fleet.colorPlaceholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -340,7 +333,7 @@ function EditCarForm({
             name="seats"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Number of Seats</FormLabel>
+                <FormLabel>{t("fleet.numberOfSeats")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -362,18 +355,18 @@ function EditCarForm({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status</FormLabel>
+                <FormLabel>{t("common.status")}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select status" />
+                      <SelectValue placeholder={t("fleet.selectStatus")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="available">Available</SelectItem>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
+                    <SelectItem value="available">{t("fleet.available")}</SelectItem>
+                    <SelectItem value="maintenance">{t("fleet.maintenance")}</SelectItem>
                     <SelectItem value="out_of_service">
-                      Out of Service
+                      {t("fleet.outOfService")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -388,24 +381,14 @@ function EditCarForm({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={updateMutation.isPending}
-            className="cursor-pointer"
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
-          <Button
-            type="submit"
-            disabled={updateMutation.isPending}
-            className="cursor-pointer"
-          >
-            {updateMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Updating...
-              </>
-            ) : (
-              "Update Car"
+          <Button type="submit" disabled={updateMutation.isPending}>
+            {updateMutation.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
+            {t("common.save")}
           </Button>
         </DialogFooter>
       </form>
@@ -419,17 +402,19 @@ export function CarFormDialog({
   mode,
   car,
 }: CarFormDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {mode === "create" ? "Add New Car" : "Edit Car"}
+            {mode === "create" ? t("fleet.addNewCar") : t("fleet.editCar")}
           </DialogTitle>
           <DialogDescription>
             {mode === "create"
-              ? "Add a new car to the fleet. Fill in all the required information."
-              : "Update the car information. You can modify any field."}
+              ? t("fleet.addNewCarDesc")
+              : t("fleet.editCarDesc")}
           </DialogDescription>
         </DialogHeader>
 

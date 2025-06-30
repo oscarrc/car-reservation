@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface LoadingScreenProps {
   text?: string;
@@ -6,9 +7,11 @@ interface LoadingScreenProps {
 }
 
 export function LoadingScreen({ 
-  text = "Loading...", 
+  text, 
   className 
 }: LoadingScreenProps) {
+  const { t } = useTranslation();
+  const displayText = text || t("common.loading");
   return (
     <div className={cn(
       "flex flex-col items-center justify-center min-h-screen bg-background",
@@ -22,7 +25,7 @@ export function LoadingScreen({
         
         {/* Loading text */}
         <p className="text-lg font-medium text-muted-foreground animate-pulse">
-          {text}
+          {displayText}
         </p>
       </div>
     </div>

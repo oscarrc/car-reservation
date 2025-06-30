@@ -22,6 +22,7 @@ import {
   updateUserPassword,
   updateUserProfile,
 } from "@/lib/profile-service";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,7 @@ type EmailFormData = z.infer<typeof emailSchema>;
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const { currentUser, userProfile } = useAuth();
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
@@ -115,11 +117,11 @@ export default function ProfilePage() {
       // Update display name in Firebase Auth
       await updateDisplayName(currentUser, data.name);
 
-      toast.success("Profile updated successfully");
+      toast.success(t("profile.profileUpdated"));
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to update profile"
+        error instanceof Error ? error.message : t("profile.failedToUpdateProfile")
       );
     } finally {
       setIsUpdatingProfile(false);
@@ -137,13 +139,11 @@ export default function ProfilePage() {
       });
 
       emailForm.reset();
-      toast.success(
-        "Email updated successfully. Please check your new email for verification."
-      );
+      toast.success(t("profile.emailUpdated"));
     } catch (error) {
       console.error("Error updating email:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to update email"
+        error instanceof Error ? error.message : t("profile.failedToUpdateEmail")
       );
     } finally {
       setIsUpdatingEmail(false);
@@ -161,11 +161,11 @@ export default function ProfilePage() {
       });
 
       passwordForm.reset();
-      toast.success("Password updated successfully");
+      toast.success(t("profile.passwordUpdated"));
     } catch (error) {
       console.error("Error updating password:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to update password"
+        error instanceof Error ? error.message : t("profile.failedToUpdatePassword")
       );
     } finally {
       setIsUpdatingPassword(false);
@@ -178,7 +178,7 @@ export default function ProfilePage() {
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
           <h2 className="text-xl font-semibold text-muted-foreground">
-            Loading Profile...
+            {t("loading.loadingProfile")}
           </h2>
         </div>
       </div>
@@ -188,8 +188,8 @@ export default function ProfilePage() {
   return (
     <>
       <SectionHeader
-        title="Profile Settings"
-        subtitle="Manage your account information and security settings"
+        title={t("profile.settings")}
+        subtitle={t("profile.subtitle")}
       />
 
       <div className="px-4 lg:px-6">
@@ -199,10 +199,10 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Profile Information
+                {t("profile.information")}
               </CardTitle>
               <CardDescription>
-                Update your basic profile information
+                {t("profile.informationDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col h-full">
@@ -217,10 +217,10 @@ export default function ProfilePage() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Full Name</FormLabel>
+                          <FormLabel>{t("profile.fullName")}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Enter your full name"
+                              placeholder={t("profile.fullNamePlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -234,10 +234,10 @@ export default function ProfilePage() {
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
+                          <FormLabel>{t("profile.phoneNumber")}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Enter your phone number"
+                              placeholder={t("profile.phoneNumberPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -256,7 +256,7 @@ export default function ProfilePage() {
                       {isUpdatingProfile && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
-                      Update Profile
+                      {t("profile.updateProfile")}
                     </Button>
                   </div>
                 </form>
@@ -269,10 +269,10 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mail className="h-5 w-5" />
-                Change Email Address
+                {t("profile.changeEmail")}
               </CardTitle>
               <CardDescription>
-                Update your email address for login and notifications
+                {t("profile.changeEmailDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col h-full">
@@ -283,7 +283,7 @@ export default function ProfilePage() {
                 >
                   <div className="space-y-4">
                     <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-sm text-muted-foreground">Current Email:</p>
+                      <p className="text-sm text-muted-foreground">{t("profile.currentEmail")}</p>
                       <p className="font-medium">{currentUser.email}</p>
                     </div>
 
@@ -292,11 +292,11 @@ export default function ProfilePage() {
                       name="currentPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Current Password</FormLabel>
+                          <FormLabel>{t("profile.currentPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="Enter your current password"
+                              placeholder={t("profile.currentPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -310,11 +310,11 @@ export default function ProfilePage() {
                       name="newEmail"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>New Email Address</FormLabel>
+                          <FormLabel>{t("profile.newEmail")}</FormLabel>
                           <FormControl>
                             <Input
                               type="email"
-                              placeholder="Enter new email address"
+                              placeholder={t("profile.newEmailPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -328,11 +328,11 @@ export default function ProfilePage() {
                       name="confirmEmail"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Confirm New Email</FormLabel>
+                          <FormLabel>{t("profile.confirmEmail")}</FormLabel>
                           <FormControl>
                             <Input
                               type="email"
-                              placeholder="Confirm new email address"
+                              placeholder={t("profile.confirmEmailPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -352,7 +352,7 @@ export default function ProfilePage() {
                       {isUpdatingEmail && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
-                      Update Email
+                      {t("profile.updateEmail")}
                     </Button>
                   </div>
                 </form>
@@ -365,10 +365,10 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lock className="h-5 w-5" />
-                Change Password
+                {t("profile.changePassword")}
               </CardTitle>
               <CardDescription>
-                Update your password to keep your account secure
+                {t("profile.changePasswordDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col h-full">
@@ -383,11 +383,11 @@ export default function ProfilePage() {
                       name="currentPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Current Password</FormLabel>
+                          <FormLabel>{t("profile.currentPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="Enter current password"
+                              placeholder={t("profile.currentPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -401,11 +401,11 @@ export default function ProfilePage() {
                       name="newPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>New Password</FormLabel>
+                          <FormLabel>{t("profile.newPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="Enter new password"
+                              placeholder={t("profile.newPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -419,11 +419,11 @@ export default function ProfilePage() {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Confirm New Password</FormLabel>
+                          <FormLabel>{t("profile.confirmNewPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="Confirm new password"
+                              placeholder={t("profile.confirmNewPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -442,7 +442,7 @@ export default function ProfilePage() {
                       {isUpdatingPassword && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
-                      Update Password
+                      {t("profile.updatePassword")}
                     </Button>
                   </div>
                 </form>

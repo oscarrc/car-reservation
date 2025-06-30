@@ -25,6 +25,7 @@ import {
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export function NavUser({
   user,
@@ -37,6 +38,7 @@ export function NavUser({
   const { isMobile } = useSidebar();
   const { logout, hasRole } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     try {
@@ -94,25 +96,25 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => handleNavigation("/profile")}>
               <UserCircle />
-              Profile
+              {t("navigation.profile")}
             </DropdownMenuItem>
             {hasRole("admin") && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => handleNavigation("/admin")}>
                   <LayoutDashboard />
-                  Admin Dashboard
+                  {t("navigation.adminDashboard")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleNavigation("/app")}>
                   <Calendar />
-                  Reservations
+                  {t("navigation.reservations")}
                 </DropdownMenuItem>
               </>
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
-              Log out
+              {t("navigation.logOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

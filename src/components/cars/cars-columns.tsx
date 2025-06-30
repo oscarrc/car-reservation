@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,9 @@ export function createColumns({
     }
   };
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation();
+
   return [
     {
       id: "select",
@@ -59,14 +63,14 @@ export function createColumns({
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
+          aria-label={t("table.selectAll")}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label={t("table.selectRow")}
         />
       ),
       enableSorting: false,
@@ -74,7 +78,7 @@ export function createColumns({
     },
     {
       accessorKey: "licensePlate",
-      header: "License Plate",
+      header: t("fleet.licensePlate"),
       cell: ({ row }) => (
         <div className="font-mono font-medium">
           {row.getValue("licensePlate")}
@@ -83,14 +87,14 @@ export function createColumns({
     },
     {
       accessorKey: "model",
-      header: "Model",
+      header: t("fleet.model"),
       cell: ({ row }) => (
         <div className="font-medium">{row.getValue("model")}</div>
       ),
     },
     {
       accessorKey: "color",
-      header: "Color",
+      header: t("fleet.color"),
       cell: ({ row }) => {
         const color = row.getValue("color") as string;
         return (
@@ -106,14 +110,14 @@ export function createColumns({
     },
     {
       accessorKey: "seats",
-      header: "Seats",
+      header: t("fleet.seats"),
       cell: ({ row }) => (
         <div className="text-center">{row.getValue("seats")}</div>
       ),
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: t("common.status"),
       cell: ({ row }) => {
         const car = row.original;
         const status = row.getValue("status") as CarStatus;
@@ -131,16 +135,16 @@ export function createColumns({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="available">
-                <Badge variant={getStatusVariant("available")}>Available</Badge>
+                <Badge variant={getStatusVariant("available")}>{t("fleet.available")}</Badge>
               </SelectItem>
               <SelectItem value="maintenance">
                 <Badge variant={getStatusVariant("maintenance")}>
-                  Maintenance
+                  {t("fleet.maintenance")}
                 </Badge>
               </SelectItem>
               <SelectItem value="out_of_service">
                 <Badge variant={getStatusVariant("out_of_service")}>
-                  Out of Service
+                  {t("fleet.outOfService")}
                 </Badge>
               </SelectItem>
             </SelectContent>
@@ -158,22 +162,22 @@ export function createColumns({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t("table.openMenu")}</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
               <DropdownMenuItem className="cursor-pointer">
                 <Eye className="mr-2 h-4 w-4" />
-                Car details
+                {t("fleet.carDetails")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onEditCar(car)}
                 className="cursor-pointer"
               >
                 <Edit className="mr-2 h-4 w-4" />
-                Edit Car
+                {t("fleet.editCar")}
               </DropdownMenuItem>
               {onDeleteCar && <DropdownMenuSeparator />}
               {onDeleteCar && (
@@ -182,7 +186,7 @@ export function createColumns({
                   className="cursor-pointer text-red-600"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Car
+                  {t("fleet.deleteCar")}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>

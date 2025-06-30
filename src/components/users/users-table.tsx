@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 import { ChevronDown, Loader2, Search } from "lucide-react";
 import type {
@@ -51,6 +52,7 @@ export function UsersTable({
   onEditUser,
   onDeleteUser,
 }: UsersTableProps) {
+  const { t } = useTranslation();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -150,12 +152,25 @@ export function UsersTable({
     setPageIndex(0);
   };
 
+  // Function to get translated column name
+  const getColumnDisplayName = (columnId: string) => {
+    const columnMap: Record<string, string> = {
+      select: t("table.selectAll"),
+      name: t("users.name"),
+      email: t("users.email"),
+      phone: t("users.phone"),
+      role: t("users.role"),
+      actions: t("common.actions"),
+    };
+    return columnMap[columnId] || columnId;
+  };
+
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-red-600 mb-2">Error loading users</p>
-          <Button onClick={() => refetch()} className="cursor-pointer">Retry</Button>
+          <p className="text-red-600 mb-2">{t("users.errorLoadingUsers")}</p>
+                          <Button onClick={() => refetch()} className="cursor-pointer">{t("common.retryButton")}</Button>
         </div>
       </div>
     );
@@ -168,7 +183,7 @@ export function UsersTable({
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search by name or email..."
+            placeholder={t("users.searchPlaceholder")}
             value={localSearchTerm}
             onChange={(event) => handleSearchChange(event.target.value)}
             className="pl-10"
@@ -179,7 +194,7 @@ export function UsersTable({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto cursor-pointer">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              {t("table.columns")} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -196,7 +211,7 @@ export function UsersTable({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {column.id}
+                    {getColumnDisplayName(column.id)}
                   </DropdownMenuCheckboxItem>
                 );
               })}
@@ -234,11 +249,11 @@ export function UsersTable({
                 >
                   <div className="flex items-center justify-center">
                     <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                    Loading users...
+                    {t("loading.loadingUsers")}
                   </div>
                 </TableCell>
               </TableRow>
-            ) : table.getRowModel().rows?.length ? (
+            ) : data.length > 0 ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -260,7 +275,7 @@ export function UsersTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No users found.
+                  {t("users.noUsersFound")}
                 </TableCell>
               </TableRow>
             )}
@@ -271,12 +286,12 @@ export function UsersTable({
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of {data.length}{" "}
-          row(s) selected.
+          {table.getFilteredSelectedRowModel().rows.length} {t("common.of")} {data.length}{" "}
+          {t("common.selected")}.
         </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Rows per page</p>
+            <p className="text-sm font-medium">{t("common.rowsPerPage")}</p>
             <select
               value={pageSize}
               onChange={(e) => handlePageSizeChange(Number(e.target.value))}
@@ -290,7 +305,7 @@ export function UsersTable({
             </select>
           </div>
           <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-            Page {pageIndex + 1} of {Math.max(1, totalPages)}
+            {t("common.page")} {pageIndex + 1} {t("common.of")} {Math.max(1, totalPages)}
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -300,7 +315,7 @@ export function UsersTable({
               disabled={pageIndex === 0}
               className="cursor-pointer"
             >
-              First
+              {t("common.first")}
             </Button>
             <Button
               variant="outline"
@@ -309,7 +324,7 @@ export function UsersTable({
               disabled={pageIndex === 0}
               className="cursor-pointer"
             >
-              Previous
+              {t("common.previous")}
             </Button>
             <Button
               variant="outline"
@@ -318,7 +333,7 @@ export function UsersTable({
               disabled={pageIndex >= totalPages - 1}
               className="cursor-pointer"
             >
-              Next
+              {t("common.next")}
             </Button>
             <Button
               variant="outline"
@@ -327,7 +342,7 @@ export function UsersTable({
               disabled={pageIndex >= totalPages - 1}
               className="cursor-pointer"
             >
-              Last
+              {t("common.last")}
             </Button>
           </div>
         </div>

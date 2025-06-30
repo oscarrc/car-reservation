@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, FilterX } from "lucide-react";
+import { Calendar as CalendarIcon, FilterX, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   flexRender,
   getCoreRowModel,
@@ -69,6 +70,7 @@ export function ReservationsTable({
   startDateFilter,
   endDateFilter,
 }: ReservationsTableProps) {
+  const { t } = useTranslation();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
@@ -98,6 +100,20 @@ export function ReservationsTable({
 
   const hasActiveFilters = statusFilter !== "all" || startDateFilter !== undefined || endDateFilter !== undefined;
 
+  // Function to get translated column name
+  const getColumnDisplayName = (columnId: string) => {
+    const columnMap: Record<string, string> = {
+      select: t("table.selectAll"),
+      userName: t("table.userName"),
+      carLicensePlate: t("table.carLicensePlate"),
+      startDateTime: t("reservations.startDate"),
+      endDateTime: t("reservations.endDate"),
+      status: t("common.status"),
+      actions: t("common.actions"),
+    };
+    return columnMap[columnId] || columnId;
+  };
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
@@ -108,13 +124,13 @@ export function ReservationsTable({
             onValueChange={(value) => onStatusFilterChange(value as ReservationStatus | "all")}
           >
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder={t("reservations.filterByStatus")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
+              <SelectItem value="pending">{t("reservations.pending")}</SelectItem>
+              <SelectItem value="confirmed">{t("reservations.confirmed")}</SelectItem>
+              <SelectItem value="cancelled">{t("reservations.cancelled")}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -129,7 +145,7 @@ export function ReservationsTable({
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDateFilter ? format(startDateFilter, "PPP") : <span>Start date</span>}
+                {startDateFilter ? format(startDateFilter, "PPP") : <span>{t("reservations.startDate")}</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -152,7 +168,7 @@ export function ReservationsTable({
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDateFilter ? format(endDateFilter, "PPP") : <span>End date</span>}
+                {endDateFilter ? format(endDateFilter, "PPP") : <span>{t("reservations.endDate")}</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -172,7 +188,7 @@ export function ReservationsTable({
               className="h-8 px-2 lg:px-3"
             >
               <FilterX className="mr-2 h-4 w-4" />
-              Clear
+              {t("reservations.clearFilters")}
             </Button>
           )}
         </div>
@@ -181,7 +197,7 @@ export function ReservationsTable({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns
+              {t("table.columns")} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -198,7 +214,7 @@ export function ReservationsTable({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {column.id}
+                    {getColumnDisplayName(column.id)}
                   </DropdownMenuCheckboxItem>
                 );
               })}
@@ -249,7 +265,7 @@ export function ReservationsTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  {loading ? "Loading..." : "No reservations found."}
+                  {loading ? t("loading.loadingReservations") : t("reservations.noReservationsFound")}
                 </TableCell>
               </TableRow>
             )}
@@ -259,8 +275,8 @@ export function ReservationsTable({
 
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredSelectedRowModel().rows.length} {t("common.of")}{" "}
+          {table.getFilteredRowModel().rows.length} {t("common.selected")}.
         </div>
         <div className="space-x-2">
           <Button
@@ -269,7 +285,7 @@ export function ReservationsTable({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            {t("common.previous")}
           </Button>
           <Button
             variant="outline"
@@ -277,7 +293,7 @@ export function ReservationsTable({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            {t("common.next")}
           </Button>
         </div>
       </div>

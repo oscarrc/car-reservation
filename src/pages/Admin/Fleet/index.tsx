@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { SectionHeader } from "@/components/ui/section-header";
 import { CarsTable } from "@/components/cars/cars-table";
 import { CarFormDialog } from "@/components/cars/car-form-dialog";
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 import type { CarWithId } from "@/types/car";
 
 export default function FleetPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -40,14 +42,17 @@ export default function FleetPage() {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
       setDeleteDialogOpen(false);
       setCarToDelete(null);
-      toast.success("Car deleted successfully", {
-        description: `${carToDelete?.model} (${carToDelete?.licensePlate}) has been removed from the fleet.`,
+      toast.success(t("fleet.carDeleted"), {
+        description: t("fleet.carDeletedDesc", {
+          model: carToDelete?.model,
+          licensePlate: carToDelete?.licensePlate,
+        }),
       });
     },
     onError: (error) => {
       console.error("Failed to delete car:", error);
-      toast.error("Failed to delete car", {
-        description: "Please try again or contact support if the problem persists.",
+      toast.error(t("fleet.failedToDeleteCar"), {
+        description: t("common.retry"),
       });
     },
   });
@@ -66,10 +71,10 @@ export default function FleetPage() {
   return (
     <>
       <SectionHeader
-        title="Fleet Management"
-        subtitle="Manage your vehicle fleet, track availability, and update car status."
+        title={t("fleet.management")}
+        subtitle={t("fleet.subtitle")}
         action={handleAddCar}
-        actionText="Add Car"
+        actionText={t("fleet.addCar")}
         actionIcon={Plus}
       />
 
@@ -93,10 +98,13 @@ export default function FleetPage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete Car"
+        title={t("fleet.deleteCar")}
         description={
           carToDelete
-            ? `Are you sure you want to delete ${carToDelete.model} (${carToDelete.licensePlate})? This action cannot be undone.`
+            ? t("fleet.deleteConfirmation", { 
+                model: carToDelete.model, 
+                licensePlate: carToDelete.licensePlate 
+              })
             : ""
         }
         isLoading={deleteMutation.isPending}

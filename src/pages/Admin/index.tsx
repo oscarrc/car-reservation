@@ -4,9 +4,11 @@ import { FleetStatusChart } from "@/components/dashboard/fleet-status-chart";
 import { ReservationsChart } from "@/components/dashboard/reservations-chart";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function AdminPage() {
   const { userProfile } = useAuth();
+  const { t } = useTranslation();
 
   const [currentDate, setCurrentDate] = useState(() => {
     const now = new Date();
@@ -28,10 +30,10 @@ export default function AdminPage() {
   return (
     <>
       <div className="mb-4 px-4 lg:px-6">
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold">{t("navigation.adminDashboard")}</h1>
         {userProfile && (
           <p className="text-sm text-muted-foreground">
-            Welcome, {userProfile.name} ({userProfile.role})
+            {t("dashboard.welcome", { name: userProfile.name, role: userProfile.role })}
           </p>
         )}
       </div>

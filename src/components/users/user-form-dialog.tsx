@@ -40,6 +40,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
 
 const createUserSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -72,6 +73,7 @@ function CreateUserForm({
   onOpenChange: (open: boolean) => void;
 }) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const form = useForm<CreateUserFormData>({
     resolver: zodResolver(createUserSchema),
@@ -91,13 +93,13 @@ function CreateUserForm({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       onOpenChange(false);
-      toast.success("User created successfully", {
+      toast.success(t("users.userCreatedSuccessfully"), {
         description: `${form.getValues("name")} has been added to the system.`,
       });
     },
     onError: (error) => {
       console.error("Error creating user:", error);
-      toast.error("Failed to create user", {
+      toast.error(t("users.failedToCreateUser"), {
         description:
           "Please try again or contact support if the problem persists.",
       });
@@ -117,7 +119,7 @@ function CreateUserForm({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name *</FormLabel>
+                <FormLabel>{t("users.name")} *</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter full name" {...field} />
                 </FormControl>
@@ -131,7 +133,7 @@ function CreateUserForm({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email *</FormLabel>
+                <FormLabel>{t("users.email")} *</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
@@ -149,7 +151,7 @@ function CreateUserForm({
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password *</FormLabel>
+                <FormLabel>{t("users.password")} *</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
@@ -167,7 +169,7 @@ function CreateUserForm({
             name="role"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Role *</FormLabel>
+                <FormLabel>{t("users.role")} *</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
@@ -189,7 +191,7 @@ function CreateUserForm({
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone</FormLabel>
+                <FormLabel>{t("users.phone")}</FormLabel>
                 <FormControl>
                   <Input
                     type="tel"
@@ -203,8 +205,7 @@ function CreateUserForm({
           />
 
           <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-md border border-blue-200">
-            <strong>Note:</strong> Creating a new user will temporarily sign you
-            out. You'll need to log back in after the user is created.
+            <strong>{t("users.note")}:</strong> {t("users.createUserNote")}
           </div>
         </div>
 
@@ -216,7 +217,7 @@ function CreateUserForm({
             disabled={createUserMutation.isPending}
             className="cursor-pointer"
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             type="submit"
@@ -226,7 +227,7 @@ function CreateUserForm({
             {createUserMutation.isPending && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Create User
+            {t("users.createUser")}
           </Button>
         </DialogFooter>
       </form>
@@ -243,6 +244,7 @@ function EditUserForm({
 }) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const form = useForm<EditUserFormData>({
     resolver: zodResolver(editUserSchema),
@@ -262,7 +264,7 @@ function EditUserForm({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       onOpenChange(false);
-      toast.success("User updated successfully", {
+      toast.success(t("users.userUpdatedSuccessfully"), {
         description: `${form.getValues(
           "name"
         )}'s information has been updated.`,
@@ -270,7 +272,7 @@ function EditUserForm({
     },
     onError: (error) => {
       console.error("Error updating user:", error);
-      toast.error("Failed to update user", {
+      toast.error(t("users.failedToUpdateUser"), {
         description:
           "Please try again or contact support if the problem persists.",
       });
@@ -290,7 +292,7 @@ function EditUserForm({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name *</FormLabel>
+                <FormLabel>{t("users.name")} *</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter full name" {...field} />
                 </FormControl>
@@ -304,7 +306,7 @@ function EditUserForm({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email *</FormLabel>
+                <FormLabel>{t("users.email")} *</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
@@ -314,7 +316,7 @@ function EditUserForm({
                   />
                 </FormControl>
                 <FormDescription>
-                  Email cannot be changed after account creation
+                  {t("users.emailCannotBeChanged")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -326,7 +328,7 @@ function EditUserForm({
             name="role"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Role *</FormLabel>
+                <FormLabel>{t("users.role")} *</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
@@ -348,7 +350,7 @@ function EditUserForm({
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone</FormLabel>
+                <FormLabel>{t("users.phone")}</FormLabel>
                 <FormControl>
                   <Input
                     type="tel"
@@ -370,7 +372,7 @@ function EditUserForm({
             disabled={updateUserMutation.isPending}
             className="cursor-pointer"
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             type="submit"
@@ -380,7 +382,7 @@ function EditUserForm({
             {updateUserMutation.isPending && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Update User
+            {t("users.updateUser")}
           </Button>
         </DialogFooter>
       </form>
@@ -394,17 +396,19 @@ export function UserFormDialog({
   user,
   mode,
 }: UserFormDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {mode === "create" ? "Create New User" : "Edit User"}
+            {mode === "create" ? t("users.createNewUser") : t("users.editUser")}
           </DialogTitle>
           <DialogDescription>
             {mode === "create"
-              ? "Fill in the information below to create a new user account."
-              : "Update the user information below."}
+              ? t("users.createUserDesc")
+              : t("users.editUserDesc")}
           </DialogDescription>
         </DialogHeader>
 

@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingScreen } from '@/components/ui/loading-screen';
+import { useTranslation } from 'react-i18next';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,10 +15,11 @@ export default function ProtectedRoute({
   fallbackPath = "/login"
 }: ProtectedRouteProps) {
   const { currentUser, userProfile, loading } = useAuth();
+  const { t } = useTranslation();
 
   // Show loading while checking auth state
   if (loading) {
-    return <LoadingScreen text="Preparing your dashboard..." />;
+    return <LoadingScreen text={undefined} />;
   }
 
   // If not authenticated, redirect to login
@@ -30,8 +32,8 @@ export default function ProtectedRoute({
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Profile Not Found</h2>
-          <p className="text-gray-600">Unable to load user profile. Please contact an administrator.</p>
+          <h2 className="text-xl font-semibold mb-2">{t("profile.notFound")}</h2>
+          <p className="text-gray-600">{t("profile.unableToLoad")}</p>
         </div>
       </div>
     );

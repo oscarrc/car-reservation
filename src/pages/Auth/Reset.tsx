@@ -14,8 +14,10 @@ import { Car } from "lucide-react";
 import type { FirebaseError } from "firebase/app";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const Reset = () => {
   const { currentUser, userProfile } = useAuth();
@@ -28,13 +30,14 @@ const Reset = () => {
   const [error, setError] = useState("");
   const [validCode, setValidCode] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const { t } = useTranslation();
 
   const oobCode = searchParams.get("oobCode");
 
   useEffect(() => {
     async function verifyResetCode() {
       if (!oobCode) {
-        setError("Invalid or missing reset code.");
+        setError(t("auth.invalidResetCode"));
         setVerifying(false);
         return;
       }
@@ -46,13 +49,13 @@ const Reset = () => {
       } catch (error) {
         console.error("Code verification error:", error);
         if ((error as FirebaseError).code === "auth/expired-action-code") {
-          setError("Reset code has expired. Please request a new one.");
+          setError(t("auth.resetCodeExpired"));
         } else if (
           (error as FirebaseError).code === "auth/invalid-action-code"
         ) {
-          setError("Invalid reset code. Please request a new one.");
+          setError(t("auth.invalidResetCode"));
         } else {
-          setError("Invalid reset code. Please try again.");
+          setError(t("auth.invalidResetCode"));
         }
         setValidCode(false);
       } finally {
@@ -75,12 +78,12 @@ const Reset = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("auth.passwordsNoMatch"));
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(t("auth.passwordTooShort"));
       return;
     }
 
@@ -90,15 +93,13 @@ const Reset = () => {
       setLoading(true);
 
       await confirmPasswordReset(auth, oobCode!, password);
-      setMessage(
-        "Password reset successful! You can now log in with your new password."
-      );
+      setMessage(t("auth.resetSuccessful"));
     } catch (error) {
       console.error("Password reset error:", error);
       if ((error as FirebaseError).code === "auth/weak-password") {
-        setError("Password is too weak. Please choose a stronger password.");
+        setError(t("auth.weakPassword"));
       } else {
-        setError("Failed to reset password. Please try again.");
+        setError(t("auth.failedToReset"));
       }
     } finally {
       setLoading(false);
@@ -116,18 +117,21 @@ const Reset = () => {
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
               <Car className="size-4" />
             </div>
-            Car Reservation System
+            {t("brand.name")}
           </Link>
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
                 <p className="text-sm text-muted-foreground">
-                  Verifying reset code...
+                  {t("auth.verifyingCode")}
                 </p>
               </div>
             </CardContent>
           </Card>
+          <div className="flex justify-center">
+            <LanguageSwitcher authOnly={true} />
+          </div>
         </section>
       </main>
     );
@@ -143,16 +147,16 @@ const Reset = () => {
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <Car className="size-4" />
           </div>
-          Car Reservation System
+          {t("brand.name")}
         </Link>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">Set new password</CardTitle>
+            <CardTitle className="text-xl">{t("auth.setNewPassword")}</CardTitle>
             <CardDescription>
               {validCode && userEmail
-                ? `Reset password for ${userEmail}`
-                : "Enter your new password"}
+                ? `${t("auth.resetPasswordFor")} ${userEmail}`
+                : t("auth.enterNewPassword")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -165,7 +169,7 @@ const Reset = () => {
                   to="/forgot"
                   className="inline-block text-sm text-primary hover:underline"
                 >
-                  Request a new reset link
+                  {t("auth.requestNewLink")}
                 </Link>
               </div>
             ) : (
@@ -182,7 +186,7 @@ const Reset = () => {
                     </div>
                   )}
                   <div className="grid gap-3">
-                    <Label htmlFor="password">New Password</Label>
+                    <Label htmlFor="password">{t("auth.newPassword")}</Label>
                     <Input
                       id="password"
                       type="password"
@@ -195,7 +199,7 @@ const Reset = () => {
                   </div>
                   <div className="grid gap-3">
                     <Label htmlFor="confirmPassword">
-                      Confirm New Password
+                      {t("auth.confirmPassword")}
                     </Label>
                     <Input
                       id="confirmPassword"
@@ -213,7 +217,7 @@ const Reset = () => {
                       className="w-full cursor-pointer"
                       disabled={loading}
                     >
-                      {loading ? "Resetting..." : "Reset Password"}
+                      {loading ? t("auth.resetting") : t("auth.resetPasswordBtn")}
                     </Button>
                   )}
                   <div className="text-center">
@@ -221,7 +225,7 @@ const Reset = () => {
                       to="/login"
                       className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
                     >
-                      {message ? "Continue to Login" : "Back to Login"}
+                      {message ? t("auth.continueToLogin") : t("auth.backToLogin")}
                     </Link>
                   </div>
                 </div>
@@ -229,6 +233,9 @@ const Reset = () => {
             )}
           </CardContent>
         </Card>
+        <div className="flex justify-center">
+          <LanguageSwitcher authOnly={true} />
+        </div>
       </section>
     </main>
   );

@@ -2,6 +2,7 @@
 
 import { type LucideIcon } from "lucide-react"
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 
 import {
   SidebarGroup,
@@ -21,20 +22,25 @@ export function NavMain({
     isActive?: boolean
   }[]
 }) {
+  const { t } = useTranslation()
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+      <SidebarGroupLabel>{t("common.navigation")}</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
+        {items.map((item) => {
+          const translatedTitle = t(item.title)
+          return (
           <SidebarMenuItem key={item.title}>
-            <SidebarMenuButton asChild isActive={item.isActive} tooltip={item.title}>
+              <SidebarMenuButton asChild isActive={item.isActive} tooltip={translatedTitle}>
               <Link to={item.url}>
                   <item.icon />
-                  <span>{item.title}</span>
+                    <span>{translatedTitle}</span>
               </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-        ))}
+          )
+        })}
       </SidebarMenu>
     </SidebarGroup>
   )

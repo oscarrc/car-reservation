@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import {
   Card,
@@ -47,6 +48,7 @@ export function ReservationsChart({
   onNavigateMonth,
 }: ReservationsChartProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const {
     data: reservationsData,
@@ -71,7 +73,7 @@ export function ReservationsChart({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Daily Reservations</CardTitle>
+            <CardTitle>{t("dashboard.dailyReservations")}</CardTitle>
             <CardDescription>{currentMonth}</CardDescription>
           </div>
           <div className="flex items-center gap-1">
@@ -100,7 +102,7 @@ export function ReservationsChart({
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
-                Loading reservations...
+                {t("dashboard.loadingReservations")}
               </p>
             </div>
           </div>
@@ -108,7 +110,7 @@ export function ReservationsChart({
           <div className="flex items-center justify-center h-[300px]">
             <div className="text-center">
               <p className="text-sm text-destructive">
-                Error loading reservations
+                {t("dashboard.errorLoadingReservations")}
               </p>
             </div>
           </div>
@@ -171,7 +173,7 @@ export function ReservationsChart({
           onClick={() => navigate("/admin/reservations")}
           className="cursor-pointer"
         >
-          Manage Reservations
+          {t("navigation.manageReservations")}
         </Button>
       </CardFooter>
     </Card>

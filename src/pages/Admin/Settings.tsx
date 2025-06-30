@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Loader2, Save } from "lucide-react";
 import {
   Card,
@@ -54,6 +55,7 @@ const settingsSchema = z.object({
 type SettingsFormData = z.infer<typeof settingsSchema>;
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const {
@@ -79,11 +81,11 @@ export default function SettingsPage() {
     mutationFn: updateSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["settings"] });
-      toast.success("Settings updated successfully");
+      toast.success(t("settings.settingsUpdated"));
     },
     onError: (error) => {
       console.error("Error updating settings:", error);
-      toast.error("Failed to update settings");
+      toast.error(t("settings.failedToUpdateSettings"));
     },
   });
 
@@ -110,7 +112,7 @@ export default function SettingsPage() {
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
           <h2 className="text-xl font-semibold text-muted-foreground">
-            Loading Settings...
+            {t("loading.loadingSettings")}
           </h2>
         </div>
       </div>
@@ -123,10 +125,10 @@ export default function SettingsPage() {
         <div className="text-center">
           <Loader2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h2 className="text-xl font-semibold text-destructive mb-2">
-            Error Loading Settings
+            {t("settings.errorLoadingSettings")}
           </h2>
           <p className="text-muted-foreground">
-            Failed to load application settings. Please try again.
+            {t("settings.failedToLoadSettings")}
           </p>
         </div>
       </div>
@@ -136,10 +138,10 @@ export default function SettingsPage() {
   return (
     <>
       <SectionHeader
-        title="Application Settings"
-        subtitle="Configure system behavior and business rules for the car reservation system"
+        title={t("settings.title")}
+        subtitle={t("settings.subtitle")}
         action={handleSaveSettings}
-        actionText={updateMutation.isPending ? "Saving..." : "Save Settings"}
+        actionText={updateMutation.isPending ? t("settings.saving") : t("settings.saveSettings")}
         actionIcon={updateMutation.isPending ? Loader2 : Save}
       />
 
@@ -149,9 +151,9 @@ export default function SettingsPage() {
             {/* Reservation Management */}
             <Card>
               <CardHeader>
-                <CardTitle>Reservation Management</CardTitle>
+                <CardTitle>{t("settings.reservationManagement")}</CardTitle>
                 <CardDescription>
-                  Configure how reservations are handled and validated
+                  {t("settings.reservationSubtitle")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -161,7 +163,7 @@ export default function SettingsPage() {
                     name="advanceReservation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Advance Reservation (Days)</FormLabel>
+                        <FormLabel>{t("settings.advanceReservation")}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -174,8 +176,7 @@ export default function SettingsPage() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Minimum days before a reservation can be made
-                          (Mon-Fri)
+                          {t("settings.advanceReservationDesc")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -188,7 +189,7 @@ export default function SettingsPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Maximum Reservation Duration (Days)
+                          {t("settings.maxReservationDuration")}
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -202,7 +203,7 @@ export default function SettingsPage() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Maximum number of days a car can be reserved
+                          {t("settings.maxReservationDurationDesc")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -214,7 +215,7 @@ export default function SettingsPage() {
                     name="advanceCancellationTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Advance Cancellation Time (Hours)</FormLabel>
+                        <FormLabel>{t("settings.advanceCancellation")}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -227,7 +228,7 @@ export default function SettingsPage() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Hours before reservation start to allow cancellation
+                          {t("settings.advanceCancellationDesc")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -239,7 +240,7 @@ export default function SettingsPage() {
                     name="maxConcurrentReservations"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Max Concurrent Reservations</FormLabel>
+                        <FormLabel>{t("settings.maxConcurrent")}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -252,7 +253,7 @@ export default function SettingsPage() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Maximum concurrent reservations per user
+                          {t("settings.maxConcurrentDesc")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -265,7 +266,7 @@ export default function SettingsPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Min Time Between Reservations (Hours)
+                          {t("settings.minTimeBetweenReservations")}
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -279,7 +280,7 @@ export default function SettingsPage() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Minimum hours between reservations for the same user
+                          {t("settings.minTimeBetweenReservationsDesc")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -297,11 +298,10 @@ export default function SettingsPage() {
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
                           <FormLabel className="text-base">
-                            Auto-approve Reservations
+                            {t("settings.autoReservation")}
                           </FormLabel>
                           <FormDescription>
-                            Automatically approve new reservations without admin
-                            confirmation
+                            {t("settings.autoReservationDesc")}
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -321,11 +321,10 @@ export default function SettingsPage() {
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
                           <FormLabel className="text-base">
-                            Auto-approve Cancellations
+                            {t("settings.autoCancellation")}
                           </FormLabel>
                           <FormDescription>
-                            Automatically approve cancellation requests without
-                            admin confirmation
+                            {t("settings.autoCancellationDesc")}
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -344,71 +343,12 @@ export default function SettingsPage() {
             {/* System Configuration */}
             <Card>
               <CardHeader>
-                <CardTitle>System Configuration</CardTitle>
+                <CardTitle>{t("settings.systemConfiguration")}</CardTitle>
                 <CardDescription>
-                  General system settings and business hours
+                  {t("settings.systemConfigurationDesc")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="businessHoursStart"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Business Hours Start</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Start time for business operations
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="businessHoursEnd"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Business Hours End</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          End time for business operations
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="supportEmails"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Support Email Addresses</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter support email addresses, one per line&#10;support@company.com&#10;help@company.com"
-                          className="resize-none min-h-[100px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Enter email addresses for support inquires, one per line
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Separator />
-
                 <div className="space-y-4">
                   <FormField
                     control={form.control}
@@ -417,10 +357,10 @@ export default function SettingsPage() {
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
                           <FormLabel className="text-base">
-                            Weekend Reservations
+                            {t("settings.weekendReservations")}
                           </FormLabel>
                           <FormDescription>
-                            Allow users to make reservations for weekends
+                            {t("settings.weekendReservationsDesc")}
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -440,10 +380,10 @@ export default function SettingsPage() {
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
                           <FormLabel className="text-base">
-                            Email Notifications
+                            {t("settings.emailNotifications")}
                           </FormLabel>
                           <FormDescription>
-                            Send email notifications for reservation updates
+                            {t("settings.emailNotificationsDesc")}
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -456,6 +396,71 @@ export default function SettingsPage() {
                     )}
                   />
                 </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium">{t("settings.businessHours")}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {t("settings.businessHoursDesc")}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="businessHoursStart"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("settings.businessHoursStart")}</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="businessHoursEnd"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("settings.businessHoursEnd")}</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <Separator />
+
+                <FormField
+                  control={form.control}
+                  name="supportEmails"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("settings.supportEmails")}</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder={t("settings.supportEmailsPlaceholder")}
+                          className="resize-none"
+                          rows={4}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        {t("settings.supportEmailsDesc")}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
             </Card>
           </form>

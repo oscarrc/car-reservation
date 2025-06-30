@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { SectionHeader } from "@/components/ui/section-header";
 import { UsersTable } from "@/components/users/users-table";
 import { UserFormDialog } from "@/components/users/user-form-dialog";
@@ -10,6 +11,7 @@ import { toast } from "sonner";
 import type { UserProfileWithId } from "@/lib/users-service";
 
 export default function UsersPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -35,14 +37,14 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setDeleteDialogOpen(false);
       setUserToDelete(null);
-      toast.success("User deleted successfully", {
-        description: `${userToDelete?.name} has been removed from the system.`,
+      toast.success(t("users.userDeleted"), {
+        description: t("users.userDeletedDesc", { name: userToDelete?.name }),
       });
     },
     onError: (error) => {
       console.error("Failed to delete user:", error);
-      toast.error("Failed to delete user", {
-        description: error.message || "Please try again or contact support if the problem persists.",
+      toast.error(t("users.failedToDeleteUser"), {
+        description: error.message || t("common.retry"),
       });
     },
   });
@@ -61,10 +63,10 @@ export default function UsersPage() {
   return (
     <>
       <SectionHeader
-        title="Users Management"
-        subtitle="Manage system users and their permissions"
+        title={t("users.management")}
+        subtitle={t("users.subtitle")}
         action={handleCreateUser}
-        actionText="Create User"
+        actionText={t("users.addUser")}
         actionIcon={Plus}
       />
 
@@ -97,10 +99,13 @@ export default function UsersPage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
-        title="Delete User"
+        title={t("users.deleteUser")}
         description={
           userToDelete
-            ? `Are you sure you want to delete ${userToDelete.name} (${userToDelete.email})? This action cannot be undone and will remove the user from the system.`
+            ? t("users.deleteConfirmation", {
+                name: userToDelete.name,
+                email: userToDelete.email,
+              })
             : ""
         }
         isLoading={deleteMutation.isPending}

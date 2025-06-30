@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 import { ChevronDown, Loader2, Search } from "lucide-react";
 import type {
@@ -52,6 +53,7 @@ export function CarsTable({
   onEditCar,
   onDeleteCar,
 }: CarsTableProps) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -91,14 +93,14 @@ export function CarsTable({
     },
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
-      toast.success("Status updated", {
-        description: `Car status changed to ${status.replace("_", " ")}.`,
+      toast.success(t("fleet.statusUpdated"), {
+        description: t("fleet.statusUpdatedDesc", { status: t(`fleet.${status}`) }),
       });
     },
     onError: (error) => {
       console.error("Failed to update car status:", error);
-      toast.error("Failed to update status", {
-        description: "Please try again or contact support if the problem persists.",
+      toast.error(t("fleet.failedToUpdateStatus"), {
+        description: t("common.retry"),
       });
     },
   });
@@ -186,12 +188,26 @@ export function CarsTable({
     setPageIndex(0);
   };
 
+  // Function to get translated column name
+  const getColumnDisplayName = (columnId: string) => {
+    const columnMap: Record<string, string> = {
+      select: t("table.selectAll"),
+      licensePlate: t("fleet.licensePlate"),
+      model: t("fleet.model"),
+      color: t("fleet.color"),
+      seats: t("fleet.seats"),
+      status: t("common.status"),
+      actions: t("common.actions"),
+    };
+    return columnMap[columnId] || columnId;
+  };
+
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-red-600 mb-2">Error loading cars</p>
-          <Button onClick={() => refetch()} className="cursor-pointer">Retry</Button>
+          <p className="text-red-600 mb-2">{t("fleet.errorLoadingCars")}</p>
+                          <Button onClick={() => refetch()} className="cursor-pointer">{t("common.retryButton")}</Button>
         </div>
       </div>
     );
@@ -204,7 +220,7 @@ export function CarsTable({
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search by model or license plate..."
+            placeholder={t("fleet.searchPlaceholder")}
             value={localSearchTerm}
             onChange={(event) => handleSearchChange(event.target.value)}
             className="pl-10"
@@ -215,7 +231,7 @@ export function CarsTable({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto cursor-pointer">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              {t("table.columns")} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -232,7 +248,7 @@ export function CarsTable({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {column.id}
+                    {getColumnDisplayName(column.id)}
                   </DropdownMenuCheckboxItem>
                 );
               })}
@@ -267,11 +283,11 @@ export function CarsTable({
                 <TableCell colSpan={columns.length} className="h-24 text-center">
                   <div className="flex items-center justify-center">
                     <Loader2 className="h-6 w-6 animate-spin" />
-                    <span className="ml-2">Loading cars...</span>
+                    <span className="ml-2">{t("loading.loadingCars")}</span>
                   </div>
                 </TableCell>
               </TableRow>
-            ) : table.getRowModel().rows?.length ? (
+            ) : data.length > 0 ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -290,7 +306,7 @@ export function CarsTable({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  {debouncedSearchTerm ? "No cars found matching your search." : "No cars found."}
+                  {debouncedSearchTerm ? t("fleet.searchNoCarsFound") : t("fleet.noCarsFound")}
                 </TableCell>
               </TableRow>
             )}
@@ -299,10 +315,10 @@ export function CarsTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between space-x-2 py-4">
+      <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing {data.length > 0 ? pageIndex * pageSize + 1 : 0} to{" "}
-          {Math.min((pageIndex + 1) * pageSize, totalRows)} of {totalRows} car(s)
+          {t("common.showing")} {data.length > 0 ? pageIndex * pageSize + 1 : 0} {t("common.to")}{" "}
+          {Math.min((pageIndex + 1) * pageSize, totalRows)} {t("common.of")} {totalRows} {t("fleet.seats").toLowerCase()}(s)
         </div>
         <div className="flex items-center space-x-2">
           <select
@@ -310,10 +326,10 @@ export function CarsTable({
             onChange={(e) => handlePageSizeChange(Number(e.target.value))}
             className="px-3 py-1 border rounded text-sm"
           >
-            <option value={5}>5 per page</option>
-            <option value={10}>10 per page</option>
-            <option value={20}>20 per page</option>
-            <option value={50}>50 per page</option>
+            <option value={5}>5 {t("common.perPage")}</option>
+            <option value={10}>10 {t("common.perPage")}</option>
+            <option value={20}>20 {t("common.perPage")}</option>
+            <option value={50}>50 {t("common.perPage")}</option>
           </select>
           <Button
             variant="outline"
@@ -322,10 +338,10 @@ export function CarsTable({
             disabled={pageIndex === 0}
             className="cursor-pointer"
           >
-            Previous
+            {t("common.previous")}
           </Button>
           <span className="text-sm">
-            Page {pageIndex + 1} of {totalPages || 1}
+            {t("common.page")} {pageIndex + 1} {t("common.of")} {totalPages || 1}
           </span>
           <Button
             variant="outline"
@@ -334,7 +350,7 @@ export function CarsTable({
             disabled={pageIndex >= totalPages - 1}
             className="cursor-pointer"
           >
-            Next
+            {t("common.next")}
           </Button>
         </div>
       </div>

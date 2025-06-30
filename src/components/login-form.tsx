@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ export function LoginForm({
   const [loading, setLoading] = useState(false);
   const { login, userProfile, currentUser } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Redirect based on role after profile is loaded
   useEffect(() => {
@@ -42,7 +44,7 @@ export function LoginForm({
       await login(email, password);
       // Navigation will be handled by the useEffect above after profile loads
     } catch (error) {
-      setError("Failed to log in. Please check your credentials.");
+      setError(t("auth.failedToLogin"));
       console.error("Login error:", error);
       setLoading(false);
     }
@@ -52,8 +54,8 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Login to the car management system</CardDescription>
+            <CardTitle className="text-xl">{t("auth.welcome")}</CardTitle>
+            <CardDescription>{t("auth.loginSubtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
@@ -65,7 +67,7 @@ export function LoginForm({
               )}
               <div className="grid gap-6">
                 <div className="grid gap-3">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("auth.email")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -77,12 +79,12 @@ export function LoginForm({
                 </div>
                 <div className="grid gap-3">
                   <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{t("auth.password")}</Label>
                     <Link
                       to="/forgot"
                       className="ml-auto text-sm underline-offset-4 hover:underline"
                     >
-                      Forgot your password?
+                      {t("auth.forgotPassword")}
                     </Link>
                   </div>
                   <Input
@@ -98,7 +100,7 @@ export function LoginForm({
                   className="w-full cursor-pointer"
                   disabled={loading}
                 >
-                  {loading ? "Logging in..." : "Login"}
+                  {loading ? t("auth.loggingIn") : t("auth.login")}
                 </Button>
               </div>
             </div>

@@ -3,6 +3,7 @@ export interface UserProfile {
   email: string;
   phone: string;
   role: 'admin' | 'teacher';
+  language?: 'en' | 'th';
 }
 
 export interface AuthUser {

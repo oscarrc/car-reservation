@@ -27,32 +27,32 @@ export const adminSidebarConfig: SidebarConfig = {
     email: "admin@company.com"
   },
   company: {
-    name: "Car Reservation System",
-    access: "Administrative portal"
+    name: "brand.name",
+    access: "navigation.administrativePortal"
   },
   items: [
     {
-      title: "Dashboard",
+      title: "navigation.dashboard",
       url: "/admin",
       icon: Home
     },
     {
-      title: "Reservations",
+      title: "navigation.reservations",
       url: "/admin/reservations",
       icon: Calendar
     },
     {
-      title: "Fleet",
+      title: "navigation.fleet",
       url: "/admin/fleet",
       icon: CarFront
     },
     {
-      title: "Users",
+      title: "navigation.users",
       url: "/admin/users",
       icon: Users
     },
     {
-      title: "Settings",
+      title: "navigation.settings",
       url: "/admin/settings",
       icon: Settings
     }
@@ -65,32 +65,32 @@ export const appSidebarConfig: SidebarConfig = {
     email: "john@example.com"
   },
   company: {
-    name: "Car Reservation System",
-    access: "User portal"
+    name: "brand.name",
+    access: "navigation.userPortal"
   },
   items: [
     {
-      title: "Dashboard",
+      title: "navigation.dashboard",
       url: "/app",
       icon: Home
     },
     {
-      title: "My Reservations",
+      title: "navigation.myReservations",
       url: "/app/reservations",
       icon: Calendar
     },
     {
-      title: "Browse Cars",
+      title: "navigation.browseCars",
       url: "/app/browse",
       icon: CarFront
     },
     {
-      title: "History",
+      title: "navigation.history",
       url: "/app/history",
       icon: FileText
     },
     {
-      title: "Support",
+      title: "navigation.support",
       url: "/app/support",
       icon: HelpCircle
     }

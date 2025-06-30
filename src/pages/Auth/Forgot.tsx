@@ -12,10 +12,12 @@ import { Car } from "lucide-react";
 import type { FirebaseError } from "firebase/app";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { auth } from "@/lib/firebase";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const Forgot = () => {
   const { currentUser, userProfile } = useAuth();
@@ -23,6 +25,7 @@ const Forgot = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const { t } = useTranslation();
 
   // If user is already logged in, redirect to app
   if (currentUser) {
@@ -41,15 +44,15 @@ const Forgot = () => {
       setLoading(true);
 
       await sendPasswordResetEmail(auth, email);
-      setMessage("Check your email for password reset instructions!");
+      setMessage(t("auth.checkEmail"));
     } catch (error) {
       console.error("Password reset error:", error);
       if ((error as FirebaseError).code === "auth/user-not-found") {
-        setError("No account found with this email address.");
+        setError(t("auth.noAccount"));
       } else if ((error as FirebaseError).code === "auth/invalid-email") {
-        setError("Invalid email address.");
+        setError(t("auth.invalidEmail"));
       } else {
-        setError("Failed to send reset email. Please try again.");
+        setError(t("auth.failedToSend"));
       }
     } finally {
       setLoading(false);
@@ -66,14 +69,14 @@ const Forgot = () => {
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <Car className="size-4" />
           </div>
-          Car Reservation System
+          {t("brand.name")}
         </Link>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">Reset your password</CardTitle>
+            <CardTitle className="text-xl">{t("auth.resetPassword")}</CardTitle>
             <CardDescription>
-              Enter your email and we'll send you a reset link
+              {t("auth.resetSubtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -90,7 +93,7 @@ const Forgot = () => {
                   </div>
                 )}
                 <div className="grid gap-3">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("auth.email")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -105,20 +108,23 @@ const Forgot = () => {
                   className="w-full cursor-pointer"
                   disabled={loading}
                 >
-                  {loading ? "Sending..." : "Send Reset Link"}
+                  {loading ? t("auth.sending") : t("auth.sendResetLink")}
                 </Button>
                 <div className="text-center">
                   <Link
                     to="/login"
                     className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
                   >
-                    Back to Login
+                    {t("auth.backToLogin")}
                   </Link>
                 </div>
               </div>
             </form>
           </CardContent>
         </Card>
+        <div className="flex justify-center">
+          <LanguageSwitcher authOnly={true} />
+        </div>
       </section>
     </main>
   );

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   Sidebar,
@@ -25,6 +26,8 @@ export function AppSidebar({
   variant = "sidebar",
   ...props
 }: AppSidebarProps) {
+  const { t } = useTranslation();
+
   // Default data for when no config is provided
   const defaultData = {
     user: {
@@ -32,8 +35,8 @@ export function AppSidebar({
       email: "user@example.com",
     },
     company: {
-      name: "Company Name",
-      access: "Internal Access",
+      name: "brand.name",
+      access: "navigation.userPortal",
     },
     items: [],
   };
@@ -60,10 +63,10 @@ export function AppSidebar({
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    {data.company.name}
+                    {t(data.company.name)}
                   </span>
                   <span className="truncate text-xs text-sidebar-foreground/70">
-                    {data.company.access}
+                    {t(data.company.access)}
                   </span>
                 </div>
               </a>
