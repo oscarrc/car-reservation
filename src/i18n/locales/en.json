@@ -395,6 +395,7 @@
     "start": "Start",
     "end": "End",
     "status": "Status",
+    "user": "User",
     "userName": "User Name",
     "carLicensePlate": "License Plate",
     "reservationDetails": "Reservation details",

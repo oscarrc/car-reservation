@@ -58,8 +58,10 @@ export default function UserReservationsPage() {
 
   const reservations = reservationsResponse?.reservations || [];
 
-  // Extract unique car IDs from reservations
-  const carIds = [...new Set(reservations.map((r) => r.carId).filter(Boolean))];
+  // Extract unique car IDs from DocumentReferences
+  const carIds = [
+    ...new Set(reservations.map((r) => r.carRef.id).filter(Boolean)),
+  ];
 
   // Fetch cars data for the reservations
   const {
@@ -72,11 +74,11 @@ export default function UserReservationsPage() {
     enabled: carIds.length > 0,
   });
 
-  // Merge reservations with car data
+  // Merge reservations with car data using reference IDs
   const reservationsWithCarData: ReservationWithCarAndUser[] = reservations.map(
     (reservation) => ({
       ...reservation,
-      carInfo: carsData?.find((car) => car.id === reservation.carId),
+      carInfo: carsData?.find((car) => car.id === reservation.carRef.id),
       userEmail: currentUser?.email || "",
     })
   );
@@ -86,23 +88,25 @@ export default function UserReservationsPage() {
     mutationFn: (reservationId: string) =>
       requestCancellation(reservationId, settings?.autoCancelation || false),
     onSuccess: (result, reservationId) => {
-      const reservation = reservations.find(r => r.id === reservationId);
-      const carInfo = carsData?.find(car => car.id === reservation?.carId);
-      
-      if (result.status === 'cancelled') {
+      const reservation = reservations.find((r) => r.id === reservationId);
+      const carInfo = carsData?.find(
+        (car) => car.id === reservation?.carRef.id
+      );
+
+      if (result.status === "cancelled") {
         toast.success(t("reservations.cancellationSuccess"), {
           description: t("reservations.cancellationSuccessDesc", {
-            car: carInfo?.model || t("common.unknown")
+            car: carInfo?.model || t("common.unknown"),
           }),
         });
       } else {
         toast.success(t("reservations.cancellationRequested"), {
           description: t("reservations.cancellationRequestedDesc", {
-            car: carInfo?.model || t("common.unknown")
+            car: carInfo?.model || t("common.unknown"),
           }),
         });
       }
-      
+
       queryClient.invalidateQueries({ queryKey: ["userReservations"] });
     },
     onError: (error) => {
@@ -120,21 +124,22 @@ export default function UserReservationsPage() {
 
   const handleCancel = (reservation: ReservationWithCarAndUser) => {
     if (!settings) return;
-    
+
     // Check if cancellation is allowed based on advance cancellation time
     const now = new Date();
     const startTime = new Date(reservation.startDateTime);
-    const hoursUntilStart = (startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-    
+    const hoursUntilStart =
+      (startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
     if (hoursUntilStart < settings.advanceCancellationTime) {
       toast.error(t("reservations.cancellationTooLate"), {
         description: t("reservations.cancellationTooLateDesc", {
-          hours: settings.advanceCancellationTime
+          hours: settings.advanceCancellationTime,
         }),
       });
       return;
     }
-    
+
     cancelMutation.mutate(reservation.id);
   };
 
@@ -170,6 +175,9 @@ export default function UserReservationsPage() {
         <SectionHeader
           title={t("reservations.myReservations")}
           subtitle={t("reservations.userSubtitle")}
+          action={handleNewReservation}
+          actionText={t("reservations.newReservation")}
+          actionIcon={Plus}
         />
         <div className="px-4 lg:px-6">
           <div className="text-center">
@@ -186,6 +194,9 @@ export default function UserReservationsPage() {
         <SectionHeader
           title={t("reservations.myReservations")}
           subtitle={t("reservations.userSubtitle")}
+          action={handleNewReservation}
+          actionText={t("reservations.newReservation")}
+          actionIcon={Plus}
         />
         <div className="px-4 lg:px-6">
           <div className="text-center">

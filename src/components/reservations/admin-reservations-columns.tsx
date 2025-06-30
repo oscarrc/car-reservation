@@ -81,7 +81,7 @@ export function createAdminColumns({
     },
     {
       accessorKey: "userInfo",
-      header: () => t("table.userName"),
+      header: () => t("table.user"),
       cell: ({ row }) => {
         const userInfo = row.getValue("userInfo") as UserProfileWithId;
         if (!userInfo) {

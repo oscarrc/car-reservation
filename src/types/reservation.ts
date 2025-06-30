@@ -1,10 +1,10 @@
+import type { DocumentReference } from 'firebase/firestore';
+
 export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled' | 'cancellation_pending';
 
 export interface Reservation {
-  userId: string;
-  userName: string;
-  carId: string;
-  carLicensePlate: string;
+  userRef: DocumentReference;
+  carRef: DocumentReference;
   startDateTime: Date;
   endDateTime: Date;
   status: ReservationStatus;

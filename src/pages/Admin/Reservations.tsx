@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Plus } from "lucide-react";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
-import { createAdminColumns, type ReservationWithCarAndUser } from "@/components/reservations/admin-reservations-columns";
+import {
+  createAdminColumns,
+  type ReservationWithCarAndUser,
+} from "@/components/reservations/admin-reservations-columns";
 import {
   fetchReservations,
   updateReservationStatus,
@@ -47,9 +49,13 @@ export default function AdminReservationsPage() {
 
   const reservations = reservationsResponse?.reservations || [];
 
-  // Extract unique car and user IDs from reservations
-  const carIds = [...new Set(reservations.map((r) => r.carId).filter(Boolean))];
-  const userIds = [...new Set(reservations.map((r) => r.userId).filter(Boolean))];
+  // Extract unique car and user IDs from DocumentReferences
+  const carIds = [
+    ...new Set(reservations.map((r) => r.carRef.id).filter(Boolean)),
+  ];
+  const userIds = [
+    ...new Set(reservations.map((r) => r.userRef.id).filter(Boolean)),
+  ];
 
   // Fetch cars and users data for the reservations
   const {
@@ -72,23 +78,28 @@ export default function AdminReservationsPage() {
     enabled: userIds.length > 0,
   });
 
-  // Merge reservations with car and user data
+  // Merge reservations with car and user data using reference IDs
   const reservationsWithData: ReservationWithCarAndUser[] = reservations.map(
     (reservation) => ({
       ...reservation,
-      carInfo: carsData?.find((car) => car.id === reservation.carId),
-      userInfo: usersData?.find((user) => user.id === reservation.userId),
+      carInfo: carsData?.find((car) => car.id === reservation.carRef.id),
+      userInfo: usersData?.find((user) => user.id === reservation.userRef.id),
     })
   );
 
   // Status update mutation
   const statusMutation = useMutation({
-    mutationFn: ({ reservationId, status }: { reservationId: string; status: ReservationStatus }) =>
-      updateReservationStatus(reservationId, status),
+    mutationFn: ({
+      reservationId,
+      status,
+    }: {
+      reservationId: string;
+      status: ReservationStatus;
+    }) => updateReservationStatus(reservationId, status),
     onSuccess: (_, { status }) => {
       toast.success(t("reservations.statusUpdated"), {
         description: t("reservations.statusUpdatedDesc", {
-          status: t(`reservations.${status}`)
+          status: t(`reservations.${status}`),
         }),
       });
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
@@ -106,11 +117,6 @@ export default function AdminReservationsPage() {
     status: ReservationStatus
   ) => {
     statusMutation.mutate({ reservationId: reservation.id, status });
-  };
-
-  const handleNewReservation = () => {
-    // TODO: Implement new reservation dialog
-    console.log("New reservation");
   };
 
   const handleStatusFilterChange = (status: ReservationStatus | "all") => {
@@ -156,9 +162,6 @@ export default function AdminReservationsPage() {
       <SectionHeader
         title={t("reservations.management")}
         subtitle={t("reservations.subtitle")}
-        action={handleNewReservation}
-        actionText={t("reservations.newReservation")}
-        actionIcon={Plus}
       />
 
       <div className="px-4 lg:px-6">
