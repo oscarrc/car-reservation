@@ -7,6 +7,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
+import { ReservationFormDialog } from "@/components/reservations/reservation-form-dialog";
+import { CancellationConfirmationDialog } from "@/components/ui/cancellation-confirmation-dialog";
+import { format, getLocalizedFormats } from "@/lib/date-locale";
 import {
   createUserColumns,
   type ReservationWithCarAndUser,
@@ -32,6 +35,9 @@ export default function UserReservationsPage() {
   const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(
     undefined
   );
+  const [reservationDialogOpen, setReservationDialogOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [reservationToCancel, setReservationToCancel] = useState<ReservationWithCarAndUser | null>(null);
   const queryClient = useQueryClient();
 
   const queryParams: ReservationsQueryParams = {
@@ -108,6 +114,8 @@ export default function UserReservationsPage() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["userReservations"] });
+      setCancelDialogOpen(false);
+      setReservationToCancel(null);
     },
     onError: (error) => {
       console.error("Error cancelling reservation:", error);
@@ -140,12 +148,19 @@ export default function UserReservationsPage() {
       return;
     }
 
-    cancelMutation.mutate(reservation.id);
+    // Show confirmation dialog
+    setReservationToCancel(reservation);
+    setCancelDialogOpen(true);
+  };
+
+  const confirmCancel = () => {
+    if (reservationToCancel) {
+      cancelMutation.mutate(reservationToCancel.id);
+    }
   };
 
   const handleNewReservation = () => {
-    // TODO: Implement new reservation dialog
-    console.log("New reservation");
+    setReservationDialogOpen(true);
   };
 
   const handleStatusFilterChange = (status: ReservationStatus | "all") => {
@@ -232,6 +247,40 @@ export default function UserReservationsPage() {
           endDateFilter={endDateFilter}
         />
       </div>
+
+      {/* Reservation Form Dialog */}
+      <ReservationFormDialog
+        open={reservationDialogOpen}
+        onOpenChange={setReservationDialogOpen}
+      />
+
+      {/* Cancellation Confirmation Dialog */}
+      <CancellationConfirmationDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        onConfirm={confirmCancel}
+        title={t("reservations.cancelConfirmation")}
+        description={
+          reservationToCancel
+            ? t("reservations.cancelConfirmationDesc", {
+                action: settings?.autoCancelation
+                  ? t("reservations.cancelConfirmationAuto")
+                  : t("reservations.cancelConfirmationRequest"),
+                car: reservationToCancel.carInfo?.model || t("common.unknown"),
+                startDate: format(
+                  new Date(reservationToCancel.startDateTime),
+                  getLocalizedFormats().dateTime
+                ),
+                endDate: format(
+                  new Date(reservationToCancel.endDateTime),
+                  getLocalizedFormats().dateTime
+                ),
+              })
+            : ""
+        }
+        isLoading={cancelMutation.isPending}
+        isAutoCancel={settings?.autoCancelation || false}
+      />
     </>
   );
 }

@@ -2,6 +2,7 @@ import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import {
   QueryConstraint,
   Timestamp,
+  addDoc,
   collection,
   doc,
   getDocs,
@@ -48,7 +49,7 @@ export async function fetchReservations({
 
     // Add user filter if specified (for user-specific reservations)
     if (userId) {
-      constraints.push(where('userId', '==', userId));
+      constraints.push(where('userRef', '==', doc(db, 'users', userId)));
     }
 
     // Add car filter if specified (for car-specific reservations)
@@ -183,6 +184,40 @@ export async function requestCancellation(
     };
   } catch (error) {
     console.error('Error requesting cancellation:', error);
+    throw error;
+  }
+}
+
+// Create a new reservation
+export async function createReservation(reservationData: {
+  userRef: string;
+  carRef: string;
+  startDateTime: Date;
+  endDateTime: Date;
+  driver?: string;
+  comments?: string;
+  autoApprove: boolean;
+}): Promise<string> {
+  try {
+    const reservationsCollection = collection(db, 'reservations');
+    const now = new Date();
+    
+    const reservation = {
+      userRef: doc(db, 'users', reservationData.userRef),
+      carRef: doc(db, 'cars', reservationData.carRef),
+      startDateTime: Timestamp.fromDate(reservationData.startDateTime),
+      endDateTime: Timestamp.fromDate(reservationData.endDateTime),
+      status: reservationData.autoApprove ? 'confirmed' : 'pending' as ReservationStatus,
+      createdAt: Timestamp.fromDate(now),
+      updatedAt: Timestamp.fromDate(now),
+      driver: reservationData.driver || undefined,
+      comments: reservationData.comments || undefined,
+    };
+
+    const docRef = await addDoc(reservationsCollection, reservation);
+    return docRef.id;
+  } catch (error) {
+    console.error('Error creating reservation:', error);
     throw error;
   }
 } 

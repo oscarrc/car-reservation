@@ -268,4 +268,31 @@ export async function deleteCar(carId: string): Promise<void> {
     console.error('Error deleting car:', error);
     throw error;
   }
+}
+
+// Fetch available cars for reservations
+export async function fetchAvailableCars(): Promise<CarWithId[]> {
+  try {
+    const carsCollection = collection(db, 'cars');
+    const q = query(
+      carsCollection,
+      where('status', '==', 'available'),
+      orderBy('model')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const cars: CarWithId[] = [];
+    
+    querySnapshot.docs.forEach((doc) => {
+      cars.push({
+        id: doc.id,
+        ...doc.data() as Car
+      });
+    });
+
+    return cars;
+  } catch (error) {
+    console.error('Error fetching available cars:', error);
+    throw error;
+  }
 } 
