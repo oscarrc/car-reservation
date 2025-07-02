@@ -134,7 +134,16 @@
     "quickActions": "การดำเนินการด่วน",
     "commonTasks": "งานทั่วไป",
     "carReservationSystem": "ระบบจองรถยนต์",
-    "manageReservationsBookings": "จัดการการจองและการใช้รถยนต์ของคุณ"
+    "manageReservationsBookings": "จัดการการจองและการใช้รถยนต์ของคุณ",
+    "upcomingReservations": "การจองที่จะมาถึง",
+    "upcomingReservationsDesc": "การจองครั้งต่อไปของคุณ",
+    "noUpcomingReservations": "ไม่มีการจองที่จะมาถึง",
+    "noUpcomingReservationsDesc": "คุณไม่มีการจองที่จะมาถึง สร้างการจองใหม่เลย!",
+    "businessInfo": "ข้อมูลธุรกิจ",
+    "businessHours": "เวลาทำการ",
+    "contactSupport": "ติดต่อฝ่ายสนับสนุน",
+    "supportEmails": "อีเมลสนับสนุน",
+    "viewAllReservations": "ดูการจองทั้งหมด"
   },
   "notFound": {
     "title": "404 ไม่พบหน้าที่ต้องการ",
