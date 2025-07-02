@@ -293,6 +293,23 @@
       "springgreen": "เขียวใส"
     }
   },
+  "browse": {
+    "title": "เรียกดูยานพาหนะ",
+    "subtitle": "สำรวจยานพาหนะที่มีให้บริการและรายละเอียด",
+    "cars": "รถยนต์",
+    "viewingCars": "แสดง {{count}} จาก {{total}} คัน",
+    "loadMore": "โหลดรถเพิ่มเติม",
+    "noMoreCars": "ไม่มีรถให้โหลดเพิ่ม",
+    "errorLoadingCars": "เกิดข้อผิดพลาดในการโหลดรถ",
+    "noDescription": "ไม่มีรายละเอียด",
+    "carCard": {
+      "status": "สถานะ",
+      "capacity": "ความจุ",
+      "people": "คน",
+      "licensePlate": "ทะเบียนรถ",
+      "description": "รายละเอียด"
+    }
+  },
   "reservations": {
     "management": "การจัดการการจอง",
     "subtitle": "จัดการและติดตามการจองรถยนต์ทั้งหมด",

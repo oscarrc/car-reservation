@@ -333,6 +333,23 @@
       "springgreen": "Spring Green"
     }
   },
+  "browse": {
+    "title": "Browse Fleet",
+    "subtitle": "Explore our available vehicles and their details",
+    "cars": "Cars",
+    "viewingCars": "Viewing {{count}} of {{total}} cars",
+    "loadMore": "Load More Cars",
+    "noMoreCars": "No more cars to load",
+    "errorLoadingCars": "Error loading cars",
+    "noDescription": "No description available",
+    "carCard": {
+      "status": "Status",
+      "capacity": "Capacity",
+      "people": "people",
+      "licensePlate": "License Plate",
+      "description": "Description"
+    }
+  },
   "reservations": {
     "management": "Reservations Management",
     "subtitle": "Manage and track all vehicle reservations",

@@ -22,6 +22,7 @@ import SidebarLayout from "./layouts/Sidebar.tsx";
 import { StrictMode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import UserReservationsPage from "./pages/App/Reservations.tsx";
+import UserFleetPage from "./pages/App/Fleet.tsx";
 import UsersPage from "./pages/Admin/Users/index.tsx";
 import UserPage from "./pages/Admin/Users/User.tsx";
 import { createRoot } from "react-dom/client";
@@ -107,6 +108,10 @@ const router = createBrowserRouter([
       {
         path: "reservations",
         element: <UserReservationsPage />,
+      },
+      {
+        path: "browse",
+        element: <UserFleetPage />,
       },
     ],
   },

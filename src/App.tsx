@@ -16,6 +16,7 @@ import ResetPage from "./pages/Auth/Reset";
 import SettingsPage from "./pages/Admin/Settings";
 import SidebarLayout from "./layouts/Sidebar";
 import UserReservationsPage from "./pages/App/Reservations";
+import UserFleetPage from "./pages/App/Fleet";
 import UsersPage from "./pages/Admin/Users";
 import UserPage from "./pages/Admin/Users/User";
 
@@ -55,6 +56,7 @@ const App = () => {
           >
             <Route index element={<AppPage />} />
             <Route path="reservations" element={<UserReservationsPage />} />
+            <Route path="browse" element={<UserFleetPage />} />
           </Route>
 
           <Route
