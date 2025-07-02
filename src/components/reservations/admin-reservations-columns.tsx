@@ -1,19 +1,15 @@
 "use client";
 
-import { format, getLocalizedFormats } from "@/lib/date-locale";
-import { MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react";
-import type { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
 import {
   Select,
   SelectContent,
@@ -21,8 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ReservationWithId, ReservationStatus } from "@/types/reservation";
+import { format, getLocalizedFormats } from "@/lib/date-locale";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { CarWithId } from "@/types/car";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { UserProfileWithId } from "@/lib/users-service";
 
 // Extended reservation type with car and user information
@@ -33,16 +34,25 @@ export interface ReservationWithCarAndUser extends ReservationWithId {
 }
 
 // Helper function to get status variant
-const getStatusVariant = (status: ReservationStatus): "default" | "secondary" | "destructive" | "outline" => {
+const getStatusVariant = (
+  status: ReservationStatus
+):
+  | "default"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "success"
+  | "warning"
+  | "orange" => {
   switch (status) {
     case "pending":
-      return "outline";
+      return "warning";
     case "confirmed":
-      return "default";
+      return "success";
     case "cancelled":
       return "destructive";
     case "cancellation_pending":
-      return "secondary";
+      return "orange";
     default:
       return "outline";
   }
@@ -53,7 +63,10 @@ export function createAdminColumns({
   onStatusChange,
   t,
 }: {
-  onStatusChange: (reservation: ReservationWithCarAndUser, status: ReservationStatus) => void;
+  onStatusChange: (
+    reservation: ReservationWithCarAndUser,
+    status: ReservationStatus
+  ) => void;
   t: (key: string) => string;
 }): ColumnDef<ReservationWithCarAndUser>[] {
   return [
@@ -90,7 +103,9 @@ export function createAdminColumns({
         return (
           <div className="flex flex-col">
             <span className="font-medium">{userInfo.name}</span>
-            <span className="text-sm text-muted-foreground">{userInfo.email}</span>
+            <span className="text-sm text-muted-foreground">
+              {userInfo.email}
+            </span>
           </div>
         );
       },
@@ -106,7 +121,9 @@ export function createAdminColumns({
         return (
           <div className="flex flex-col">
             <span className="font-medium">{carInfo.model}</span>
-            <span className="text-sm text-muted-foreground">{carInfo.licensePlate}</span>
+            <span className="text-sm text-muted-foreground">
+              {carInfo.licensePlate}
+            </span>
           </div>
         );
       },
@@ -137,9 +154,11 @@ export function createAdminColumns({
         return (
           <Select
             value={status}
-            onValueChange={(newStatus) => onStatusChange(reservation, newStatus as ReservationStatus)}
+            onValueChange={(newStatus) =>
+              onStatusChange(reservation, newStatus as ReservationStatus)
+            }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] border-none shadow-none">
               <SelectValue>
                 <Badge variant={getStatusVariant(status)}>
                   {t(`reservations.${status}`)}
@@ -147,10 +166,26 @@ export function createAdminColumns({
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="pending">{t("reservations.pending")}</SelectItem>
-              <SelectItem value="confirmed">{t("reservations.confirmed")}</SelectItem>
-              <SelectItem value="cancelled">{t("reservations.cancelled")}</SelectItem>
-              <SelectItem value="cancellation_pending">{t("reservations.cancellationPending")}</SelectItem>
+              <SelectItem value="pending">
+                <Badge variant={getStatusVariant("pending")}>
+                  {t("reservations.pending")}
+                </Badge>
+              </SelectItem>
+              <SelectItem value="confirmed">
+                <Badge variant={getStatusVariant("confirmed")}>
+                  {t("reservations.confirmed")}
+                </Badge>
+              </SelectItem>
+              <SelectItem value="cancelled">
+                <Badge variant={getStatusVariant("cancelled")}>
+                  {t("reservations.cancelled")}
+                </Badge>
+              </SelectItem>
+              <SelectItem value="cancellation_pending">
+                <Badge variant={getStatusVariant("cancellation_pending")}>
+                  {t("reservations.cancellationPending")}
+                </Badge>
+              </SelectItem>
             </SelectContent>
           </Select>
         );
@@ -223,4 +258,4 @@ export function createAdminColumns({
       enableHiding: false,
     },
   ];
-} 
+}

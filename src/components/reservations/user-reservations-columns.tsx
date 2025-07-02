@@ -25,16 +25,16 @@ export interface ReservationWithCarAndUser extends ReservationWithId {
 }
 
 // Helper function to get status variant
-const getStatusVariant = (status: ReservationStatus): "default" | "secondary" | "destructive" | "outline" => {
+const getStatusVariant = (status: ReservationStatus): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "orange" => {
   switch (status) {
     case "pending":
-      return "outline";
+      return "warning";
     case "confirmed":
-      return "default";
+      return "success";
     case "cancelled":
       return "destructive";
     case "cancellation_pending":
-      return "secondary";
+      return "orange";
     default:
       return "outline";
   }

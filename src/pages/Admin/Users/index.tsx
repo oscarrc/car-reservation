@@ -6,6 +6,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { UsersTable } from "@/components/users/users-table";
 import { UserFormDialog } from "@/components/users/user-form-dialog";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
+import { StatusConfirmationDialog } from "@/components/ui/status-confirmation-dialog";
 import { deleteUser } from "@/lib/user-management-service";
 import { toggleUserSuspension } from "@/lib/users-service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -22,6 +23,9 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<UserProfileWithId | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserProfileWithId | null>(null);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [userToChangeStatus, setUserToChangeStatus] = useState<UserProfileWithId | null>(null);
+  const [statusAction, setStatusAction] = useState<"suspend" | "unsuspend">("suspend");
 
   const handleViewUser = (user: UserProfileWithId) => {
     navigate(`/admin/users/${user.id}`);
@@ -66,6 +70,8 @@ export default function UsersPage() {
       toast.success(t(`users.user${action.charAt(0).toUpperCase() + action.slice(1)}`), {
         description: t(`users.user${action.charAt(0).toUpperCase() + action.slice(1)}Desc`),
       });
+      setStatusDialogOpen(false);
+      setUserToChangeStatus(null);
     },
     onError: (error, { currentStatus }) => {
       console.error("Failed to toggle user suspension:", error);
@@ -82,11 +88,24 @@ export default function UsersPage() {
   };
 
   const handleSuspendUser = (user: UserProfileWithId) => {
-    suspendMutation.mutate({ userId: user.id, currentStatus: user.suspended });
+    setUserToChangeStatus(user);
+    setStatusAction("suspend");
+    setStatusDialogOpen(true);
   };
 
   const handleUnsuspendUser = (user: UserProfileWithId) => {
-    suspendMutation.mutate({ userId: user.id, currentStatus: user.suspended });
+    setUserToChangeStatus(user);
+    setStatusAction("unsuspend");
+    setStatusDialogOpen(true);
+  };
+
+  const confirmStatusChange = () => {
+    if (userToChangeStatus) {
+      suspendMutation.mutate({ 
+        userId: userToChangeStatus.id, 
+        currentStatus: userToChangeStatus.suspended 
+      });
+    }
   };
 
   const confirmDelete = () => {
@@ -147,6 +166,35 @@ export default function UsersPage() {
             : ""
         }
         isLoading={deleteMutation.isPending}
+      />
+
+      {/* Status Change Confirmation Dialog */}
+      <StatusConfirmationDialog
+        open={statusDialogOpen}
+        onOpenChange={setStatusDialogOpen}
+        onConfirm={confirmStatusChange}
+        title={
+          userToChangeStatus && statusAction === "suspend"
+            ? t("users.suspendConfirmation", { name: userToChangeStatus.name })
+            : userToChangeStatus
+            ? t("users.unsuspendConfirmation", { name: userToChangeStatus.name })
+            : ""
+        }
+        description={
+          userToChangeStatus && statusAction === "suspend"
+            ? t("users.suspendConfirmationDesc", {
+                name: userToChangeStatus.name,
+                email: userToChangeStatus.email,
+              })
+            : userToChangeStatus
+            ? t("users.unsuspendConfirmationDesc", {
+                name: userToChangeStatus.name,
+                email: userToChangeStatus.email,
+              })
+            : ""
+        }
+        action={statusAction}
+        isLoading={suspendMutation.isPending}
       />
     </>
   );

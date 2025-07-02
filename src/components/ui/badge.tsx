@@ -19,6 +19,8 @@ const badgeVariants = cva(
           "border-transparent bg-success text-white [a&]:hover:bg-success/90",
         warning:
           "border-transparent bg-warning text-white [a&]:hover:bg-warning/90",
+        orange:
+          "border-transparent bg-orange text-white [a&]:hover:bg-orange/90",
         error:
           "border-transparent bg-error text-white [a&]:hover:bg-error/90",
         outline:

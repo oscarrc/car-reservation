@@ -33,6 +33,10 @@ const reservationsChartConfig = {
     label: "Pending",
     color: "var(--warning)",
   },
+  cancellation_pending: {
+    label: "Cancellation Pending",
+    color: "var(--orange)",
+  },
   cancelled: {
     label: "Cancelled",
     color: "var(--error)",
@@ -155,6 +159,12 @@ export function ReservationsChart({
                 dataKey="pending"
                 stackId="a"
                 fill="var(--color-pending)"
+                radius={[0, 0, 0, 0]}
+              />
+              <Bar
+                dataKey="cancellation_pending"
+                stackId="a"
+                fill="var(--color-cancellation_pending)"
                 radius={[0, 0, 0, 0]}
               />
               <Bar
