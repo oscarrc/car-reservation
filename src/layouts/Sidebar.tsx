@@ -31,28 +31,32 @@ export default function SidebarLayout({ config }: { config: SidebarConfig }) {
   const homePageUrl = userProfile?.role === "admin" ? "/admin" : "/app";
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar config={updatedConfig} variant="inset" />
-      <SidebarInset>
-        <SiteHeader
-          companyName={companyName}
-          homePageUrl={homePageUrl}
-        />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <Outlet />
+    <div className="h-screen overflow-hidden">
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        <AppSidebar config={updatedConfig} variant="inset" />
+        <SidebarInset className="overflow-hidden h-[calc(100vh-1rem)] my-4 mr-4 flex flex-col">
+          {/* Fixed Header at top */}
+          <div className="flex-shrink-0 bg-background border-b">
+            <SiteHeader companyName={companyName} homePageUrl={homePageUrl} />
+          </div>
+          
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="@container/main flex flex-1 flex-col gap-2">
+              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                <Outlet />
+              </div>
             </div>
           </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   );
 }
