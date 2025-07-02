@@ -38,6 +38,7 @@ export interface UpdateUserData {
   email: string;
   phone?: string;
   role: 'admin' | 'teacher';
+  suspended?: boolean;
 }
 
 export async function createUser(userData: CreateUserData): Promise<{ uid: string; requiresReauth: boolean }> {
@@ -91,13 +92,13 @@ export async function updateUser(
 
     const currentProfile = userDoc.data() as UserProfile;
 
-    // Update user profile in Firestore (email and suspended status stay the same)
+    // Update user profile in Firestore (email stays the same)
     const updatedProfile: UserProfile = {
       name: userData.name,
       email: currentProfile.email, // Keep existing email
       phone: userData.phone || '',
       role: userData.role,
-      suspended: currentProfile.suspended ?? false, // Preserve existing suspended status
+      suspended: userData.suspended ?? currentProfile.suspended ?? false, // Use new suspended status or preserve existing
       language: currentProfile.language // Preserve existing language preference
     };
 

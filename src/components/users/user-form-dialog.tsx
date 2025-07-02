@@ -55,6 +55,7 @@ const editUserSchema = z.object({
   email: z.string().min(1, "Email is required").email("Email is invalid"),
   phone: z.string().optional(),
   role: z.enum(["admin", "teacher"]),
+  suspended: z.boolean(),
 });
 
 type CreateUserFormData = z.infer<typeof createUserSchema>;
@@ -253,6 +254,7 @@ function EditUserForm({
       email: user.email,
       phone: user.phone || "",
       role: user.role,
+      suspended: user.suspended || false,
     },
   });
 
@@ -263,6 +265,8 @@ function EditUserForm({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["userReservations", user.id] });
       onOpenChange(false);
       toast.success(t("users.userUpdatedSuccessfully"), {
         description: `${form.getValues(
@@ -338,6 +342,31 @@ function EditUserForm({
                   <SelectContent>
                     <SelectItem value="teacher">Teacher</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="suspended"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("users.status")} *</FormLabel>
+                <Select 
+                  onValueChange={(value) => field.onChange(value === "true")} 
+                  value={field.value ? "true" : "false"}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="false">{t("users.active")}</SelectItem>
+                    <SelectItem value="true">{t("users.suspended")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
