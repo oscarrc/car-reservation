@@ -17,6 +17,7 @@ import SettingsPage from "./pages/Admin/Settings";
 import SidebarLayout from "./layouts/Sidebar";
 import UserReservationsPage from "./pages/App/Reservations";
 import UsersPage from "./pages/Admin/Users";
+import UserPage from "./pages/Admin/Users/User";
 
 const App = () => {
   return (
@@ -40,6 +41,7 @@ const App = () => {
             <Route path="fleet/:carId" element={<CarPage />} />
             <Route path="reservations" element={<ReservationsPage />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="users/:userId" element={<UserPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 

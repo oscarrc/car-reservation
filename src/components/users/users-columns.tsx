@@ -27,6 +27,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 
 interface ColumnsProps {
+  onViewUser?: (user: UserProfileWithId) => void;
   onEditUser: (user: UserProfileWithId) => void;
   onDeleteUser?: (user: UserProfileWithId) => void;
   onSuspendUser?: (user: UserProfileWithId) => void;
@@ -34,6 +35,7 @@ interface ColumnsProps {
 }
 
 export const createColumns = ({
+  onViewUser,
   onEditUser,
   onDeleteUser,
   onSuspendUser,
@@ -155,10 +157,15 @@ export const createColumns = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
-              <DropdownMenuItem className="cursor-pointer">
-                <Eye className="mr-2 h-4 w-4" />
-                {t("users.userDetails")}
-              </DropdownMenuItem>
+              {onViewUser && (
+                <DropdownMenuItem
+                  onClick={() => onViewUser(user)}
+                  className="cursor-pointer"
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  {t("users.userDetails")}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 onClick={() => onEditUser(user)}
                 className="cursor-pointer"

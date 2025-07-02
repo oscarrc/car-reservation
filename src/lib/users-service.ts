@@ -8,7 +8,8 @@ import {
   where,
   QueryConstraint,
   doc,
-  updateDoc
+  updateDoc,
+  getDoc
 } from 'firebase/firestore';
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { db } from './firebase';
@@ -202,6 +203,26 @@ export async function fetchUsersByIds(userIds: string[]): Promise<UserProfileWit
     return batchResults.flat();
   } catch (error) {
     console.error('Error fetching users by IDs:', error);
+    throw error;
+  }
+}
+
+// Function to fetch a single user by ID
+export async function fetchUserById(userId: string): Promise<UserProfileWithId | null> {
+  try {
+    const userDocRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userDocRef);
+    
+    if (!userDoc.exists()) {
+      return null;
+    }
+    
+    return {
+      id: userDoc.id,
+      ...userDoc.data() as UserProfile
+    };
+  } catch (error) {
+    console.error('Error fetching user by ID:', error);
     throw error;
   }
 }

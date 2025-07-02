@@ -23,6 +23,7 @@ import { StrictMode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import UserReservationsPage from "./pages/App/Reservations.tsx";
 import UsersPage from "./pages/Admin/Users/index.tsx";
+import UserPage from "./pages/Admin/Users/User.tsx";
 import { createRoot } from "react-dom/client";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 
@@ -68,6 +69,10 @@ const router = createBrowserRouter([
       {
         path: "users",
         element: <UsersPage />,
+      },
+      {
+        path: "users/:userId",
+        element: <UserPage />,
       },
       {
         path: "fleet",

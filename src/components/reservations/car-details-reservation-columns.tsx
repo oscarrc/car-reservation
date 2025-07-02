@@ -15,7 +15,7 @@ import type { ReservationStatus } from "@/types/reservation";
 import type { ReservationWithCarAndUser } from "@/components/reservations/admin-reservations-columns";
 import { format } from "date-fns";
 
-interface CreateCarReservationColumnsProps {
+interface CreateCarDetailsReservationColumnsProps {
   onStatusChange: (
     reservation: ReservationWithCarAndUser,
     status: ReservationStatus
@@ -23,10 +23,10 @@ interface CreateCarReservationColumnsProps {
   t: (key: string, options?: Record<string, string>) => string;
 }
 
-export function createCarReservationColumns({
+export function createCarDetailsReservationColumns({
   onStatusChange,
   t,
-}: CreateCarReservationColumnsProps): ColumnDef<ReservationWithCarAndUser>[] {
+}: CreateCarDetailsReservationColumnsProps): ColumnDef<ReservationWithCarAndUser>[] {
   const getStatusVariant = (status: ReservationStatus) => {
     switch (status) {
       case "confirmed":

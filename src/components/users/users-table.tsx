@@ -42,6 +42,7 @@ import type { UserProfileWithId } from "@/lib/users-service";
 interface UsersTableProps {
   searchTerm?: string;
   onSearchChange?: (searchTerm: string) => void;
+  onViewUser?: (user: UserProfileWithId) => void;
   onEditUser: (user: UserProfileWithId) => void;
   onDeleteUser?: (user: UserProfileWithId) => void;
   onSuspendUser?: (user: UserProfileWithId) => void;
@@ -51,6 +52,7 @@ interface UsersTableProps {
 export function UsersTable({
   searchTerm = "",
   onSearchChange,
+  onViewUser,
   onEditUser,
   onDeleteUser,
   onSuspendUser,
@@ -111,8 +113,9 @@ export function UsersTable({
   const totalRows = usersData?.users.length || 0;
   const totalPages = Math.ceil(totalRows / pageSize);
 
-  // Create columns with edit callback
+  // Create columns with callbacks
   const columns = createColumns({ 
+    onViewUser,
     onEditUser, 
     onDeleteUser, 
     onSuspendUser, 

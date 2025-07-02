@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
 import { CarFormDialog } from "@/components/cars/car-form-dialog";
-import { createCarReservationColumns } from "@/components/reservations/car-reservation-columns";
+import { createCarDetailsReservationColumns } from "@/components/reservations/car-details-reservation-columns";
 import type { ReservationWithCarAndUser } from "@/components/reservations/admin-reservations-columns";
 
 import { fetchCarById } from "@/lib/cars-service";
@@ -139,7 +139,7 @@ export default function CarPage() {
     }
   };
 
-  const columns = createCarReservationColumns({
+  const columns = createCarDetailsReservationColumns({
     onStatusChange: handleStatusChange,
     t,
   });

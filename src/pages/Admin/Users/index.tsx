@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { SectionHeader } from "@/components/ui/section-header";
 import { UsersTable } from "@/components/users/users-table";
 import { UserFormDialog } from "@/components/users/user-form-dialog";
@@ -13,6 +14,7 @@ import type { UserProfileWithId } from "@/lib/users-service";
 
 export default function UsersPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -20,6 +22,10 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<UserProfileWithId | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserProfileWithId | null>(null);
+
+  const handleViewUser = (user: UserProfileWithId) => {
+    navigate(`/admin/users/${user.id}`);
+  };
 
   const handleEditUser = (user: UserProfileWithId) => {
     setSelectedUser(user);
@@ -103,6 +109,7 @@ export default function UsersPage() {
         <UsersTable 
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
+          onViewUser={handleViewUser}
           onEditUser={handleEditUser}
           onDeleteUser={handleDeleteUser}
           onSuspendUser={handleSuspendUser}
