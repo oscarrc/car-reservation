@@ -275,6 +275,12 @@
     "noColorFound": "No color found.",
     "otherInformation": "Other information",
     "descriptionPlaceholder": "Enter additional details about the vehicle (optional)",
+    "carDetails": "Car Details",
+    "carDetailsSubtitle": "View detailed information about this vehicle and its reservations",
+    "carInformation": "Car Information",
+    "carReservations": "Car Reservations",
+    "errorLoadingCarDetails": "Error loading car details",
+    "carNotFound": "Car not found",
     "colors": {
       "red": "Red",
       "blue": "Blue",
@@ -377,7 +383,8 @@
     "cancellationRequestedDesc": "Your cancellation request for {{car}} has been submitted for admin approval",
     "failedToCancel": "Failed to cancel reservation",
     "cancellationTooLate": "Cancellation not allowed",
-    "cancellationTooLateDesc": "Reservations can only be cancelled at least {{hours}} hours in advance"
+    "cancellationTooLateDesc": "Reservations can only be cancelled at least {{hours}} hours in advance",
+    "userNotFound": "User not found"
   },
   "users": {
     "management": "User Management",

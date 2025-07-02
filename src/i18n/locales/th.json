@@ -235,6 +235,12 @@
     "noColorFound": "ไม่พบสี",
     "otherInformation": "ข้อมูลอื่นๆ",
     "descriptionPlaceholder": "กรอกรายละเอียดเพิ่มเติมเกี่ยวกับรถยนต์ (ไม่จำเป็น)",
+    "carDetails": "รายละเอียดรถยนต์",
+    "carDetailsSubtitle": "ดูข้อมูลรายละเอียดของรถยนต์คันนี้และการจองทั้งหมด",
+    "carInformation": "ข้อมูลรถยนต์",
+    "carReservations": "การจองรถยนต์",
+    "errorLoadingCarDetails": "เกิดข้อผิดพลาดในการโหลดรายละเอียดรถยนต์",
+    "carNotFound": "ไม่พบรถยนต์",
     "colors": {
       "red": "แดง",
       "blue": "น้ำเงิน",
@@ -337,7 +343,8 @@
     "cancellationRequestedDesc": "คำขอยกเลิกการจอง {{car}} ของคุณได้ถูกส่งให้ผู้ดูแลระบบพิจารณาแล้ว",
     "failedToCancel": "ไม่สามารถยกเลิกการจองได้",
     "cancellationTooLate": "ไม่สามารถยกเลิกได้",
-    "cancellationTooLateDesc": "การจองสามารถยกเลิกได้เฉพาะล่วงหน้าอย่างน้อย {{hours}} ชั่วโมงเท่านั้น"
+    "cancellationTooLateDesc": "การจองสามารถยกเลิกได้เฉพาะล่วงหน้าอย่างน้อย {{hours}} ชั่วโมงเท่านั้น",
+    "userNotFound": "ไม่พบผู้ใช้"
   },
   "users": {
     "management": "จัดการผู้ใช้",

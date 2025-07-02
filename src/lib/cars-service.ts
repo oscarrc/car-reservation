@@ -6,6 +6,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   limit,
   orderBy,
@@ -203,6 +204,26 @@ export async function updateCarStatus(carId: string, status: CarStatus): Promise
 }
 
 // New function to fetch multiple cars by their IDs
+// Fetch a single car by ID
+export async function fetchCarById(carId: string): Promise<CarWithId | null> {
+  try {
+    const carDoc = doc(db, 'cars', carId);
+    const docSnap = await getDoc(carDoc);
+    
+    if (docSnap.exists()) {
+      return {
+        id: docSnap.id,
+        ...docSnap.data() as Car
+      };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching car by ID:', error);
+    throw error;
+  }
+}
+
 export async function fetchCarsByIds(carIds: string[]): Promise<CarWithId[]> {
   try {
     if (carIds.length === 0) {

@@ -4,6 +4,7 @@ import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config";
 import AdminPage from "./pages/Admin";
 import AppPage from "./pages/App";
 import { AuthProvider } from "./contexts/AuthContext";
+import CarPage from "./pages/Admin/Fleet/Car";
 import FleetPage from "./pages/Admin/Fleet";
 import ForgotPage from "./pages/Auth/Forgot";
 import LoginPage from "./pages/Auth/Login";
@@ -36,6 +37,7 @@ const App = () => {
           >
             <Route index element={<AdminPage />} />
             <Route path="fleet" element={<FleetPage />} />
+            <Route path="fleet/:carId" element={<CarPage />} />
             <Route path="reservations" element={<ReservationsPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="settings" element={<SettingsPage />} />

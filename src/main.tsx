@@ -8,6 +8,7 @@ import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config.ts";
 import AdminPage from "./pages/Admin/index.tsx";
 import AppPage from "./pages/App/index.tsx";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
+import CarPage from "./pages/Admin/Fleet/Car.tsx";
 import FleetPage from "./pages/Admin/Fleet/index.tsx";
 import Forgot from "./pages/Auth/Forgot.tsx";
 import Login from "./pages/Auth/Login.tsx";
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
       {
         path: "fleet",
         element: <FleetPage />,
+      },
+      {
+        path: "fleet/:carId",
+        element: <CarPage />,
       },
       {
         path: "reservations",

@@ -30,6 +30,7 @@ export interface ReservationsQueryParams {
   startDate?: Date;
   endDate?: Date;
   userId?: string;
+  carId?: string;
 }
 
 export async function fetchReservations({
@@ -38,7 +39,8 @@ export async function fetchReservations({
   statusFilter = 'all',
   startDate,
   endDate,
-  userId
+  userId,
+  carId
 }: ReservationsQueryParams): Promise<ReservationsResponse> {
   try {
     const reservationsCollection = collection(db, 'reservations');
@@ -47,6 +49,11 @@ export async function fetchReservations({
     // Add user filter if specified (for user-specific reservations)
     if (userId) {
       constraints.push(where('userId', '==', userId));
+    }
+
+    // Add car filter if specified (for car-specific reservations)
+    if (carId) {
+      constraints.push(where('carRef', '==', doc(db, 'cars', carId)));
     }
 
     // Add status filter if specified
