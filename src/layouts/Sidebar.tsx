@@ -1,22 +1,16 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { useTranslation } from "react-i18next";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import type { SidebarConfig } from "@/lib/sidebar-config";
 import { SiteHeader } from "@/components/site-header";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 export default function SidebarLayout({ config }: { config: SidebarConfig }) {
   const location = useLocation();
   const { userProfile } = useAuth();
   const { t } = useTranslation();
-
-  const getCurrentPageTitle = () => {
-    const currentPath = location.pathname;
-    const currentItem = config.items.find((item) => item.url === currentPath);
-    return currentItem ? t(currentItem.title) : t("navigation.dashboard");
-  };
 
   const updatedConfig = {
     ...config,
@@ -33,8 +27,8 @@ export default function SidebarLayout({ config }: { config: SidebarConfig }) {
       : config.user,
   };
 
-  const currentPageTitle = getCurrentPageTitle();
   const companyName = t(config.company.name);
+  const homePageUrl = userProfile?.role === "admin" ? "/admin" : "/app";
 
   return (
     <SidebarProvider
@@ -46,19 +40,19 @@ export default function SidebarLayout({ config }: { config: SidebarConfig }) {
       }
     >
       <AppSidebar config={updatedConfig} variant="inset" />
-          <SidebarInset>
-        <SiteHeader 
-          companyName={companyName} 
-          currentPageTitle={currentPageTitle} 
+      <SidebarInset>
+        <SiteHeader
+          companyName={companyName}
+          homePageUrl={homePageUrl}
         />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-            <Outlet />
+              <Outlet />
             </div>
           </div>
         </div>
       </SidebarInset>
-      </SidebarProvider>
+    </SidebarProvider>
   );
 }
