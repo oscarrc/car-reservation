@@ -6,6 +6,7 @@ export interface Car {
   status: CarStatus;
   seats: number;
   color: string;
+  description?: string;
 }
 
 export interface CarWithId extends Car {

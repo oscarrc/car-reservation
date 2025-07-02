@@ -97,13 +97,14 @@ export function createColumns({
       header: t("fleet.color"),
       cell: ({ row }) => {
         const color = row.getValue("color") as string;
+        const translatedColor = t(`fleet.colors.${color}`, { defaultValue: color });
         return (
           <div className="flex items-center gap-2">
             <div
               className="w-4 h-4 rounded-full border border-gray-300"
               style={{ backgroundColor: color.toLowerCase() }}
             />
-            <span className="capitalize">{color}</span>
+            <span>{translatedColor}</span>
           </div>
         );
       },

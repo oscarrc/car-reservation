@@ -30,11 +30,27 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Loader2, Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 const carSchema = z.object({
   licensePlate: z.string().min(1, "License plate is required"),
@@ -45,6 +61,7 @@ const carSchema = z.object({
     .min(1, "Seats must be between 1 and 20")
     .max(20, "Seats must be between 1 and 20"),
   status: z.enum(["available", "maintenance", "out_of_service"]),
+  description: z.string().optional(),
 });
 
 type CarFormData = z.infer<typeof carSchema>;
@@ -54,6 +71,96 @@ interface CarFormDialogProps {
   onOpenChange: (open: boolean) => void;
   mode: "create" | "edit";
   car?: CarWithId;
+}
+
+// Color list data - this should match the colors in the translations
+const colorKeys = [
+  "red", "blue", "green", "yellow", "orange", "purple", "pink", "brown",
+  "black", "white", "gray", "grey", "silver", "gold", "beige", "navy",
+  "maroon", "olive", "lime", "aqua", "teal", "fuchsia", "crimson", "indigo",
+  "violet", "turquoise", "coral", "salmon", "khaki", "tan", "chocolate",
+  "peru", "sienna", "darkred", "darkblue", "darkgreen", "darkgray",
+  "lightgray", "lightblue", "lightgreen", "lightyellow", "lightpink",
+  "lightcoral", "steelblue", "royalblue", "skyblue", "forestgreen",
+  "seagreen", "springgreen"
+];
+
+function ColorCombobox({ 
+  value, 
+  onValueChange, 
+  placeholder 
+}: { 
+  value: string; 
+  onValueChange: (value: string) => void; 
+  placeholder: string;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+
+  const colors = colorKeys.map(key => ({
+    value: key,
+    label: t(`fleet.colors.${key}`)
+  }));
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between"
+        >
+          {value ? (
+            <div className="flex items-center gap-2">
+              <div
+                className="w-4 h-4 rounded-full border border-gray-300"
+                style={{ backgroundColor: value.toLowerCase() }}
+              />
+              <span>{colors.find((color) => color.value === value)?.label}</span>
+            </div>
+          ) : (
+            placeholder
+          )}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder={t("fleet.searchColor")} className="h-9" />
+          <CommandList>
+            <CommandEmpty>{t("fleet.noColorFound")}</CommandEmpty>
+            <CommandGroup>
+              {colors.map((color) => (
+                <CommandItem
+                  key={color.value}
+                  value={color.value}
+                  onSelect={(currentValue) => {
+                    onValueChange(currentValue === value ? "" : currentValue);
+                    setOpen(false);
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-4 h-4 rounded-full border border-gray-300"
+                      style={{ backgroundColor: color.value.toLowerCase() }}
+                    />
+                    <span>{color.label}</span>
+                  </div>
+                  <Check
+                    className={cn(
+                      "ml-auto h-4 w-4",
+                      value === color.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 function CreateCarForm({
@@ -72,6 +179,7 @@ function CreateCarForm({
       color: "",
       seats: 4,
       status: "available",
+      description: "",
     },
   });
 
@@ -103,6 +211,7 @@ function CreateCarForm({
       licensePlate: data.licensePlate.trim().toUpperCase(),
       model: data.model.trim(),
       color: data.color.trim(),
+      description: data.description?.trim() || undefined,
     };
     createMutation.mutate(carData);
   };
@@ -150,7 +259,11 @@ function CreateCarForm({
               <FormItem>
                 <FormLabel>{t("fleet.color")}</FormLabel>
                 <FormControl>
-                  <Input placeholder={t("fleet.colorPlaceholder")} {...field} />
+                  <ColorCombobox
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    placeholder={t("fleet.selectColor")}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -203,6 +316,25 @@ function CreateCarForm({
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("fleet.otherInformation")}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder={t("fleet.descriptionPlaceholder")}
+                    className="resize-none"
+                    rows={3}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <DialogFooter>
@@ -243,6 +375,7 @@ function EditCarForm({
       color: car.color,
       seats: car.seats,
       status: car.status,
+      description: car.description || "",
     },
   });
 
@@ -274,6 +407,7 @@ function EditCarForm({
       licensePlate: data.licensePlate.trim().toUpperCase(),
       model: data.model.trim(),
       color: data.color.trim(),
+      description: data.description?.trim() || undefined,
     };
     updateMutation.mutate(carData);
   };
@@ -321,7 +455,11 @@ function EditCarForm({
               <FormItem>
                 <FormLabel>{t("fleet.color")}</FormLabel>
                 <FormControl>
-                  <Input placeholder={t("fleet.colorPlaceholder")} {...field} />
+                  <ColorCombobox
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    placeholder={t("fleet.selectColor")}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -370,6 +508,25 @@ function EditCarForm({
                     </SelectItem>
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("fleet.otherInformation")}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder={t("fleet.descriptionPlaceholder")}
+                    className="resize-none"
+                    rows={3}
+                    {...field}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
