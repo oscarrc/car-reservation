@@ -175,7 +175,7 @@ export const createColumns = ({
                     ? onUnsuspendUser && (
                         <DropdownMenuItem
                           onClick={() => onUnsuspendUser(user)}
-                          className="cursor-pointer text-green-600"
+                          className="cursor-pointer"
                         >
                           <UserCheck className="mr-2 h-4 w-4" />
                           {t("users.unsuspendUser")}
