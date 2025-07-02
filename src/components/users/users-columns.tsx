@@ -1,6 +1,14 @@
 "use client";
 
-import { ArrowUpDown, Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import {
+  ArrowUpDown,
+  Edit,
+  Eye,
+  MoreHorizontal,
+  Trash2,
+  UserCheck,
+  UserX,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,25 +17,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { UserProfileWithId } from "@/lib/users-service";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 interface ColumnsProps {
   onEditUser: (user: UserProfileWithId) => void;
   onDeleteUser?: (user: UserProfileWithId) => void;
+  onSuspendUser?: (user: UserProfileWithId) => void;
+  onUnsuspendUser?: (user: UserProfileWithId) => void;
 }
 
 export const createColumns = ({
   onEditUser,
   onDeleteUser,
+  onSuspendUser,
+  onUnsuspendUser,
 }: ColumnsProps): ColumnDef<UserProfileWithId>[] => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { t } = useTranslation();
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { authUser } = useAuth();
 
   return [
     {
@@ -110,12 +125,25 @@ export const createColumns = ({
         );
       },
     },
+    {
+      accessorKey: "suspended",
+      header: t("users.status"),
+      cell: ({ row }) => {
+        const suspended = row.getValue("suspended") as boolean;
+        return (
+          <Badge variant={suspended ? "destructive" : "success"}>
+            {suspended ? t("users.suspended") : t("users.active")}
+          </Badge>
+        );
+      },
+    },
 
     {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
         const user = row.original;
+        const isCurrentUser = authUser?.uid === user.id;
 
         return (
           <DropdownMenu>
@@ -138,9 +166,36 @@ export const createColumns = ({
                 <Edit className="mr-2 h-4 w-4" />
                 {t("users.editUser")}
               </DropdownMenuItem>
-              {onDeleteUser && (
+
+              {/* Suspend/Unsuspend actions - only if not current user */}
+              {!isCurrentUser && (
                 <>
                   <DropdownMenuSeparator />
+                  {user.suspended
+                    ? onUnsuspendUser && (
+                        <DropdownMenuItem
+                          onClick={() => onUnsuspendUser(user)}
+                          className="cursor-pointer text-green-600"
+                        >
+                          <UserCheck className="mr-2 h-4 w-4" />
+                          {t("users.unsuspendUser")}
+                        </DropdownMenuItem>
+                      )
+                    : onSuspendUser && (
+                        <DropdownMenuItem
+                          onClick={() => onSuspendUser(user)}
+                          className="cursor-pointer text-orange-600"
+                        >
+                          <UserX className="mr-2 h-4 w-4" />
+                          {t("users.suspendUser")}
+                        </DropdownMenuItem>
+                      )}
+                </>
+              )}
+
+              {/* Delete action - only if not current user */}
+              {!isCurrentUser && onDeleteUser && (
+                <>
                   <DropdownMenuItem
                     onClick={() => onDeleteUser(user)}
                     className="cursor-pointer text-red-600"

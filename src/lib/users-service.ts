@@ -6,7 +6,9 @@ import {
   startAfter, 
   getDocs, 
   where,
-  QueryConstraint
+  QueryConstraint,
+  doc,
+  updateDoc
 } from 'firebase/firestore';
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { db } from './firebase';
@@ -200,6 +202,45 @@ export async function fetchUsersByIds(userIds: string[]): Promise<UserProfileWit
     return batchResults.flat();
   } catch (error) {
     console.error('Error fetching users by IDs:', error);
+    throw error;
+  }
+}
+
+// Function to suspend a user account
+export async function suspendUser(userId: string): Promise<void> {
+  try {
+    const userDocRef = doc(db, 'users', userId);
+    await updateDoc(userDocRef, {
+      suspended: true
+    });
+  } catch (error) {
+    console.error('Error suspending user:', error);
+    throw error;
+  }
+}
+
+// Function to unsuspend a user account
+export async function unsuspendUser(userId: string): Promise<void> {
+  try {
+    const userDocRef = doc(db, 'users', userId);
+    await updateDoc(userDocRef, {
+      suspended: false
+    });
+  } catch (error) {
+    console.error('Error unsuspending user:', error);
+    throw error;
+  }
+}
+
+// Function to toggle user suspension status
+export async function toggleUserSuspension(userId: string, currentStatus: boolean): Promise<void> {
+  try {
+    const userDocRef = doc(db, 'users', userId);
+    await updateDoc(userDocRef, {
+      suspended: !currentStatus
+    });
+  } catch (error) {
+    console.error('Error toggling user suspension:', error);
     throw error;
   }
 } 

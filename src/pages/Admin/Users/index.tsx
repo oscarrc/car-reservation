@@ -6,6 +6,7 @@ import { UsersTable } from "@/components/users/users-table";
 import { UserFormDialog } from "@/components/users/user-form-dialog";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { deleteUser } from "@/lib/user-management-service";
+import { toggleUserSuspension } from "@/lib/users-service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { UserProfileWithId } from "@/lib/users-service";
@@ -49,9 +50,37 @@ export default function UsersPage() {
     },
   });
 
+  const suspendMutation = useMutation({
+    mutationFn: async ({ userId, currentStatus }: { userId: string; currentStatus: boolean }) => {
+      return await toggleUserSuspension(userId, currentStatus);
+    },
+    onSuccess: (_, { currentStatus }) => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      const action = currentStatus ? "unsuspended" : "suspended";
+      toast.success(t(`users.user${action.charAt(0).toUpperCase() + action.slice(1)}`), {
+        description: t(`users.user${action.charAt(0).toUpperCase() + action.slice(1)}Desc`),
+      });
+    },
+    onError: (error, { currentStatus }) => {
+      console.error("Failed to toggle user suspension:", error);
+      const action = currentStatus ? "unsuspend" : "suspend";
+      toast.error(t(`users.failedTo${action.charAt(0).toUpperCase() + action.slice(1)}User`), {
+        description: error.message || t("common.retry"),
+      });
+    },
+  });
+
   const handleDeleteUser = (user: UserProfileWithId) => {
     setUserToDelete(user);
     setDeleteDialogOpen(true);
+  };
+
+  const handleSuspendUser = (user: UserProfileWithId) => {
+    suspendMutation.mutate({ userId: user.id, currentStatus: user.suspended });
+  };
+
+  const handleUnsuspendUser = (user: UserProfileWithId) => {
+    suspendMutation.mutate({ userId: user.id, currentStatus: user.suspended });
   };
 
   const confirmDelete = () => {
@@ -76,6 +105,8 @@ export default function UsersPage() {
           onSearchChange={setSearchTerm}
           onEditUser={handleEditUser}
           onDeleteUser={handleDeleteUser}
+          onSuspendUser={handleSuspendUser}
+          onUnsuspendUser={handleUnsuspendUser}
         />
       </div>
 

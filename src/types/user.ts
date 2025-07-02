@@ -4,6 +4,7 @@ export interface UserProfile {
   phone: string;
   role: 'admin' | 'teacher';
   language?: 'en' | 'th';
+  suspended: boolean;
 }
 
 export interface AuthUser {

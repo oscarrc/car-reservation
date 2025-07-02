@@ -44,6 +44,8 @@ interface UsersTableProps {
   onSearchChange?: (searchTerm: string) => void;
   onEditUser: (user: UserProfileWithId) => void;
   onDeleteUser?: (user: UserProfileWithId) => void;
+  onSuspendUser?: (user: UserProfileWithId) => void;
+  onUnsuspendUser?: (user: UserProfileWithId) => void;
 }
 
 export function UsersTable({
@@ -51,6 +53,8 @@ export function UsersTable({
   onSearchChange,
   onEditUser,
   onDeleteUser,
+  onSuspendUser,
+  onUnsuspendUser,
 }: UsersTableProps) {
   const { t } = useTranslation();
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -108,7 +112,12 @@ export function UsersTable({
   const totalPages = Math.ceil(totalRows / pageSize);
 
   // Create columns with edit callback
-  const columns = createColumns({ onEditUser, onDeleteUser });
+  const columns = createColumns({ 
+    onEditUser, 
+    onDeleteUser, 
+    onSuspendUser, 
+    onUnsuspendUser 
+  });
 
   const table = useReactTable({
     data,
@@ -160,6 +169,7 @@ export function UsersTable({
       email: t("users.email"),
       phone: t("users.phone"),
       role: t("users.role"),
+      suspended: t("users.status"),
       actions: t("common.actions"),
     };
     return columnMap[columnId] || columnId;

@@ -56,7 +56,8 @@ export async function createUser(userData: CreateUserData): Promise<{ uid: strin
       name: userData.name,
       email: userData.email,
       phone: userData.phone || '',
-      role: userData.role
+      role: userData.role,
+      suspended: false // New users are not suspended by default
     };
 
     await setDoc(doc(db, 'users', newUser.uid), userProfile);
@@ -90,12 +91,14 @@ export async function updateUser(
 
     const currentProfile = userDoc.data() as UserProfile;
 
-    // Update user profile in Firestore (email stays the same)
+    // Update user profile in Firestore (email and suspended status stay the same)
     const updatedProfile: UserProfile = {
       name: userData.name,
       email: currentProfile.email, // Keep existing email
       phone: userData.phone || '',
-      role: userData.role
+      role: userData.role,
+      suspended: currentProfile.suspended ?? false, // Preserve existing suspended status
+      language: currentProfile.language // Preserve existing language preference
     };
 
     await updateDoc(userDocRef, updatedProfile as Partial<UserProfile>);
