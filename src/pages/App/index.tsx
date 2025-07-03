@@ -189,60 +189,76 @@ export default function AppPage() {
                 {upcomingReservationsWithCarData.map((reservation) => (
                   <div
                     key={reservation.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg gap-3 sm:gap-4"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="flex flex-col items-center justify-center w-16 h-16 bg-primary/10 rounded-lg">
-                        <div className="text-sm font-semibold text-primary">
+                    {/* Mobile: Full width layout, Desktop: Left side content */}
+                    <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1">
+                      {/* Date block - smaller on mobile */}
+                      <div className="flex flex-col items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-lg flex-shrink-0">
+                        <div className="text-xs sm:text-sm font-semibold text-primary">
                           {format(new Date(reservation.startDateTime), "MMM")}
                         </div>
-                        <div className="text-lg font-bold text-primary">
+                        <div className="text-sm sm:text-lg font-bold text-primary">
                           {format(new Date(reservation.startDateTime), "dd")}
                         </div>
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Car className="h-4 w-4" />
+
+                      {/* Content area - stacks on mobile */}
+                      <div className="flex-1 min-w-0">
+                        {/* Car info */}
+                        <div className="flex items-center gap-2 mb-2 sm:mb-1">
+                          <Car className="h-4 w-4 flex-shrink-0" />
                           {reservation.carInfo && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
                               {getColorCircle(reservation.carInfo.color)}
-                              <span className="font-medium">
+                              <span className="font-medium text-sm sm:text-base truncate">
                                 {reservation.carInfo.model}
                               </span>
-                              <span className="text-muted-foreground text-sm">
+                              <span className="text-muted-foreground text-xs sm:text-sm hidden xs:inline">
                                 ({reservation.carInfo.licensePlate})
                               </span>
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+
+                        {/* Time info - stacked on mobile */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 text-xs sm:text-sm text-muted-foreground gap-1 sm:gap-0">
                           <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            <span>
+                            <Clock className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">
                               {format(
                                 new Date(reservation.startDateTime),
                                 getLocalizedFormats().dateTime
                               )}
                             </span>
                           </div>
-                          <span>→</span>
-                          <span>
+                          <span className="hidden sm:inline">→</span>
+                          <span className="text-xs sm:text-sm pl-4 sm:pl-0">
                             {format(
                               new Date(reservation.endDateTime),
                               getLocalizedFormats().dateTime
                             )}
                           </span>
                         </div>
+
+                        {/* Driver info */}
                         {reservation.driver && (
-                          <div className="text-sm text-muted-foreground mt-1">
+                          <div className="text-xs sm:text-sm text-muted-foreground mt-1 truncate">
                             {t("reservations.driver")}: {reservation.driver}
                           </div>
                         )}
                       </div>
                     </div>
-                    <Badge variant={getStatusBadgeVariant(reservation.status)}>
-                      {t(`reservations.${reservation.status}`)}
-                    </Badge>
+
+                    {/* Badge - full width on mobile, right side on desktop */}
+                    <div className="flex sm:block">
+                      <Badge
+                        variant={getStatusBadgeVariant(reservation.status)}
+                        className="w-full sm:w-auto justify-center sm:justify-start text-xs sm:text-sm"
+                      >
+                        {t(`reservations.${reservation.status}`)}
+                      </Badge>
+                    </div>
                   </div>
                 ))}
               </div>

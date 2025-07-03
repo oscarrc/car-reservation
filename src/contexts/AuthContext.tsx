@@ -7,12 +7,12 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { LoadingScreen } from "@/components/ui/loading-screen";
-import { saveLanguageToStorage } from "@/i18n";
-import i18n from "@/i18n";
-import { toast } from "sonner";
 
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import type { User } from "firebase/auth";
+import i18n from "@/i18n";
+import { saveLanguageToStorage } from "@/i18n";
+import { toast } from "sonner";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -60,23 +60,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password
     );
-    
+
     // Check if user profile exists and is not suspended
     const profile = await fetchUserProfile(userCredential.user.uid);
-    
+
     if (!profile) {
       await signOut(auth);
       toast.error(i18n.t("auth.profileNotFound"));
       throw new Error("Profile not found");
     }
-    
+
     if (profile.suspended) {
       await signOut(auth);
       toast.error(i18n.t("auth.accountSuspended"));
       throw new Error("Account suspended");
     }
-    
-    console.log("Login successful:", userCredential);
   }
 
   function logout() {
@@ -105,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (user) {
         // Fetch user profile from Firestore
         const profile = await fetchUserProfile(user.uid);
-        
+
         if (!profile) {
           setUserProfile(null);
           setAuthUser(null);
@@ -114,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           toast.error(i18n.t("auth.profileNotFound"));
           return;
         }
-        
+
         if (profile.suspended) {
           setUserProfile(null);
           setAuthUser(null);
@@ -123,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           toast.error(i18n.t("auth.accountSuspended"));
           return;
         }
-        
+
         setUserProfile(profile);
 
         setAuthUser({

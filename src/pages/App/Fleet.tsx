@@ -195,19 +195,6 @@ export default function FleetPage() {
                           </span>
                         </div>
                       </div>
-
-                      {/* Status */}
-                      <div className="flex flex-col space-y-1">
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {t("browse.carCard.status")}
-                        </span>
-                        <Badge
-                          variant={getStatusVariant(car.status)}
-                          className="w-fit"
-                        >
-                          {t(`fleet.${car.status}`)}
-                        </Badge>
-                      </div>
                     </div>
 
                     {/* Description */}

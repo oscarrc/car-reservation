@@ -107,24 +107,11 @@ export function ReservationFormDialog({
   });
 
   // Fetch available cars
-  const {
-    data: availableCars = [],
-    isLoading: carsLoading,
-    error: carsError,
-  } = useQuery({
+  const { data: availableCars = [], isLoading: carsLoading } = useQuery({
     queryKey: ["availableCars"],
     queryFn: fetchAvailableCars,
     enabled: open,
   });
-
-  // Log cars for debugging
-  React.useEffect(() => {
-    if (open) {
-      console.log("Available cars:", availableCars);
-      console.log("Cars loading:", carsLoading);
-      console.log("Cars error:", carsError);
-    }
-  }, [availableCars, carsLoading, carsError, open]);
 
   // Create reservation mutation
   const createMutation = useMutation({

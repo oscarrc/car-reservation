@@ -37,7 +37,8 @@ export default function UserReservationsPage() {
   );
   const [reservationDialogOpen, setReservationDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [reservationToCancel, setReservationToCancel] = useState<ReservationWithCarAndUser | null>(null);
+  const [reservationToCancel, setReservationToCancel] =
+    useState<ReservationWithCarAndUser | null>(null);
   const queryClient = useQueryClient();
 
   const queryParams: ReservationsQueryParams = {
