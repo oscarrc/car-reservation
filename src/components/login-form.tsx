@@ -7,13 +7,13 @@ import {
 } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 export function LoginForm({
   className,
@@ -54,8 +54,8 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-            <CardTitle className="text-xl">{t("auth.welcome")}</CardTitle>
-            <CardDescription>{t("auth.loginSubtitle")}</CardDescription>
+          <CardTitle className="text-xl">{t("auth.welcome")}</CardTitle>
+          <CardDescription>{t("auth.loginSubtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
@@ -67,7 +67,7 @@ export function LoginForm({
               )}
               <div className="grid gap-6">
                 <div className="grid gap-3">
-                  <Label htmlFor="email">{t("auth.email")}</Label>
+                  <Label htmlFor="email">{t("common.email")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -102,6 +102,14 @@ export function LoginForm({
                 >
                   {loading ? t("auth.loggingIn") : t("auth.login")}
                 </Button>
+                <p className="text-sm text-muted-foreground text-center">
+                  <Link
+                    to="/activate"
+                    className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
+                  >
+                    {t("auth.firstTime")}
+                  </Link>
+                </p>
               </div>
             </div>
           </form>

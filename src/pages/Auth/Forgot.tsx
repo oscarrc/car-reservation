@@ -75,9 +75,7 @@ const Forgot = () => {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-xl">{t("auth.resetPassword")}</CardTitle>
-            <CardDescription>
-              {t("auth.resetSubtitle")}
-            </CardDescription>
+            <CardDescription>{t("auth.resetSubtitle")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit}>
@@ -93,7 +91,7 @@ const Forgot = () => {
                   </div>
                 )}
                 <div className="grid gap-3">
-                  <Label htmlFor="email">{t("auth.email")}</Label>
+                  <Label htmlFor="email">{t("common.email")}</Label>
                   <Input
                     id="email"
                     type="email"

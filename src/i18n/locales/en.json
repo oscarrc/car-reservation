@@ -71,7 +71,6 @@
     "resetting": "Resetting...",
     "continueToLogin": "Continue to Login",
     "checkEmail": "Check your email for password reset instructions!",
-    "noAccount": "No account found with this email address.",
     "invalidEmail": "Invalid email address.",
     "failedToSend": "Failed to send reset email. Please try again.",
     "resetCodeExpired": "Reset code has expired. Please request a new one.",
@@ -124,7 +123,8 @@
     "resetLinkSent": "Password reset link sent to your email",
     "logoutSuccess": "You have been logged out successfully",
     "profileNotFound": "User profile not found. Please contact an administrator.",
-    "accountSuspended": "Your account has been suspended. Please contact an administrator."
+    "accountSuspended": "Your account has been suspended. Please contact an administrator.",
+    "firstTime": "First time here? Activate your account"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -254,7 +254,6 @@
     "model": "Model",
     "color": "Color",
     "seats": "Seats",
-    "carDetails": "Car details",
     "editCar": "Edit Car",
     "searchPlaceholder": "Search by model or license plate...",
     "noCarsFound": "No cars found.",
