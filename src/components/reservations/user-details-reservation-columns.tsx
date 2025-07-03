@@ -21,11 +21,13 @@ interface CreateUserDetailsReservationColumnsProps {
     reservation: ReservationWithCarAndUser,
     status: ReservationStatus
   ) => void;
+  isUpdatingStatus?: boolean;
   t: (key: string) => string;
 }
 
 export function createUserDetailsReservationColumns({
   onStatusChange,
+  isUpdatingStatus,
   t,
 }: CreateUserDetailsReservationColumnsProps): ColumnDef<ReservationWithCarAndUser>[] {
   return [
@@ -115,6 +117,7 @@ export function createUserDetailsReservationColumns({
               onStatusChange(reservation, newStatus as ReservationStatus)
             }
             t={t}
+            disabled={isUpdatingStatus}
           />
         );
       },

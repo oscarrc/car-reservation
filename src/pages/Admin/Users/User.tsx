@@ -137,6 +137,7 @@ export default function UserPage() {
   const columns = createUserDetailsReservationColumns({
     t,
     onStatusChange: handleStatusChange,
+    isUpdatingStatus: statusMutation.isPending,
   });
 
   const isLoading = userLoading || reservationsLoading || carsLoading;

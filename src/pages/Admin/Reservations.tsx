@@ -132,6 +132,7 @@ export default function AdminReservationsPage() {
   };
 
   const columns = createAdminColumns({
+    isUpdatingStatus: statusMutation.isPending,
     onStatusChange: handleStatusChange,
     t,
   });

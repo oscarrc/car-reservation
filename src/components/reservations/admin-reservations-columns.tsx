@@ -29,12 +29,14 @@ export interface ReservationWithCarAndUser extends ReservationWithId {
 // Admin columns for admin reservations page
 export function createAdminColumns({
   onStatusChange,
+  isUpdatingStatus,
   t,
 }: {
   onStatusChange: (
     reservation: ReservationWithCarAndUser,
     status: ReservationStatus
   ) => void;
+  isUpdatingStatus?: boolean;
   t: (key: string) => string;
 }): ColumnDef<ReservationWithCarAndUser>[] {
   return [
@@ -126,6 +128,7 @@ export function createAdminColumns({
               onStatusChange(reservation, newStatus as ReservationStatus)
             }
             t={t}
+            disabled={isUpdatingStatus}
           />
         );
       },

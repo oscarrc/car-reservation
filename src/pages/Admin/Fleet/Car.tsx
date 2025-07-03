@@ -140,6 +140,7 @@ export default function CarPage() {
   };
 
   const columns = createCarDetailsReservationColumns({
+    isUpdatingStatus: statusMutation.isPending,
     onStatusChange: handleStatusChange,
     t,
   });

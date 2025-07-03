@@ -12,11 +12,13 @@ interface CreateCarDetailsReservationColumnsProps {
     reservation: ReservationWithCarAndUser,
     status: ReservationStatus
   ) => void;
+  isUpdatingStatus?: boolean;
   t: (key: string, options?: Record<string, string>) => string;
 }
 
 export function createCarDetailsReservationColumns({
   onStatusChange,
+  isUpdatingStatus,
   t,
 }: CreateCarDetailsReservationColumnsProps): ColumnDef<ReservationWithCarAndUser>[] {
   return [
@@ -104,6 +106,7 @@ export function createCarDetailsReservationColumns({
             t={t}
             triggerClassName="border-0 h-8 w-auto p-1 focus:ring-0 focus:ring-offset-0 shadow-none"
             showValue={false}
+            disabled={isUpdatingStatus}
           />
         );
       },

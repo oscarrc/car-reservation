@@ -14,6 +14,7 @@ interface StatusSelectProps {
   t: (key: string) => string;
   triggerClassName?: string;
   showValue?: boolean;
+  disabled?: boolean;
 }
 
 const getStatusVariant = (
@@ -46,9 +47,10 @@ export function StatusSelect({
   t,
   triggerClassName = "w-[180px] border-none shadow-none",
   showValue = true,
+  disabled = false,
 }: StatusSelectProps) {
   return (
-    <Select value={value} onValueChange={onValueChange}>
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger className={triggerClassName}>
         {showValue ? (
           <SelectValue>
