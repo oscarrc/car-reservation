@@ -33,17 +33,21 @@ export default function AdminPage() {
         <h1 className="text-2xl font-bold">{t("navigation.adminDashboard")}</h1>
         {userProfile && (
           <p className="text-sm text-muted-foreground">
-            {t("dashboard.welcome", { name: userProfile.name, role: userProfile.role })}
+            {t("dashboard.welcome", {
+              name: userProfile.name,
+              role: userProfile.role,
+            })}
           </p>
         )}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 px-4 lg:px-6">
-        <FleetStatusChart />
+      <div className="grid gap-4 lg:grid-cols-5 px-4 lg:px-6">
         <ReservationsChart
+          className="lg:col-span-3"
           currentDate={currentDate}
           onNavigateMonth={navigateMonth}
         />
+        <FleetStatusChart className="lg:col-span-2" />
       </div>
     </>
   );

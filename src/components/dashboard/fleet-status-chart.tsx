@@ -23,6 +23,7 @@ import {
   ChartLegend,
 } from "@/components/ui/chart";
 import { fetchFleetStatus } from "@/lib/dashboard-service";
+import { cn } from "@/lib/utils";
 
 const fleetChartConfig = {
   count: {
@@ -42,7 +43,11 @@ const fleetChartConfig = {
   },
 } satisfies ChartConfig;
 
-export function FleetStatusChart() {
+interface FleetStatusChartProps {
+  className?: string;
+}
+
+export function FleetStatusChart({ className }: FleetStatusChartProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -67,7 +72,7 @@ export function FleetStatusChart() {
   }, [fleetData?.fleetStatus]);
 
   return (
-    <Card className="flex flex-col justify-between">
+    <Card className={cn("flex flex-col justify-between", className)}>
       <CardHeader className="items-center pb-0">
         <CardTitle>{t("dashboard.fleetStatus")}</CardTitle>
         <CardDescription>{t("dashboard.fleetSubtitle")}</CardDescription>

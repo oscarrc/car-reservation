@@ -153,7 +153,7 @@ export function ReservationFormDialog({
         autoApprove,
       });
     },
-    onSuccess: (reservationId, formData) => {
+    onSuccess: (_reservationId, formData) => {
       const selectedCar = availableCars.find(
         (car) => car.id === formData.carId
       );

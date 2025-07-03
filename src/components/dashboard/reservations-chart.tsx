@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/chart";
 import { fetchDailyReservations } from "@/lib/dashboard-service";
 import { getLocaleString } from "@/lib/date-locale";
+import { cn } from "@/lib/utils";
 
 const reservationsChartConfig = {
   confirmed: {
@@ -44,11 +45,13 @@ const reservationsChartConfig = {
 } satisfies ChartConfig;
 
 interface ReservationsChartProps {
+  className?: string;
   currentDate: { year: number; month: number };
   onNavigateMonth: (direction: "prev" | "next") => void;
 }
 
 export function ReservationsChart({
+  className,
   currentDate,
   onNavigateMonth,
 }: ReservationsChartProps) {
@@ -74,7 +77,7 @@ export function ReservationsChart({
   });
 
   return (
-    <Card className="justify-between">
+    <Card className={cn("justify-between", className)}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
