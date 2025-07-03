@@ -211,7 +211,7 @@ export function ReservationFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="!max-w-fit max-h-[90vh] px-2 sm:px-6 flex flex-col">
+      <DialogContent className="sm:!max-w-fit max-h-[90vh] px-4 sm:px-6 flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{t("reservations.newReservation")}</DialogTitle>
           <DialogDescription>
@@ -219,7 +219,7 @@ export function ReservationFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto min-h-0 pr-2 -mr-2">
+        <div className="flex-1 overflow-y-auto min-h-0 pr-4 -mr-4">
           <Form {...form}>
             <form
               id="reservation-form"
@@ -228,9 +228,9 @@ export function ReservationFormDialog({
             >
               <div className="w-full md:w-fit mx-auto space-y-6">
                 {/* Date and Time Selection */}
-                <Card className="w-full md:w-fit py-3 sm:py-4">
+                <Card className="w-full md:w-fit py-8 sm:py-4">
                   <CardContent className="px-2 sm:px-4">
-                    <div className="flex flex-col md:flex-row gap-4 md:gap-6 justify-center">
+                    <div className="flex flex-col md:flex-row gap-8 md:gap-6 justify-center">
                       {/* Start Date and Time */}
                       <div className="flex flex-col mx-auto md:mx-0">
                         <FormField
