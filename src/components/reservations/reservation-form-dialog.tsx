@@ -139,6 +139,10 @@ export function ReservationFormDialog({
         `${data.endDate.toDateString()} ${data.endTime}`
       );
 
+      // When autoReservation is true, reservations require admin confirmation (so autoApprove should be false)
+      // When autoReservation is false, reservations don't require admin confirmation (so autoApprove should be true)
+      const autoApprove = !settings.autoReservation;
+
       return await createReservation({
         userRef: currentUser.uid,
         carRef: data.carId,
@@ -146,16 +150,21 @@ export function ReservationFormDialog({
         endDateTime,
         driver: data.driver || undefined,
         comments: data.comments || undefined,
-        autoApprove: !settings.autoReservation,
+        autoApprove,
       });
     },
     onSuccess: (reservationId, formData) => {
       const selectedCar = availableCars.find(
         (car) => car.id === formData.carId
       );
-      const autoApprove = !settings?.autoReservation;
+      
+      // Ensure settings are available for determining message
+      if (!settings) return;
+      
+      // When autoReservation is false, reservations are auto-approved
+      const isAutoApproved = !settings.autoReservation;
 
-      if (autoApprove) {
+      if (isAutoApproved) {
         toast.success(t("reservations.reservationConfirmed"), {
           description: t("reservations.reservationConfirmedDesc", {
             car: selectedCar?.model || t("common.unknown"),
@@ -511,11 +520,15 @@ export function ReservationFormDialog({
           </Button>
           <Button
             type="submit"
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || !settings}
             form="reservation-form"
           >
             {createMutation.isPending
               ? t("common.saving")
+              : !settings
+              ? t("loading.loadingSettings")
+              : settings.autoReservation
+              ? t("reservations.requestReservation")
               : t("reservations.createReservation")}
           </Button>
         </DialogFooter>

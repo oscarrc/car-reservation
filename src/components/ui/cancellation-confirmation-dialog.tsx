@@ -51,7 +51,9 @@ export function CancellationConfirmationDialog({
               ? isAutoCancel
                 ? t("reservations.cancelling")
                 : t("reservations.requestingCancellation")
-              : t("reservations.cancelReservation")}
+              : isAutoCancel
+              ? t("reservations.cancelReservation")
+              : t("reservations.requestCancellation")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
