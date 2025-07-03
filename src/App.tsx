@@ -10,15 +10,15 @@ import ForgotPage from "./pages/Auth/Forgot";
 import LoginPage from "./pages/Auth/Login";
 import NotFoundPage from "./pages/NotFound";
 import ProfilePage from "./pages/Profile";
-import ProtectedRoute from "./components/ProtectedRoute";
+import Protected from "./layouts/Protected";
 import ReservationsPage from "./pages/Admin/Reservations";
 import ResetPage from "./pages/Auth/Reset";
 import SettingsPage from "./pages/Admin/Settings";
 import SidebarLayout from "./layouts/Sidebar";
-import UserReservationsPage from "./pages/App/Reservations";
 import UserFleetPage from "./pages/App/Fleet";
-import UsersPage from "./pages/Admin/Users";
 import UserPage from "./pages/Admin/Users/User";
+import UserReservationsPage from "./pages/App/Reservations";
+import UsersPage from "./pages/Admin/Users";
 
 const App = () => {
   return (
@@ -32,9 +32,9 @@ const App = () => {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute requiredRole="admin" fallbackPath="/app">
+              <Protected requiredRole="admin" fallbackPath="/app">
                 <SidebarLayout config={adminSidebarConfig} />
-              </ProtectedRoute>
+              </Protected>
             }
           >
             <Route index element={<AdminPage />} />
@@ -49,9 +49,9 @@ const App = () => {
           <Route
             path="/app"
             element={
-              <ProtectedRoute requiredRole="teacher">
+              <Protected requiredRole="teacher">
                 <SidebarLayout config={appSidebarConfig} />
-              </ProtectedRoute>
+              </Protected>
             }
           >
             <Route index element={<AppPage />} />
@@ -62,9 +62,9 @@ const App = () => {
           <Route
             path="/profile"
             element={
-              <ProtectedRoute>
+              <Protected>
                 <SidebarLayout config={appSidebarConfig} />
-              </ProtectedRoute>
+              </Protected>
             }
           >
             <Route index element={<ProfilePage />} />

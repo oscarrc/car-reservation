@@ -14,19 +14,18 @@ import Forgot from "./pages/Auth/Forgot.tsx";
 import Login from "./pages/Auth/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ProfilePage from "./pages/Profile.tsx";
-import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import Protected from "./layouts/Protected.tsx";
 import ReservationsPage from "./pages/Admin/Reservations.tsx";
 import Reset from "./pages/Auth/Reset.tsx";
 import SettingsPage from "./pages/Admin/Settings.tsx";
 import SidebarLayout from "./layouts/Sidebar.tsx";
 import { StrictMode } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import UserReservationsPage from "./pages/App/Reservations.tsx";
 import UserFleetPage from "./pages/App/Fleet.tsx";
-import UsersPage from "./pages/Admin/Users/index.tsx";
 import UserPage from "./pages/Admin/Users/User.tsx";
+import UserReservationsPage from "./pages/App/Reservations.tsx";
+import UsersPage from "./pages/Admin/Users/index.tsx";
 import { createRoot } from "react-dom/client";
-import { SettingsProvider } from "@/contexts/SettingsContext";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -58,9 +57,9 @@ const router = createBrowserRouter([
   {
     path: "/admin",
     element: (
-      <ProtectedRoute requiredRole="admin">
+      <Protected requiredRole="admin">
         <SidebarLayout config={adminSidebarConfig} />
-      </ProtectedRoute>
+      </Protected>
     ),
     children: [
       {
@@ -96,9 +95,9 @@ const router = createBrowserRouter([
   {
     path: "/app",
     element: (
-      <ProtectedRoute>
+      <Protected>
         <SidebarLayout config={appSidebarConfig} />
-      </ProtectedRoute>
+      </Protected>
     ),
     children: [
       {
@@ -118,9 +117,9 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: (
-      <ProtectedRoute>
+      <Protected>
         <SidebarLayout config={appSidebarConfig} />
-      </ProtectedRoute>
+      </Protected>
     ),
     children: [
       {
@@ -139,10 +138,8 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SettingsProvider>
-          <RouterProvider router={router} />
-          <Toaster />
-        </SettingsProvider>
+        <RouterProvider router={router} />
+        <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>
