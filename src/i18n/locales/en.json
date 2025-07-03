@@ -49,7 +49,8 @@
     "tomorrow": "Tomorrow",
     "yesterday": "Yesterday",
     "selectDate": "Select date",
-    "pickDate": "Pick a date"
+    "pickDate": "Pick a date",
+    "unknown": "Unknown"
   },
   "auth": {
     "welcome": "Welcome back",
