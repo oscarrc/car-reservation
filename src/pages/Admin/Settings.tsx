@@ -45,7 +45,7 @@ const settingsSchema = z.object({
   minTimeBetweenReservations: z.number().min(0).max(72), // max 3 days
 
   // System Configuration
-  weekendReservationsEnabled: z.boolean(),
+  weekendReservations: z.boolean(),
   businessHoursStart: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/),
   businessHoursEnd: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/),
   supportEmails: z.string().optional(),
@@ -140,7 +140,11 @@ export default function SettingsPage() {
         title={t("settings.title")}
         subtitle={t("settings.subtitle")}
         action={handleSaveSettings}
-        actionText={updateMutation.isPending ? t("settings.saving") : t("settings.saveSettings")}
+        actionText={
+          updateMutation.isPending
+            ? t("settings.saving")
+            : t("settings.saveSettings")
+        }
         actionIcon={updateMutation.isPending ? Loader2 : Save}
       />
 
@@ -162,7 +166,9 @@ export default function SettingsPage() {
                     name="advanceReservation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("settings.advanceReservation")}</FormLabel>
+                        <FormLabel>
+                          {t("settings.advanceReservation")}
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -214,7 +220,9 @@ export default function SettingsPage() {
                     name="advanceCancellationTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("settings.advanceCancellation")}</FormLabel>
+                        <FormLabel>
+                          {t("settings.advanceCancellation")}
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -351,7 +359,7 @@ export default function SettingsPage() {
                 <div className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="weekendReservationsEnabled"
+                    name="weekendReservations"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
@@ -371,15 +379,15 @@ export default function SettingsPage() {
                       </FormItem>
                     )}
                   />
-
-
                 </div>
 
                 <Separator />
 
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium">{t("settings.businessHours")}</h4>
+                    <h4 className="text-sm font-medium">
+                      {t("settings.businessHours")}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
                       {t("settings.businessHoursDesc")}
                     </p>
@@ -391,7 +399,9 @@ export default function SettingsPage() {
                       name="businessHoursStart"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("settings.businessHoursStart")}</FormLabel>
+                          <FormLabel>
+                            {t("settings.businessHoursStart")}
+                          </FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>
@@ -405,7 +415,9 @@ export default function SettingsPage() {
                       name="businessHoursEnd"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("settings.businessHoursEnd")}</FormLabel>
+                          <FormLabel>
+                            {t("settings.businessHoursEnd")}
+                          </FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>

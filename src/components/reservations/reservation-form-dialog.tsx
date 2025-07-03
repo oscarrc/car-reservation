@@ -157,10 +157,10 @@ export function ReservationFormDialog({
       const selectedCar = availableCars.find(
         (car) => car.id === formData.carId
       );
-      
+
       // Ensure settings are available for determining message
       if (!settings) return;
-      
+
       // When autoReservation is false, reservations are auto-approved
       const isAutoApproved = !settings.autoReservation;
 
@@ -244,10 +244,25 @@ export function ReservationFormDialog({
                                   selected={field.value}
                                   onSelect={field.onChange}
                                   className="bg-transparent p-0 scale-110 md:scale-100"
-                                  disabled={(date) =>
-                                    date <
-                                    new Date(new Date().setHours(0, 0, 0, 0))
-                                  }
+                                  disabled={(date) => {
+                                    const today = new Date(
+                                      new Date().setHours(0, 0, 0, 0)
+                                    );
+                                    const isPastDate = date < today;
+
+                                    // Check if weekends should be disabled
+                                    const isWeekend =
+                                      date.getDay() === 0 ||
+                                      date.getDay() === 6; // Sunday = 0, Saturday = 6
+                                    const weekendsDisabled = settings
+                                      ? !settings.weekendReservations
+                                      : false;
+
+                                    return (
+                                      isPastDate ||
+                                      (weekendsDisabled && isWeekend)
+                                    );
+                                  }}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -270,14 +285,27 @@ export function ReservationFormDialog({
                                   onSelect={field.onChange}
                                   className="bg-transparent p-0 scale-110 md:scale-100"
                                   disabled={(date) => {
+                                    const today = new Date(
+                                      new Date().setHours(0, 0, 0, 0)
+                                    );
                                     const startDate =
                                       form.getValues("startDate");
+                                    const isPastDate = date < today;
+                                    const isBeforeStartDate =
+                                      startDate && date < startDate;
+
+                                    // Check if weekends should be disabled
+                                    const isWeekend =
+                                      date.getDay() === 0 ||
+                                      date.getDay() === 6; // Sunday = 0, Saturday = 6
+                                    const weekendsDisabled = settings
+                                      ? !settings.weekendReservations
+                                      : false;
+
                                     return (
-                                      date <
-                                        new Date(
-                                          new Date().setHours(0, 0, 0, 0)
-                                        ) ||
-                                      (startDate && date < startDate)
+                                      isPastDate ||
+                                      isBeforeStartDate ||
+                                      (weekendsDisabled && isWeekend)
                                     );
                                   }}
                                 />

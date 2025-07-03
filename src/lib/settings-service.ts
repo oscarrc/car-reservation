@@ -1,4 +1,5 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+
 import { db } from './firebase';
 
 export interface AppSettings {
@@ -9,7 +10,7 @@ export interface AppSettings {
   
   // Additional useful settings
   maxReservationDuration: number; // maximum days a car can be reserved
-  weekendReservationsEnabled: boolean; // allow weekend reservations
+  weekendReservations: boolean; // allow weekend reservations
   minTimeBetweenReservations: number; // minimum hours between reservations for same user
   advanceCancellationTime: number; // hours before reservation start to allow cancellation
   maxConcurrentReservations: number; // maximum concurrent reservations per user
@@ -23,7 +24,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   autoCancelation: false,
   autoReservation: false,
   maxReservationDuration: 7,
-  weekendReservationsEnabled: true,
+  weekendReservations: true,
   minTimeBetweenReservations: 2,
   advanceCancellationTime: 24,
   maxConcurrentReservations: 2,
