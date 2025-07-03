@@ -46,7 +46,6 @@ const settingsSchema = z.object({
 
   // System Configuration
   weekendReservationsEnabled: z.boolean(),
-  emailNotificationsEnabled: z.boolean(),
   businessHoursStart: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/),
   businessHoursEnd: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/),
   supportEmails: z.string().optional(),
@@ -373,28 +372,7 @@ export default function SettingsPage() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="emailNotificationsEnabled"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">
-                            {t("settings.emailNotifications")}
-                          </FormLabel>
-                          <FormDescription>
-                            {t("settings.emailNotificationsDesc")}
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+
                 </div>
 
                 <Separator />

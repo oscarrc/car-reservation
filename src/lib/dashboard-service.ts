@@ -79,8 +79,8 @@ export async function fetchDailyReservations(year?: number, month?: number): Pro
     const targetYear = year ?? now.getFullYear();
     const targetMonth = month ?? now.getMonth();
     
-    const startOfMonth = new Date(targetYear, targetMonth, 1);
-    const endOfMonth = new Date(targetYear, targetMonth + 1, 0);
+    const startOfMonth = new Date(Date.UTC(targetYear, targetMonth, 1, 0, 0, 0, 0));
+    const endOfMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0, 23, 59, 59, 999));
 
     const reservationsCollection = collection(db, 'reservations');
     
@@ -92,11 +92,12 @@ export async function fetchDailyReservations(year?: number, month?: number): Pro
     );
 
     const reservationsSnapshot = await getDocs(reservationsQuery);
-
+    const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+    
     // Initialize daily counts for all days of the month
     const dailyCounts: Record<string, {confirmed: number, pending: number, cancellation_pending: number, cancelled: number}> = {};
     
-    for (let day = 1; day <= endOfMonth.getDate(); day++) {
+    for (let day = 1; day <= daysInMonth; day++) {
       const dayStr = day.toString().padStart(2, '0');
       dailyCounts[dayStr] = { confirmed: 0, pending: 0, cancellation_pending: 0, cancelled: 0 };
     }
@@ -109,7 +110,7 @@ export async function fetchDailyReservations(year?: number, month?: number): Pro
       const status = data.status as ReservationStatus;
       
       if (dailyCounts[day] && status in dailyCounts[day]) {
-        (dailyCounts[day] as any)[status]++;
+        (dailyCounts[day])[status]++;
       }
     });
 
