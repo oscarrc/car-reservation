@@ -136,6 +136,7 @@ export default function UserPage() {
 
   const columns = createUserDetailsReservationColumns({
     t,
+    onStatusChange: handleStatusChange,
   });
 
   const isLoading = userLoading || reservationsLoading || carsLoading;
@@ -236,9 +237,7 @@ export default function UserPage() {
                   {t("users.role")}
                 </label>
                 <div className="mt-1">
-                  <Badge variant={getRoleVariant(user.role)}>
-                    {user.role}
-                  </Badge>
+                  <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>
                 </div>
               </div>
               <div>

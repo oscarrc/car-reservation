@@ -342,7 +342,7 @@
     "pending": "รอดำเนินการ",
     "confirmed": "ยืนยันแล้ว",
     "cancelled": "ยกเลิกแล้ว",
-    "cancellationPending": "รอยกเลิก",
+    "cancellation_pending": "รอยกเลิก",
     "filterByStatus": "กรองตามสถานะ",
     "clearFilters": "ล้างตัวกรอง",
     "viewDetails": "ดูรายละเอียด",

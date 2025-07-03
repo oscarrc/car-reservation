@@ -1,18 +1,10 @@
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ReservationStatus } from "@/types/reservation";
 import type { ReservationWithCarAndUser } from "@/components/reservations/admin-reservations-columns";
+import { StatusSelect } from "@/components/ui/status-select";
 import { format } from "date-fns";
 
 interface CreateCarDetailsReservationColumnsProps {
@@ -27,21 +19,6 @@ export function createCarDetailsReservationColumns({
   onStatusChange,
   t,
 }: CreateCarDetailsReservationColumnsProps): ColumnDef<ReservationWithCarAndUser>[] {
-  const getStatusVariant = (status: ReservationStatus) => {
-    switch (status) {
-      case "confirmed":
-        return "success";
-      case "pending":
-        return "warning";
-      case "cancelled":
-        return "destructive";
-      case "cancellation_pending":
-        return "secondary";
-      default:
-        return "secondary";
-    }
-  };
-
   return [
     {
       id: "select",
@@ -119,38 +96,15 @@ export function createCarDetailsReservationColumns({
         const status = row.getValue("status") as ReservationStatus;
 
         return (
-          <Select
+          <StatusSelect
             value={status}
             onValueChange={(newStatus: ReservationStatus) =>
               onStatusChange(reservation, newStatus)
             }
-          >
-            <SelectTrigger className="border-0 h-8 w-auto p-1 focus:ring-0 focus:ring-offset-0 shadow-none">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">
-                <Badge variant={getStatusVariant("pending")}>
-                  {t("reservations.pending")}
-                </Badge>
-              </SelectItem>
-              <SelectItem value="confirmed">
-                <Badge variant={getStatusVariant("confirmed")}>
-                  {t("reservations.confirmed")}
-                </Badge>
-              </SelectItem>
-              <SelectItem value="cancelled">
-                <Badge variant={getStatusVariant("cancelled")}>
-                  {t("reservations.cancelled")}
-                </Badge>
-              </SelectItem>
-              <SelectItem value="cancellation_pending">
-                <Badge variant={getStatusVariant("cancellation_pending")}>
-                  {t("reservations.cancellationPending")}
-                </Badge>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+            t={t}
+            triggerClassName="border-0 h-8 w-auto p-1 focus:ring-0 focus:ring-offset-0 shadow-none"
+            showValue={false}
+          />
         );
       },
     },

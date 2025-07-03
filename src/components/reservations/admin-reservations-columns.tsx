@@ -10,20 +10,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { format, getLocalizedFormats } from "@/lib/date-locale";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { CarWithId } from "@/types/car";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ColumnDef } from "@tanstack/react-table";
+import { StatusSelect } from "@/components/ui/status-select";
 import type { UserProfileWithId } from "@/lib/users-service";
 
 // Extended reservation type with car and user information
@@ -32,31 +25,6 @@ export interface ReservationWithCarAndUser extends ReservationWithId {
   userInfo?: UserProfileWithId;
   userEmail?: string;
 }
-
-// Helper function to get status variant
-const getStatusVariant = (
-  status: ReservationStatus
-):
-  | "default"
-  | "secondary"
-  | "destructive"
-  | "outline"
-  | "success"
-  | "warning"
-  | "orange" => {
-  switch (status) {
-    case "pending":
-      return "warning";
-    case "confirmed":
-      return "success";
-    case "cancelled":
-      return "destructive";
-    case "cancellation_pending":
-      return "orange";
-    default:
-      return "outline";
-  }
-};
 
 // Admin columns for admin reservations page
 export function createAdminColumns({
@@ -152,42 +120,13 @@ export function createAdminColumns({
         const status = row.getValue("status") as ReservationStatus;
 
         return (
-          <Select
+          <StatusSelect
             value={status}
             onValueChange={(newStatus) =>
               onStatusChange(reservation, newStatus as ReservationStatus)
             }
-          >
-            <SelectTrigger className="w-[140px] border-none shadow-none">
-              <SelectValue>
-                <Badge variant={getStatusVariant(status)}>
-                  {t(`reservations.${status}`)}
-                </Badge>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">
-                <Badge variant={getStatusVariant("pending")}>
-                  {t("reservations.pending")}
-                </Badge>
-              </SelectItem>
-              <SelectItem value="confirmed">
-                <Badge variant={getStatusVariant("confirmed")}>
-                  {t("reservations.confirmed")}
-                </Badge>
-              </SelectItem>
-              <SelectItem value="cancelled">
-                <Badge variant={getStatusVariant("cancelled")}>
-                  {t("reservations.cancelled")}
-                </Badge>
-              </SelectItem>
-              <SelectItem value="cancellation_pending">
-                <Badge variant={getStatusVariant("cancellation_pending")}>
-                  {t("reservations.cancellationPending")}
-                </Badge>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+            t={t}
+          />
         );
       },
     },
@@ -224,9 +163,7 @@ export function createAdminColumns({
     {
       id: "actions",
       header: () => t("common.actions"),
-      cell: ({ row }) => {
-        const reservation = row.original;
-
+      cell: () => {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

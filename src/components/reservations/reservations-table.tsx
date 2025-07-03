@@ -136,7 +136,7 @@ export function ReservationsTable({
               <SelectItem value="pending">{t("reservations.pending")}</SelectItem>
               <SelectItem value="confirmed">{t("reservations.confirmed")}</SelectItem>
               <SelectItem value="cancelled">{t("reservations.cancelled")}</SelectItem>
-              <SelectItem value="cancellation_pending">{t("reservations.cancellationPending")}</SelectItem>
+              <SelectItem value="cancellation_pending">{t("reservations.cancellation_pending")}</SelectItem>
             </SelectContent>
           </Select>
 

@@ -1,12 +1,13 @@
 "use client";
 
-import { format } from "date-fns";
-import type { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import type { ReservationWithId, ReservationStatus } from "@/types/reservation";
+import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
+
 import type { CarWithId } from "@/types/car";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { ColumnDef } from "@tanstack/react-table";
+import { StatusSelect } from "@/components/ui/status-select";
 import type { UserProfileWithId } from "@/lib/users-service";
+import { format } from "date-fns";
 
 // Extended reservation type with car and user information
 export interface ReservationWithCarAndUser extends ReservationWithId {
@@ -16,28 +17,17 @@ export interface ReservationWithCarAndUser extends ReservationWithId {
 }
 
 interface CreateUserDetailsReservationColumnsProps {
+  onStatusChange: (
+    reservation: ReservationWithCarAndUser,
+    status: ReservationStatus
+  ) => void;
   t: (key: string) => string;
 }
 
 export function createUserDetailsReservationColumns({
+  onStatusChange,
   t,
 }: CreateUserDetailsReservationColumnsProps): ColumnDef<ReservationWithCarAndUser>[] {
-  // Helper function to get status variant
-  const getStatusVariant = (status: ReservationStatus): "default" | "secondary" | "destructive" | "outline" => {
-    switch (status) {
-      case "pending":
-        return "outline";
-      case "confirmed":
-        return "default";
-      case "cancelled":
-        return "destructive";
-      case "cancellation_pending":
-        return "secondary";
-      default:
-        return "outline";
-    }
-  };
-
   return [
     {
       id: "select",
@@ -72,7 +62,9 @@ export function createUserDetailsReservationColumns({
         return (
           <div className="flex flex-col">
             <span className="font-medium">{carInfo.model}</span>
-            <span className="text-sm text-muted-foreground">{carInfo.licensePlate}</span>
+            <span className="text-sm text-muted-foreground">
+              {carInfo.licensePlate}
+            </span>
           </div>
         );
       },
@@ -111,14 +103,19 @@ export function createUserDetailsReservationColumns({
     },
     {
       accessorKey: "status",
-      header: t("common.status"),
+      header: () => t("common.status"),
       cell: ({ row }) => {
+        const reservation = row.original;
         const status = row.getValue("status") as ReservationStatus;
 
         return (
-          <Badge variant={getStatusVariant(status)}>
-            {t(`reservations.${status}`)}
-          </Badge>
+          <StatusSelect
+            value={status}
+            onValueChange={(newStatus) =>
+              onStatusChange(reservation, newStatus as ReservationStatus)
+            }
+            t={t}
+          />
         );
       },
     },
@@ -153,4 +150,4 @@ export function createUserDetailsReservationColumns({
       },
     },
   ];
-} 
+}

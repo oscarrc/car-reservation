@@ -382,7 +382,7 @@
     "pending": "Pending",
     "confirmed": "Confirmed",
     "cancelled": "Cancelled",
-    "cancellationPending": "Cancellation Pending",
+    "cancellation_pending": "Cancellation Pending",
     "filterByStatus": "Filter by status",
     "clearFilters": "Clear filters",
     "viewDetails": "View Details",
