@@ -6,7 +6,9 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config.ts";
 
 import AdminPage from "./pages/Admin/index.tsx";
+import AdminReservationPage from "./pages/Admin/Reservations/Reservation.tsx";
 import AppPage from "./pages/App/index.tsx";
+import AppReservationPage from "./pages/App/Reservations/Reservation.tsx";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
 import CarPage from "./pages/Admin/Fleet/Car.tsx";
 import FleetPage from "./pages/Admin/Fleet/index.tsx";
@@ -15,7 +17,7 @@ import Login from "./pages/Auth/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ProfilePage from "./pages/Profile.tsx";
 import Protected from "./layouts/Protected.tsx";
-import ReservationsPage from "./pages/Admin/Reservations.tsx";
+import ReservationsPage from "./pages/Admin/Reservations/index.tsx";
 import Reset from "./pages/Auth/Reset.tsx";
 import SettingsPage from "./pages/Admin/Settings.tsx";
 import SidebarLayout from "./layouts/Sidebar.tsx";
@@ -23,7 +25,7 @@ import { StrictMode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import UserFleetPage from "./pages/App/Fleet.tsx";
 import UserPage from "./pages/Admin/Users/User.tsx";
-import UserReservationsPage from "./pages/App/Reservations.tsx";
+import UserReservationsPage from "./pages/App/Reservations/index.tsx";
 import UsersPage from "./pages/Admin/Users/index.tsx";
 import { createRoot } from "react-dom/client";
 
@@ -87,6 +89,10 @@ const router = createBrowserRouter([
         element: <ReservationsPage />,
       },
       {
+        path: "reservations/:reservationId",
+        element: <AdminReservationPage />,
+      },
+      {
         path: "settings",
         element: <SettingsPage />,
       },
@@ -107,6 +113,10 @@ const router = createBrowserRouter([
       {
         path: "reservations",
         element: <UserReservationsPage />,
+      },
+      {
+        path: "reservations/:reservationId",
+        element: <AppReservationPage />,
       },
       {
         path: "browse",

@@ -50,7 +50,9 @@
     "yesterday": "Yesterday",
     "selectDate": "Select date",
     "pickDate": "Pick a date",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "cancelling": "Cancelling...",
+    "settingsError": "Settings Error"
   },
   "auth": {
     "welcome": "Welcome back",
@@ -264,6 +266,10 @@
     "model": "Model",
     "color": "Color",
     "seats": "Seats",
+    "seatsLabel": "seats",
+    "year": "Year",
+    "description": "Description",
+    "addedOn": "Added On",
     "editCar": "Edit Car",
     "searchPlaceholder": "Search by model or license plate...",
     "noCarsFound": "No cars found.",
@@ -441,7 +447,21 @@
     "cancelConfirmationAuto": "immediately cancel",
     "cancelConfirmationRequest": "submit a cancellation request for",
     "cancelling": "Cancelling...",
-    "requestingCancellation": "Requesting..."
+    "requestingCancellation": "Requesting...",
+    "reservationDetailsDesc": "View detailed information about this reservation",
+    "reservationNotFound": "Reservation Not Found",
+    "reservationNotFoundDesc": "The reservation you're looking for doesn't exist or has been removed.",
+    "backToReservations": "Back to Reservations",
+    "editFeatureComingSoon": "Edit feature coming soon!",
+    "reservationCancelled": "Reservation Cancelled",
+    "reservationCancelledDesc": "Your reservation for {{car}} has been cancelled successfully",
+    "cancellationRequested": "Cancellation Requested",
+    "cancellationRequestedDesc": "Your cancellation request for {{car}} has been submitted for admin approval",
+    "failedToCancelReservation": "Failed to cancel reservation",
+    "cancelReservationConfirmAuto": "This will immediately cancel your reservation. This action cannot be undone.",
+    "cancelReservationConfirmManual": "This will submit a cancellation request for admin approval. You will be notified once it's processed.",
+    "userInformation": "User Information",
+    "carInformation": "Car Information"
   },
   "users": {
     "management": "User Management",
@@ -464,6 +484,12 @@
     "email": "Email",
     "phone": "Phone",
     "role": "Role",
+    "department": "Department",
+    "memberSince": "Member Since",
+    "roles": {
+      "admin": "Administrator",
+      "teacher": "Teacher"
+    },
     "status": "Status",
     "active": "Active",
     "suspended": "Suspended",

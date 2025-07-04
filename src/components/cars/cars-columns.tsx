@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -159,8 +159,6 @@ export function createColumns({
       enableHiding: false,
       cell: ({ row }) => {
         const car = row.original;
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const navigate = useNavigate();
 
         return (
           <DropdownMenu>
@@ -172,12 +170,11 @@ export function createColumns({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
-              <DropdownMenuItem 
-                onClick={() => navigate(`/admin/fleet/${car.id}`)}
-                className="cursor-pointer"
-              >
-                <Eye className="mr-2 h-4 w-4" />
-                {t("fleet.carDetails")}
+              <DropdownMenuItem asChild>
+                <Link to={`/admin/fleet/${car.id}`}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  {t("fleet.carDetails")}
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onEditCar(car)}

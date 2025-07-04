@@ -25,6 +25,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { UserProfileWithId } from "@/lib/users-service";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 interface ColumnsProps {
   onViewUser?: (user: UserProfileWithId) => void;
@@ -157,15 +158,12 @@ export const createColumns = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
-              {onViewUser && (
-                <DropdownMenuItem
-                  onClick={() => onViewUser(user)}
-                  className="cursor-pointer"
-                >
+              <DropdownMenuItem asChild>
+                <Link to={`/admin/users/${user.id}`}>
                   <Eye className="mr-2 h-4 w-4" />
                   {t("users.userDetails")}
-                </DropdownMenuItem>
-              )}
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onEditUser(user)}
                 className="cursor-pointer"

@@ -12,12 +12,14 @@ import NotFoundPage from "./pages/NotFound";
 import ProfilePage from "./pages/Profile";
 import Protected from "./layouts/Protected";
 import ReservationsPage from "./pages/Admin/Reservations";
+import AdminReservationPage from "./pages/Admin/Reservations/Reservation";
 import ResetPage from "./pages/Auth/Reset";
 import SettingsPage from "./pages/Admin/Settings";
 import SidebarLayout from "./layouts/Sidebar";
 import UserFleetPage from "./pages/App/Fleet";
 import UserPage from "./pages/Admin/Users/User";
 import UserReservationsPage from "./pages/App/Reservations";
+import AppReservationPage from "./pages/App/Reservations/Reservation";
 import UsersPage from "./pages/Admin/Users";
 
 const App = () => {
@@ -41,6 +43,7 @@ const App = () => {
             <Route path="fleet" element={<FleetPage />} />
             <Route path="fleet/:carId" element={<CarPage />} />
             <Route path="reservations" element={<ReservationsPage />} />
+            <Route path="reservations/:reservationId" element={<AdminReservationPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="users/:userId" element={<UserPage />} />
             <Route path="settings" element={<SettingsPage />} />
@@ -56,6 +59,7 @@ const App = () => {
           >
             <Route index element={<AppPage />} />
             <Route path="reservations" element={<UserReservationsPage />} />
+            <Route path="reservations/:reservationId" element={<AppReservationPage />} />
             <Route path="browse" element={<UserFleetPage />} />
           </Route>
 

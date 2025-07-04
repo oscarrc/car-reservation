@@ -16,6 +16,7 @@ import {
 import type { ReservationWithId, ReservationStatus } from "@/types/reservation";
 import type { CarWithId } from "@/types/car";
 import type { UserProfileWithId } from "@/lib/users-service";
+import { Link } from "react-router-dom";
 
 // Extended reservation type with car and user information
 export interface ReservationWithCarAndUser extends ReservationWithId {
@@ -164,15 +165,15 @@ export function createUserColumns({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {onView && (
-                <DropdownMenuItem onClick={() => onView(reservation)}>
+              <DropdownMenuItem asChild>
+                <Link to={`/app/reservations/${reservation.id}`}>
                   <Eye className="mr-2 h-4 w-4" />
                   {t("reservations.viewDetails")}
-                </DropdownMenuItem>
-              )}
+                </Link>
+              </DropdownMenuItem>
               {onCancel && canCancel && (
                 <>
-                  {onView && <DropdownMenuSeparator />}
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={() => onCancel(reservation)}
                     className="text-destructive focus:text-destructive"

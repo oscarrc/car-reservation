@@ -5,6 +5,7 @@ import {
   addDoc,
   collection,
   doc,
+  getDoc,
   getDocs,
   limit,
   orderBy,
@@ -184,6 +185,31 @@ export async function requestCancellation(
     };
   } catch (error) {
     console.error('Error requesting cancellation:', error);
+    throw error;
+  }
+}
+
+// Fetch a single reservation by ID
+export async function fetchReservationById(reservationId: string): Promise<ReservationWithId> {
+  try {
+    const reservationDoc = doc(db, 'reservations', reservationId);
+    const reservationSnap = await getDoc(reservationDoc);
+    
+    if (!reservationSnap.exists()) {
+      throw new Error('Reservation not found');
+    }
+    
+    const data = reservationSnap.data();
+    return {
+      id: reservationSnap.id,
+      ...data,
+      startDateTime: data.startDateTime.toDate(),
+      endDateTime: data.endDateTime.toDate(),
+      createdAt: data.createdAt.toDate(),
+      updatedAt: data.updatedAt.toDate(),
+    } as ReservationWithId;
+  } catch (error) {
+    console.error('Error fetching reservation:', error);
     throw error;
   }
 }

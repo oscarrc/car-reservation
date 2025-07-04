@@ -11,6 +11,7 @@ import {
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
 import { format, getLocalizedFormats } from "@/lib/date-locale";
+import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import type { CarWithId } from "@/types/car";
@@ -166,7 +167,8 @@ export function createAdminColumns({
     {
       id: "actions",
       header: () => t("common.actions"),
-      cell: () => {
+      cell: ({ row }) => {
+        const reservation = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -177,9 +179,11 @@ export function createAdminColumns({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
-              <DropdownMenuItem>
-                <Eye className="mr-2 h-4 w-4" />
-                {t("reservations.viewDetails")}
+              <DropdownMenuItem asChild>
+                <Link to={`/admin/reservations/${reservation.id}`}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  {t("reservations.viewDetails")}
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Edit className="mr-2 h-4 w-4" />

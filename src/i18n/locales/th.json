@@ -50,7 +50,9 @@
     "yesterday": "เมื่อวาน",
     "selectDate": "เลือกวันที่",
     "pickDate": "เลือกวันที่",
-    "unknown": "ไม่ทราบ"
+    "unknown": "ไม่ทราบ",
+    "cancelling": "กำลังยกเลิก...",
+    "settingsError": "ข้อผิดพลาดในการตั้งค่า"
   },
   "auth": {
     "welcome": "ยินดีต้อนรับกลับ",
@@ -226,6 +228,10 @@
     "model": "รุ่น",
     "color": "สี",
     "seats": "ที่นั่ง",
+    "seatsLabel": "ที่นั่ง",
+    "year": "ปี",
+    "description": "รายละเอียด",
+    "addedOn": "เพิ่มเมื่อ",
     "carDetails": "รายละเอียดรถยนต์",
     "editCar": "แก้ไขรถยนต์",
     "searchPlaceholder": "ค้นหาด้วยรุ่นหรือป้ายทะเบียน...",
@@ -403,7 +409,21 @@
     "cancelConfirmationAuto": "ยกเลิกทันที",
     "cancelConfirmationRequest": "ส่งคำขอยกเลิกสำหรับ",
     "cancelling": "กำลังยกเลิก...",
-    "requestingCancellation": "กำลังส่งคำขอ..."
+    "requestingCancellation": "กำลังส่งคำขอ...",
+    "reservationDetailsDesc": "ดูรายละเอียดข้อมูลเกี่ยวกับการจองนี้",
+    "reservationNotFound": "ไม่พบการจอง",
+    "reservationNotFoundDesc": "การจองที่คุณกำลังค้นหาไม่มีอยู่หรือถูกลบออกแล้ว",
+    "backToReservations": "กลับไปยังการจอง",
+    "editFeatureComingSoon": "ฟีเจอร์แก้ไขจะมาเร็วๆ นี้!",
+    "reservationCancelled": "ยกเลิกการจองแล้ว",
+    "reservationCancelledDesc": "การจอง {{car}} ของคุณถูกยกเลิกสำเร็จแล้ว",
+    "cancellationRequested": "ส่งคำขอยกเลิกแล้ว",
+    "cancellationRequestedDesc": "คำขอยกเลิกการจอง {{car}} ของคุณได้ถูกส่งให้ผู้ดูแลระบบพิจารณาแล้ว",
+    "failedToCancelReservation": "ไม่สามารถยกเลิกการจองได้",
+    "cancelReservationConfirmAuto": "การดำเนินการนี้จะยกเลิกการจองของคุณทันที การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+    "cancelReservationConfirmManual": "การดำเนินการนี้จะส่งคำขอยกเลิกให้ผู้ดูแลระบบพิจารณา คุณจะได้รับการแจ้งเตือนเมื่อดำเนินการเสร็จสิ้น",
+    "userInformation": "ข้อมูลผู้ใช้",
+    "carInformation": "ข้อมูลรถยนต์"
   },
   "users": {
     "management": "จัดการผู้ใช้",
@@ -419,6 +439,12 @@
     "password": "รหัสผ่าน",
     "phone": "โทรศัพท์",
     "role": "บทบาท",
+    "department": "แผนก",
+    "memberSince": "เป็นสมาชิกตั้งแต่",
+    "roles": {
+      "admin": "ผู้ดูแลระบบ",
+      "teacher": "ครู"
+    },
     "userDetails": "รายละเอียดผู้ใช้",
     "userDetailsSubtitle": "ดูข้อมูลโดยละเอียดเกี่ยวกับผู้ใช้และการจองของพวกเขา",
     "userInformation": "ข้อมูลผู้ใช้",

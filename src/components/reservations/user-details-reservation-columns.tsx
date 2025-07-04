@@ -8,6 +8,15 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { StatusSelect } from "@/components/ui/status-select";
 import type { UserProfileWithId } from "@/lib/users-service";
 import { format } from "date-fns";
+import { Link } from "react-router-dom";
+import { Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Extended reservation type with car and user information
 export interface ReservationWithCarAndUser extends ReservationWithId {
@@ -151,6 +160,33 @@ export function createUserDetailsReservationColumns({
         const date = row.getValue("createdAt") as Date;
         return format(date, "MMM dd, yyyy");
       },
+    },
+    {
+      id: "actions",
+      header: () => t("common.actions"),
+      cell: ({ row }) => {
+        const reservation = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">{t("common.actions")}</span>
+                <Eye className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to={`/admin/reservations/${reservation.id}`}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  {t("reservations.viewDetails")}
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+      enableSorting: false,
+      enableHiding: false,
     },
   ];
 }
