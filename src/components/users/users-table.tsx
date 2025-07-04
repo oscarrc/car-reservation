@@ -1,20 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useTranslation } from "react-i18next";
 
-import { ChevronDown, Loader2, Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import type {
   ColumnFiltersState,
   SortingState,
-  VisibilityState,
 } from "@tanstack/react-table";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -36,9 +28,11 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ColumnSelector } from "@/components/ui/column-selector";
+import type { UserProfileWithId } from "@/lib/users-service";
 import { createColumns } from "./users-columns";
 import { useQuery } from "@tanstack/react-query";
-import type { UserProfileWithId } from "@/lib/users-service";
+import { useTranslation } from "react-i18next";
 
 interface UsersTableProps {
   searchTerm?: string;
@@ -64,8 +58,6 @@ export function UsersTable({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(25);
@@ -120,7 +112,7 @@ export function UsersTable({
     onEditUser, 
     onDeleteUser, 
     onSuspendUser, 
-    onUnsuspendUser 
+    onUnsuspendUser,
   });
 
   const table = useReactTable({
@@ -132,12 +124,10 @@ export function UsersTable({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
       rowSelection,
     },
     manualPagination: true,
@@ -172,7 +162,9 @@ export function UsersTable({
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <p className="text-red-600 mb-2">{t("users.errorLoadingUsers")}</p>
-                          <Button onClick={() => refetch()} className="cursor-pointer">{t("common.retryButton")}</Button>
+          <Button onClick={() => refetch()} className="cursor-pointer">
+            {t("common.retryButton")}
+          </Button>
         </div>
       </div>
     );
@@ -180,45 +172,24 @@ export function UsersTable({
 
   return (
     <div className="w-full space-y-4">
-      {/* Search and filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
+      {/* Search and filters - Responsive */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="relative flex-1 w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             placeholder={t("users.searchPlaceholder")}
             value={localSearchTerm}
             onChange={(event) => handleSearchChange(event.target.value)}
-            className="pl-10"
+            className="pl-10 w-full"
           />
         </div>
 
-        {/* Column visibility */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto cursor-pointer">
-              {t("table.columns")} <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {getColumnDisplayName(column.id)}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Column visibility - Using new component */}
+        <ColumnSelector
+          tableId="users-table"
+          columns={table.getAllColumns()}
+          getColumnDisplayName={getColumnDisplayName}
+        />
       </div>
 
       {/* Table */}
@@ -297,4 +268,3 @@ export function UsersTable({
     </div>
   );
 }
- 

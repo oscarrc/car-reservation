@@ -3,18 +3,11 @@
 import * as React from "react";
 
 import type { CarStatus, CarWithId } from "@/types/car";
-import { ChevronDown, Loader2, Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import type {
   ColumnFiltersState,
   SortingState,
-  VisibilityState,
 } from "@tanstack/react-table";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -37,6 +30,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { ColumnSelector } from "@/components/ui/column-selector";
 import { createColumns } from "./cars-columns";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -60,8 +54,6 @@ export function CarsTable({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(25);
@@ -158,12 +150,10 @@ export function CarsTable({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
       rowSelection,
     },
     manualPagination: true,
@@ -208,45 +198,24 @@ export function CarsTable({
 
   return (
     <div className="w-full space-y-4">
-      {/* Search and filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
+      {/* Search and filters - Responsive */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="relative flex-1 w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             placeholder={t("fleet.searchPlaceholder")}
             value={localSearchTerm}
             onChange={(event) => handleSearchChange(event.target.value)}
-            className="pl-10"
+            className="pl-10 w-full"
           />
         </div>
 
-        {/* Column visibility */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto cursor-pointer">
-              {t("table.columns")} <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {getColumnDisplayName(column.id)}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Column visibility - Using new component */}
+        <ColumnSelector
+          tableId="cars-table"
+          columns={table.getAllColumns()}
+          getColumnDisplayName={getColumnDisplayName}
+        />
       </div>
 
       {/* Table */}

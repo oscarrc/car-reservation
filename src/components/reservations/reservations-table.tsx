@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { format, getLocalizedFormats } from "@/lib/date-locale";
-import { Calendar as CalendarIcon, FilterX, ChevronDown } from "lucide-react";
+import { Calendar as CalendarIcon, FilterX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   flexRender,
@@ -13,17 +13,10 @@ import {
   useReactTable,
   type ColumnDef,
   type SortingState,
-  type VisibilityState,
   type RowSelectionState,
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Popover,
   PopoverContent,
@@ -45,6 +38,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { ColumnSelector } from "@/components/ui/column-selector";
 import { cn } from "@/lib/utils";
 import type { ReservationWithId, ReservationStatus } from "@/types/reservation";
 
@@ -73,7 +67,6 @@ export function ReservationsTable({
 }: ReservationsTableProps) {
   const { t } = useTranslation();
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(25);
@@ -107,11 +100,9 @@ export function ReservationsTable({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
       sorting,
-      columnVisibility,
       rowSelection,
     },
     manualPagination: true,
@@ -147,111 +138,94 @@ export function ReservationsTable({
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between py-4">
-        <div className="flex items-center space-x-2">
-          {/* Status Filter */}
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => onStatusFilterChange(value as ReservationStatus | "all")}
-          >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder={t("reservations.filterByStatus")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
-              <SelectItem value="pending">{t("reservations.pending")}</SelectItem>
-              <SelectItem value="confirmed">{t("reservations.confirmed")}</SelectItem>
-              <SelectItem value="cancelled">{t("reservations.cancelled")}</SelectItem>
-              <SelectItem value="cancellation_pending">{t("reservations.cancellation_pending")}</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Start Date Filter */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[200px] justify-start text-left font-normal",
-                  !startDateFilter && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDateFilter ? format(startDateFilter, getLocalizedFormats().dateShort) : <span>{t("reservations.startDate")}</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={startDateFilter}
-                onSelect={onStartDateFilterChange}
-              />
-            </PopoverContent>
-          </Popover>
-
-          {/* End Date Filter */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[200px] justify-start text-left font-normal",
-                  !endDateFilter && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDateFilter ? format(endDateFilter, getLocalizedFormats().dateShort) : <span>{t("reservations.endDate")}</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={endDateFilter}
-                onSelect={onEndDateFilterChange}
-              />
-            </PopoverContent>
-          </Popover>
-
-          {/* Clear Filters */}
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              onClick={clearFilters}
-              className="h-8 px-2 lg:px-3"
+      <div className="flex flex-col space-y-4 py-4">
+        {/* Filters Section - Responsive */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
+          {/* Filter Controls */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-2 w-full lg:w-auto">
+            {/* Status Filter */}
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => onStatusFilterChange(value as ReservationStatus | "all")}
             >
-              <FilterX className="mr-2 h-4 w-4" />
-              {t("reservations.clearFilters")}
-            </Button>
-          )}
-        </div>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder={t("reservations.filterByStatus")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
+                <SelectItem value="pending">{t("reservations.pending")}</SelectItem>
+                <SelectItem value="confirmed">{t("reservations.confirmed")}</SelectItem>
+                <SelectItem value="cancelled">{t("reservations.cancelled")}</SelectItem>
+                <SelectItem value="cancellation_pending">{t("reservations.cancellation_pending")}</SelectItem>
+              </SelectContent>
+            </Select>
 
-        {/* Column Visibility */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              {t("table.columns")} <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {getColumnDisplayName(column.id)}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+            {/* Start Date Filter */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full sm:w-[200px] justify-start text-left font-normal",
+                    !startDateFilter && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDateFilter ? format(startDateFilter, getLocalizedFormats().dateShort) : <span>{t("reservations.startDate")}</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={startDateFilter}
+                  onSelect={onStartDateFilterChange}
+                />
+              </PopoverContent>
+            </Popover>
+
+            {/* End Date Filter */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full sm:w-[200px] justify-start text-left font-normal",
+                    !endDateFilter && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDateFilter ? format(endDateFilter, getLocalizedFormats().dateShort) : <span>{t("reservations.endDate")}</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={endDateFilter}
+                  onSelect={onEndDateFilterChange}
+                />
+              </PopoverContent>
+            </Popover>
+
+            {/* Clear Filters */}
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                onClick={clearFilters}
+                className="w-full sm:w-auto h-8 px-2 lg:px-3"
+              >
+                <FilterX className="mr-2 h-4 w-4" />
+                {t("reservations.clearFilters")}
+              </Button>
+            )}
+          </div>
+
+          {/* Column Visibility - Using new component */}
+          <ColumnSelector
+            tableId="reservations-table"
+            columns={table.getAllColumns()}
+            getColumnDisplayName={getColumnDisplayName}
+          />
+        </div>
       </div>
 
       <div className="rounded-md border">
