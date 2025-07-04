@@ -11,15 +11,18 @@ interface SettingsContextType {
   refetch: () => void;
 }
 
-const SettingsContext = createContext<SettingsContextType>({} as SettingsContextType);
+const SettingsContext = createContext<SettingsContextType>(
+  {} as SettingsContextType
+);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSettings() {
   return useContext(SettingsContext);
 }
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
-  
+
   const {
     data: settings,
     isLoading,
@@ -51,4 +54,4 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       {children}
     </SettingsContext.Provider>
   );
-} 
+}
