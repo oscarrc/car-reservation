@@ -43,7 +43,7 @@ export default function AdminReservationsPage() {
     isLoading: reservationsLoading,
     error: reservationsError,
   } = useQuery({
-    queryKey: ["reservations", queryParams],
+    queryKey: ["reservations", queryParams.pageSize, queryParams.statusFilter, queryParams.startDate, queryParams.endDate],
     queryFn: () => fetchReservations(queryParams),
   });
 

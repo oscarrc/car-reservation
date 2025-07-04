@@ -62,7 +62,7 @@ export default function UserPage() {
     isLoading: reservationsLoading,
     error: reservationsError,
   } = useQuery({
-    queryKey: ["userReservations", userId],
+    queryKey: ["userReservations", userId, statusFilter, startDateFilter, endDateFilter],
     queryFn: () => fetchReservations(queryParams),
     enabled: !!userId,
   });

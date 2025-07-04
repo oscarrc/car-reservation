@@ -55,7 +55,7 @@ export default function UserReservationsPage() {
     isLoading: reservationsLoading,
     error: reservationsError,
   } = useQuery({
-    queryKey: ["userReservations", queryParams],
+    queryKey: ["userReservations", currentUser?.uid, queryParams.pageSize, queryParams.statusFilter, queryParams.startDate, queryParams.endDate],
     queryFn: () => {
       if (!currentUser?.uid) throw new Error("User not authenticated");
       return fetchUserReservations({ ...queryParams, userId: currentUser.uid });
@@ -175,8 +175,6 @@ export default function UserReservationsPage() {
   const handleEndDateFilterChange = (date: Date | undefined) => {
     setEndDateFilter(date);
   };
-
-
 
   const columns = createUserColumns({
     onView: handleView,

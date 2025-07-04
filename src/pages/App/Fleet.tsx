@@ -33,7 +33,7 @@ export default function FleetPage() {
     useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [hasMore, setHasMore] = useState(true);
 
-  const pageSize = 12; // Show 12 cars per load
+  const pageSize = 25;
 
   // Initial load
   const {
@@ -41,7 +41,7 @@ export default function FleetPage() {
     isLoading: initialLoading,
     error: initialError,
   } = useQuery({
-    queryKey: ["cars", "initial"],
+    queryKey: ["cars", "initial", pageSize],
     queryFn: () => fetchCars({ pageSize }),
   });
 
@@ -51,7 +51,7 @@ export default function FleetPage() {
     isLoading: loadingMore,
     refetch: loadMore,
   } = useQuery({
-    queryKey: ["cars", "more", lastDoc],
+    queryKey: ["cars", "more", pageSize, lastDoc],
     queryFn: () => fetchCars({ pageSize, lastDoc }),
     enabled: false,
   });

@@ -62,7 +62,7 @@ export default function CarPage() {
     isLoading: reservationsLoading,
     error: reservationsError,
   } = useQuery({
-    queryKey: ["carReservations", carId],
+    queryKey: ["carReservations", carId, statusFilter, startDateFilter, endDateFilter],
     queryFn: () => fetchReservations(queryParams),
     enabled: !!carId,
   });

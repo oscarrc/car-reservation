@@ -89,45 +89,6 @@ export async function fetchCars({
   }
 }
 
-// Search function for license plate
-export async function searchCarsByLicensePlate(licensePlate: string, pageSize = 10): Promise<CarsResponse> {
-  try {
-    const carsCollection = collection(db, 'cars');
-    const plateUpper = licensePlate.toUpperCase();
-    
-    const q = query(
-      carsCollection,
-      where('licensePlate', '>=', plateUpper),
-      where('licensePlate', '<=', plateUpper + '\uf8ff'),
-      orderBy('licensePlate'),
-      limit(pageSize + 1)
-    );
-
-    const querySnapshot = await getDocs(q);
-    const docs = querySnapshot.docs;
-    
-    const cars: CarWithId[] = [];
-    docs.slice(0, pageSize).forEach((doc) => {
-      cars.push({
-        id: doc.id,
-        ...doc.data() as Car
-      });
-    });
-
-    const hasMore = docs.length > pageSize;
-    const lastDoc = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : null;
-
-    return {
-      cars,
-      lastDoc,
-      hasMore
-    };
-  } catch (error) {
-    console.error('Error searching cars by license plate:', error);
-    throw error;
-  }
-}
-
 // Combined search function that searches both model and license plate
 export async function searchCars(searchTerm: string, pageSize = 10): Promise<CarsResponse> {
   if (!searchTerm.trim()) {
@@ -135,25 +96,85 @@ export async function searchCars(searchTerm: string, pageSize = 10): Promise<Car
   }
 
   try {
-    // Search by model
-    const modelResults = await fetchCars({ 
-      pageSize: Math.ceil(pageSize / 2), 
-      searchTerm 
+    const carsCollection = collection(db, 'cars');
+    const searchLower = searchTerm.toLowerCase().trim();
+    const searchUpper = searchTerm.toUpperCase().trim();
+        
+    // Search by model (case-insensitive)
+    const modelQuery = query(
+      carsCollection,
+      where('model', '>=', searchLower),
+      where('model', '<=', searchLower + '\uf8ff'),
+      orderBy('model'),
+      limit(pageSize)
+    );
+    
+    // Search by license plate (case-insensitive)
+    const plateQuery = query(
+      carsCollection,
+      where('licensePlate', '>=', searchUpper),
+      where('licensePlate', '<=', searchUpper + '\uf8ff'),
+      orderBy('licensePlate'),
+      limit(pageSize)
+    );
+    
+    // Execute both queries in parallel
+    const [modelSnapshot, plateSnapshot] = await Promise.all([
+      getDocs(modelQuery),
+      getDocs(plateQuery)
+    ]);
+    
+    // Process model results
+    const modelCars: CarWithId[] = [];
+    modelSnapshot.docs.forEach((doc) => {
+      const carData = doc.data() as Car;
+      // Additional client-side filtering for exact match
+      if (carData.model.toLowerCase().includes(searchLower)) {
+        modelCars.push({
+          id: doc.id,
+          ...carData
+        });
+      }
     });
     
-    // Search by license plate
-    const plateResults = await searchCarsByLicensePlate(searchTerm, Math.ceil(pageSize / 2));
+    // Process license plate results
+    const plateCars: CarWithId[] = [];
+    plateSnapshot.docs.forEach((doc) => {
+      const carData = doc.data() as Car;
+      // Additional client-side filtering for exact match
+      if (carData.licensePlate.toUpperCase().includes(searchUpper)) {
+        plateCars.push({
+          id: doc.id,
+          ...carData
+        });
+      }
+    });
     
     // Combine and deduplicate results
-    const combinedCars = [...modelResults.cars];
-    plateResults.cars.forEach(car => {
+    const combinedCars = [...modelCars];
+    plateCars.forEach(car => {
       if (!combinedCars.some(existing => existing.id === car.id)) {
         combinedCars.push(car);
       }
     });
-
-    // Sort combined results by model
-    combinedCars.sort((a, b) => a.model.localeCompare(b.model));
+    
+    // Sort combined results by relevance (exact matches first, then alphabetical)
+    combinedCars.sort((a, b) => {
+      const aModelExact = a.model.toLowerCase() === searchLower;
+      const bModelExact = b.model.toLowerCase() === searchLower;
+      const aPlateExact = a.licensePlate.toUpperCase() === searchUpper;
+      const bPlateExact = b.licensePlate.toUpperCase() === searchUpper;
+      
+      // Exact matches first
+      if (aModelExact || aPlateExact) {
+        if (!(bModelExact || bPlateExact)) return -1;
+      } else if (bModelExact || bPlateExact) {
+        return 1;
+      }
+      
+      // Then sort by model
+      return a.model.localeCompare(b.model);
+    });
     
     // Limit to requested page size
     const cars = combinedCars.slice(0, pageSize);

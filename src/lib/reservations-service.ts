@@ -64,20 +64,20 @@ export async function fetchReservations({
 
     // Add date range filter if specified
     if (startDate && endDate) {
-      // Filter by date range
+      // Filter by date range: startDateTime >= startDate AND endDateTime <= endDate
       constraints.push(
         where('startDateTime', '>=', Timestamp.fromDate(startDate)),
-        where('startDateTime', '<=', Timestamp.fromDate(endDate))
+        where('endDateTime', '<=', Timestamp.fromDate(endDate))
       );
     } else if (startDate) {
-      // Filter by start date only
+      // Filter by start date only: startDateTime >= startDate
       constraints.push(
         where('startDateTime', '>=', Timestamp.fromDate(startDate))
       );
     } else if (endDate) {
-      // Filter by end date only
+      // Filter by end date only: endDateTime <= endDate
       constraints.push(
-        where('startDateTime', '<=', Timestamp.fromDate(endDate))
+        where('endDateTime', '<=', Timestamp.fromDate(endDate))
       );
     }
 
