@@ -131,6 +131,8 @@ export default function AdminReservationsPage() {
     setEndDateFilter(date);
   };
 
+
+
   const columns = createAdminColumns({
     isUpdatingStatus: statusMutation.isPending,
     onStatusChange: handleStatusChange,

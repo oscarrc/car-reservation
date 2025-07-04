@@ -126,6 +126,8 @@ export default function UserPage() {
     statusMutation.mutate({ reservationId: reservation.id, status });
   };
 
+
+
   const getStatusVariant = (suspended: boolean) => {
     return suspended ? "destructive" : "success";
   };

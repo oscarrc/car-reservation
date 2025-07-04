@@ -126,6 +126,8 @@ export default function CarPage() {
     statusMutation.mutate({ reservationId: reservation.id, status });
   };
 
+
+
   const getStatusVariant = (status: string) => {
     switch (status) {
       case "available":

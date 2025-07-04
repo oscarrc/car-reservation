@@ -176,6 +176,8 @@ export default function UserReservationsPage() {
     setEndDateFilter(date);
   };
 
+
+
   const columns = createUserColumns({
     onView: handleView,
     onCancel: handleCancel,

@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useTranslation } from "react-i18next";
 
+import type { CarStatus, CarWithId } from "@/types/car";
 import { ChevronDown, Loader2, Search } from "lucide-react";
 import type {
   ColumnFiltersState,
@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { fetchCars, searchCars, updateCarStatus } from "@/lib/cars-service";
 import {
   flexRender,
@@ -32,13 +33,13 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createColumns } from "./cars-columns";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CarWithId, CarStatus } from "@/types/car";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface CarsTableProps {
   searchTerm?: string;
@@ -94,7 +95,9 @@ export function CarsTable({
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
       toast.success(t("fleet.statusUpdated"), {
-        description: t("fleet.statusUpdatedDesc", { status: t(`fleet.${status}`) }),
+        description: t("fleet.statusUpdatedDesc", {
+          status: t(`fleet.${status}`),
+        }),
       });
     },
     onError: (error) => {
@@ -139,8 +142,8 @@ export function CarsTable({
   const totalPages = Math.ceil(totalRows / pageSize);
 
   // Create columns with callbacks
-  const columns = createColumns({ 
-    onEditCar, 
+  const columns = createColumns({
+    onEditCar,
     onDeleteCar,
     onStatusChange: handleStatusChange,
     isUpdatingStatus: statusMutation.isPending,
@@ -171,18 +174,6 @@ export function CarsTable({
     setLocalSearchTerm(value);
   };
 
-  const handlePreviousPage = () => {
-    if (pageIndex > 0) {
-      setPageIndex(pageIndex - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (pageIndex < totalPages - 1) {
-      setPageIndex(pageIndex + 1);
-    }
-  };
-
   const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize);
     setPageIndex(0);
@@ -207,7 +198,9 @@ export function CarsTable({
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <p className="text-red-600 mb-2">{t("fleet.errorLoadingCars")}</p>
-                          <Button onClick={() => refetch()} className="cursor-pointer">{t("common.retryButton")}</Button>
+          <Button onClick={() => refetch()} className="cursor-pointer">
+            {t("common.retryButton")}
+          </Button>
         </div>
       </div>
     );
@@ -280,7 +273,10 @@ export function CarsTable({
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   <div className="flex items-center justify-center">
                     <Loader2 className="h-6 w-6 animate-spin" />
                     <span className="ml-2">{t("loading.loadingCars")}</span>
@@ -305,8 +301,13 @@ export function CarsTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  {debouncedSearchTerm ? t("fleet.searchNoCarsFound") : t("fleet.noCarsFound")}
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  {debouncedSearchTerm
+                    ? t("fleet.searchNoCarsFound")
+                    : t("fleet.noCarsFound")}
                 </TableCell>
               </TableRow>
             )}
@@ -315,45 +316,14 @@ export function CarsTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          {t("common.showing")} {data.length > 0 ? pageIndex * pageSize + 1 : 0} {t("common.to")}{" "}
-          {Math.min((pageIndex + 1) * pageSize, totalRows)} {t("common.of")} {totalRows} {t("fleet.seats").toLowerCase()}(s)
-        </div>
-        <div className="flex items-center space-x-2">
-          <select
-            value={pageSize}
-            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-            className="px-3 py-1 border rounded text-sm"
-          >
-            <option value={5}>5 {t("common.perPage")}</option>
-            <option value={10}>10 {t("common.perPage")}</option>
-            <option value={20}>20 {t("common.perPage")}</option>
-            <option value={50}>50 {t("common.perPage")}</option>
-          </select>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePreviousPage}
-            disabled={pageIndex === 0}
-            className="cursor-pointer"
-          >
-            {t("common.previous")}
-          </Button>
-          <span className="text-sm">
-            {t("common.page")} {pageIndex + 1} {t("common.of")} {totalPages || 1}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNextPage}
-            disabled={pageIndex >= totalPages - 1}
-            className="cursor-pointer"
-          >
-            {t("common.next")}
-          </Button>
-        </div>
-      </div>
+      <TablePagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        totalRows={totalRows}
+        selectedCount={table.getFilteredSelectedRowModel().rows.length}
+        onPageChange={setPageIndex}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
-} 
+}

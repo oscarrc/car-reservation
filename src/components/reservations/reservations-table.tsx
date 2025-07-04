@@ -44,6 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { cn } from "@/lib/utils";
 import type { ReservationWithId, ReservationStatus } from "@/types/reservation";
 
@@ -74,9 +75,32 @@ export function ReservationsTable({
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+  const [pageIndex, setPageIndex] = React.useState(0);
+  const [pageSize, setPageSize] = React.useState(25);
+
+  // Handle client-side pagination
+  const paginatedData = React.useMemo(() => {
+    if (!data) return [];
+    const start = pageIndex * pageSize;
+    const end = start + pageSize;
+    return data.slice(start, end);
+  }, [data, pageIndex, pageSize]);
+
+  const totalRows = data?.length || 0;
+  const totalPages = Math.ceil(totalRows / pageSize);
+
+  // Pagination handlers
+  const handlePageChange = (newPageIndex: number) => {
+    setPageIndex(newPageIndex);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPageIndex(0); // Reset to first page when changing page size
+  };
 
   const table = useReactTable({
-    data,
+    data: paginatedData,
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -90,6 +114,8 @@ export function ReservationsTable({
       columnVisibility,
       rowSelection,
     },
+    manualPagination: true,
+    pageCount: totalPages,
   });
 
   const clearFilters = () => {
@@ -279,29 +305,15 @@ export function ReservationsTable({
         </Table>
       </div>
 
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} {t("common.of")}{" "}
-          {table.getFilteredRowModel().rows.length} {t("common.selected")}.
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            {t("common.previous")}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            {t("common.next")}
-          </Button>
-        </div>
+      <div className="py-4">
+        <TablePagination
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          totalRows={totalRows}
+          selectedCount={table.getFilteredSelectedRowModel().rows.length}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
       </div>
     </div>
   );

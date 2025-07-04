@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { fetchUsers, searchUsers } from "@/lib/users-service";
 import {
   flexRender,
@@ -67,7 +68,7 @@ export function UsersTable({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [pageIndex, setPageIndex] = React.useState(0);
-  const [pageSize, setPageSize] = React.useState(10);
+  const [pageSize, setPageSize] = React.useState(25);
   const [localSearchTerm, setLocalSearchTerm] = React.useState(searchTerm);
 
   // Debounce search term
@@ -145,18 +146,6 @@ export function UsersTable({
 
   const handleSearchChange = (value: string) => {
     setLocalSearchTerm(value);
-  };
-
-  const handlePreviousPage = () => {
-    if (pageIndex > 0) {
-      setPageIndex(pageIndex - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (pageIndex < totalPages - 1) {
-      setPageIndex(pageIndex + 1);
-    }
   };
 
   const handlePageSizeChange = (newSize: number) => {
@@ -297,69 +286,14 @@ export function UsersTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} {t("common.of")} {data.length}{" "}
-          {t("common.selected")}.
-        </div>
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">{t("common.rowsPerPage")}</p>
-            <select
-              value={pageSize}
-              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-              className="h-8 w-[70px] rounded border border-input bg-background px-2 text-sm"
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={30}>30</option>
-              <option value={40}>40</option>
-              <option value={50}>50</option>
-            </select>
-          </div>
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-            {t("common.page")} {pageIndex + 1} {t("common.of")} {Math.max(1, totalPages)}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageIndex(0)}
-              disabled={pageIndex === 0}
-              className="cursor-pointer"
-            >
-              {t("common.first")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePreviousPage}
-              disabled={pageIndex === 0}
-              className="cursor-pointer"
-            >
-              {t("common.previous")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={pageIndex >= totalPages - 1}
-              className="cursor-pointer"
-            >
-              {t("common.next")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageIndex(totalPages - 1)}
-              disabled={pageIndex >= totalPages - 1}
-              className="cursor-pointer"
-            >
-              {t("common.last")}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <TablePagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        totalRows={totalRows}
+        selectedCount={table.getFilteredSelectedRowModel().rows.length}
+        onPageChange={setPageIndex}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 }
