@@ -8,6 +8,13 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useTranslation } from "react-i18next";
 
 interface TablePaginationProps {
@@ -69,17 +76,21 @@ export function TablePagination({
       <div className="flex items-center gap-2">
         {/* Page size selector */}
         <div className="flex items-center gap-2">
-          <select
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="px-3 py-1 border rounded text-sm bg-background"
+          <Select 
+            value={pageSize.toString()} 
+            onValueChange={(value) => onPageSizeChange(Number(value))}
           >
-            {pageSizeOptions.map((size) => (
-              <option key={size} value={size}>
-                {size} {t("common.perPage")}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-fit" size="sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {pageSizeOptions.map((size) => (
+                <SelectItem key={size} value={size.toString()}>
+                  {size} {t("common.perPage")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Page info */}
