@@ -163,10 +163,10 @@ export async function updateReservationStatus(
 // New function to handle user cancellation requests
 export async function requestCancellation(
   reservationId: string,
-  autoApproveCancellation: boolean
+  autoCancelation: boolean
 ): Promise<{ status: ReservationStatus; message: string }> {
   try {
-    const newStatus: ReservationStatus = autoApproveCancellation 
+    const newStatus: ReservationStatus = autoCancelation 
       ? 'cancelled' 
       : 'cancellation_pending';
     
@@ -178,7 +178,7 @@ export async function requestCancellation(
 
     return {
       status: newStatus,
-      message: autoApproveCancellation 
+      message: autoCancelation 
         ? 'Reservation cancelled successfully'
         : 'Cancellation request submitted for admin approval'
     };
@@ -196,7 +196,7 @@ export async function createReservation(reservationData: {
   endDateTime: Date;
   driver?: string;
   comments?: string;
-  autoApprove: boolean;
+  autoReservation: boolean;
 }): Promise<string> {
   try {
     const reservationsCollection = collection(db, 'reservations');
@@ -207,11 +207,11 @@ export async function createReservation(reservationData: {
       carRef: doc(db, 'cars', reservationData.carRef),
       startDateTime: Timestamp.fromDate(reservationData.startDateTime),
       endDateTime: Timestamp.fromDate(reservationData.endDateTime),
-      status: reservationData.autoApprove ? 'confirmed' : 'pending' as ReservationStatus,
+      status: reservationData.autoReservation ? 'confirmed' : 'pending' as ReservationStatus,
       createdAt: Timestamp.fromDate(now),
       updatedAt: Timestamp.fromDate(now),
-      driver: reservationData.driver || undefined,
-      comments: reservationData.comments || undefined,
+      ...(reservationData.driver ? { driver: reservationData.driver } : {}),
+      ...reservationData.comments ? { comments: reservationData.comments } : {},
     };
 
     const docRef = await addDoc(reservationsCollection, reservation);

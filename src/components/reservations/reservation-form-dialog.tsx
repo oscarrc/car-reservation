@@ -93,6 +93,8 @@ export function ReservationFormDialog({
   const queryClient = useQueryClient();
   const [carDropdownOpen, setCarDropdownOpen] = React.useState(false);
 
+  console.log(JSON.stringify(settings, null, 2));
+
   const form = useForm<ReservationFormData>({
     resolver: zodResolver(reservationSchema),
     defaultValues: {
@@ -126,10 +128,6 @@ export function ReservationFormDialog({
         `${data.endDate.toDateString()} ${data.endTime}`
       );
 
-      // When autoReservation is true, reservations require admin confirmation (so autoApprove should be false)
-      // When autoReservation is false, reservations don't require admin confirmation (so autoApprove should be true)
-      const autoApprove = !settings.autoReservation;
-
       return await createReservation({
         userRef: currentUser.uid,
         carRef: data.carId,
@@ -137,7 +135,7 @@ export function ReservationFormDialog({
         endDateTime,
         driver: data.driver || undefined,
         comments: data.comments || undefined,
-        autoApprove,
+        autoReservation: settings?.autoReservation || false,
       });
     },
     onSuccess: (_reservationId, formData) => {
@@ -145,21 +143,15 @@ export function ReservationFormDialog({
         (car) => car.id === formData.carId
       );
 
-      // Ensure settings are available for determining message
-      if (!settings) return;
-
-      // When autoReservation is false, reservations are auto-approved
-      const isAutoApproved = !settings.autoReservation;
-
-      if (isAutoApproved) {
-        toast.success(t("reservations.reservationConfirmed"), {
-          description: t("reservations.reservationConfirmedDesc", {
+      if (settings?.autoReservation) {
+        toast.success(t("reservations.reservationSubmitted"), {
+          description: t("reservations.reservationSubmittedDesc", {
             car: selectedCar?.model || t("common.unknown"),
           }),
         });
       } else {
-        toast.success(t("reservations.reservationSubmitted"), {
-          description: t("reservations.reservationSubmittedDesc", {
+        toast.success(t("reservations.reservationConfirmed"), {
+          description: t("reservations.reservationConfirmedDesc", {
             car: selectedCar?.model || t("common.unknown"),
           }),
         });
@@ -543,8 +535,8 @@ export function ReservationFormDialog({
               : !settings
               ? t("loading.loadingSettings")
               : settings.autoReservation
-              ? t("reservations.requestReservation")
-              : t("reservations.createReservation")}
+              ? t("reservations.createReservation")
+              : t("reservations.requestReservation")}
           </Button>
         </DialogFooter>
       </DialogContent>
