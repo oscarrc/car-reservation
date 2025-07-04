@@ -33,11 +33,43 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
+          "fieldPath": "startDateTime",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "endDateTime",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "reservations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
           "fieldPath": "status",
           "order": "ASCENDING"
         },
         {
           "fieldPath": "startDateTime",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "reservations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "startDateTime",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "endDateTime",
           "order": "DESCENDING"
         }
       ]
