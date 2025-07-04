@@ -189,7 +189,10 @@ export default function AppPage() {
                 {upcomingReservationsWithCarData.map((reservation) => (
                   <div
                     key={reservation.id}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg gap-3 sm:gap-4"
+                    onClick={() =>
+                      navigate(`/app/reservations/${reservation.id}`)
+                    }
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg gap-3 sm:gap-4 cursor-pointer"
                   >
                     {/* Mobile: Full width layout, Desktop: Left side content */}
                     <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1">
