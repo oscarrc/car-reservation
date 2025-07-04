@@ -7,6 +7,7 @@ interface SectionHeaderProps {
   action?: () => void;
   actionText?: string;
   actionIcon?: LucideIcon;
+  actionVariant?: "default" | "outline" | "destructive";
 }
 
 export function SectionHeader({
@@ -15,6 +16,7 @@ export function SectionHeader({
   action,
   actionText,
   actionIcon: ActionIcon,
+  actionVariant = "default",
 }: SectionHeaderProps) {
   return (
     <div className="mb-6 px-4 lg:px-6">
@@ -24,7 +26,7 @@ export function SectionHeader({
           <p className="text-muted-foreground">{subtitle}</p>
         </div>
         {action && actionText && (
-          <Button className="cursor-pointer gap-2" onClick={action}>
+          <Button className="cursor-pointer gap-2" variant={actionVariant} onClick={action}>
             {ActionIcon && <ActionIcon className="h-4 w-4" />}
             <span className="hidden sm:block">{actionText}</span>
           </Button>

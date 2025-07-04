@@ -54,6 +54,27 @@ export default function AdminReservationPage() {
     toast.info(t("reservations.editFeatureComingSoon"));
   };
 
+  // Show loading state first
+  if (reservationLoading) {
+    return (
+      <>
+        <SectionHeader
+          title={t("reservations.reservationDetails")}
+          subtitle={t("reservations.reservationDetailsDesc")}
+          action={handleEditReservation}
+          actionText={t("reservations.editReservation")}
+          actionIcon={Edit}
+        />
+        <div className="px-4 lg:px-6 space-y-6">
+          <ReservationDetailsSkeleton />
+          <UserInfoSkeleton />
+          <CarInfoSkeleton />
+        </div>
+      </>
+    );
+  }
+
+  // Handle error state after loading is complete
   if (reservationError || !reservation) {
     return (
       <>
@@ -91,11 +112,7 @@ export default function AdminReservationPage() {
       <div className="px-4 lg:px-6 space-y-6">
         {/* Content */}
         <div className="space-y-6">
-          {reservationLoading ? (
-            <ReservationDetailsSkeleton />
-          ) : (
-            <ReservationDetailsCard reservation={reservation} t={t} />
-          )}
+          <ReservationDetailsCard reservation={reservation} t={t} />
           {userLoading ? (
             <UserInfoSkeleton />
           ) : user ? (

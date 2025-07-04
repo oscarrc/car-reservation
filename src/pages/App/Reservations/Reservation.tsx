@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { XCircle } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -11,23 +12,13 @@ import { ReservationDetailsCard } from "@/components/reservations/reservation-de
 import { ReservationDetailsSkeleton } from "@/components/reservations/reservation-details-skeleton";
 import { CarInfoCard } from "@/components/reservations/car-info-card";
 import { CarInfoSkeleton } from "@/components/reservations/car-info-skeleton";
+import { CancellationConfirmationDialog } from "@/components/ui/cancellation-confirmation-dialog";
 import { fetchReservationById } from "@/lib/reservations-service";
 import { fetchCarById } from "@/lib/cars-service";
 import { requestCancellation } from "@/lib/reservations-service";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 export default function AppReservationPage() {
   const { reservationId } = useParams<{ reservationId: string }>();
@@ -36,6 +27,7 @@ export default function AppReservationPage() {
   const queryClient = useQueryClient();
   const { settings } = useSettings();
   const { currentUser } = useAuth();
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   // Fetch reservation details
   const { data: reservation, isLoading: reservationLoading, error: reservationError } = useQuery({
@@ -93,6 +85,35 @@ export default function AppReservationPage() {
     ["pending", "confirmed"].includes(reservation.status) &&
     reservation.userRef.id === currentUser?.uid;
 
+  // Handle cancel action
+  const handleCancelAction = () => {
+    if (canCancel) {
+      setShowCancelDialog(true);
+    }
+  };
+
+  // Handle cancel confirmation
+  const handleCancelConfirm = () => {
+    cancelMutation.mutate();
+  };
+
+  // Show loading state first
+  if (reservationLoading) {
+    return (
+      <>
+        <SectionHeader
+          title={t("reservations.reservationDetails")}
+          subtitle={t("reservations.reservationDetailsDesc")}
+        />
+        <div className="px-4 lg:px-6 space-y-6">
+          <ReservationDetailsSkeleton />
+          <CarInfoSkeleton />
+        </div>
+      </>
+    );
+  }
+
+  // Handle error state after loading is complete
   if (reservationError || !reservation) {
     return (
       <>
@@ -118,54 +139,16 @@ export default function AppReservationPage() {
       <SectionHeader
         title={t("reservations.reservationDetails")}
         subtitle={t("reservations.reservationDetailsDesc")}
+        action={canCancel ? handleCancelAction : undefined}
+        actionText={canCancel ? t("reservations.cancelReservation") : undefined}
+        actionIcon={canCancel ? XCircle : undefined}
+        actionVariant={canCancel ? "destructive" : undefined}
       />
 
       <div className="px-4 lg:px-6 space-y-6">
-        {/* Cancel Button */}
-        {canCancel && (
-          <div className="flex justify-end">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">
-                  <XCircle className="h-4 w-4 mr-2" />
-                  {t("reservations.cancelReservation")}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{t("reservations.cancelReservation")}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {settings?.autoCancelation 
-                      ? t("reservations.cancelReservationConfirmAuto")
-                      : t("reservations.cancelReservationConfirmManual")
-                    }
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => cancelMutation.mutate()}
-                    disabled={cancelMutation.isPending}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    {cancelMutation.isPending 
-                      ? t("common.cancelling")
-                      : t("reservations.cancelReservation")
-                    }
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        )}
-
         {/* Content */}
         <div className="space-y-6">
-          {reservationLoading ? (
-            <ReservationDetailsSkeleton />
-          ) : (
-            <ReservationDetailsCard reservation={reservation} t={t} />
-          )}
+          <ReservationDetailsCard reservation={reservation} t={t} />
           {carLoading ? (
             <CarInfoSkeleton />
           ) : car ? (
@@ -173,6 +156,21 @@ export default function AppReservationPage() {
           ) : null}
         </div>
       </div>
+
+      {/* Cancel Confirmation Dialog */}
+      <CancellationConfirmationDialog
+        open={showCancelDialog}
+        onOpenChange={setShowCancelDialog}
+        onConfirm={handleCancelConfirm}
+        title={t("reservations.cancelReservation")}
+        description={
+          settings?.autoCancelation 
+            ? t("reservations.cancelReservationConfirmAuto")
+            : t("reservations.cancelReservationConfirmManual")
+        }
+        isLoading={cancelMutation.isPending}
+        isAutoCancel={settings?.autoCancelation}
+      />
     </>
   );
 }
