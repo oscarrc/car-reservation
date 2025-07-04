@@ -1,11 +1,5 @@
 "use client";
 
-import { format, getLocalizedFormats } from "@/lib/date-locale";
-import { MoreHorizontal, Eye, XCircle } from "lucide-react";
-import type { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +7,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { ReservationWithId, ReservationStatus } from "@/types/reservation";
+import { Eye, MoreHorizontal, XCircle } from "lucide-react";
+import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
+import { format, getLocalizedFormats } from "@/lib/date-locale";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { CarWithId } from "@/types/car";
-import type { UserProfileWithId } from "@/lib/users-service";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Link } from "react-router-dom";
+import type { UserProfileWithId } from "@/lib/users-service";
 
 // Extended reservation type with car and user information
 export interface ReservationWithCarAndUser extends ReservationWithId {
@@ -26,7 +27,16 @@ export interface ReservationWithCarAndUser extends ReservationWithId {
 }
 
 // Helper function to get status variant
-const getStatusVariant = (status: ReservationStatus): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "orange" => {
+const getStatusVariant = (
+  status: ReservationStatus
+):
+  | "default"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "success"
+  | "warning"
+  | "orange" => {
   switch (status) {
     case "pending":
       return "warning";
@@ -85,7 +95,9 @@ export function createUserColumns({
         return (
           <div className="flex flex-col">
             <span className="font-medium">{carInfo.model}</span>
-            <span className="text-sm text-muted-foreground">{carInfo.licensePlate}</span>
+            <span className="text-sm text-muted-foreground">
+              {carInfo.licensePlate}
+            </span>
           </div>
         );
       },
@@ -174,7 +186,7 @@ export function createUserColumns({
               {onCancel && canCancel && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => onCancel(reservation)}
                     className="text-destructive focus:text-destructive"
                   >
@@ -191,4 +203,4 @@ export function createUserColumns({
       enableHiding: false,
     },
   ];
-} 
+}

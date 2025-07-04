@@ -281,52 +281,57 @@ export default function AppPage() {
         </Card>
 
         {/* Business Information Card */}
-        {settings && (
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building className="h-5 w-5" />
-                {t("dashboard.businessInfo")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Business Hours */}
-              <div>
-                <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  {t("dashboard.businessHours")}
-                </h4>
-                <p className="text-muted-foreground">
-                  {settings.businessHoursStart} - {settings.businessHoursEnd}
-                </p>
-              </div>
-
-              {/* Support Information */}
-              {settings.supportEmails && settings.supportEmails.length > 0 && (
-                <>
-                  <Separator />
+        {settings &&
+          (settings?.businessHoursStart || settings?.supportEmails) && (
+            <Card className="w-full">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building className="h-5 w-5" />
+                  {t("dashboard.businessInfo")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Business Hours */}
+                {settings.businessHoursStart && (
                   <div>
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                      {t("dashboard.contactSupport")}
+                      <Clock className="h-4 w-4" />
+                      {t("dashboard.businessHours")}
                     </h4>
-                    <div className="space-y-1">
-                      {settings.supportEmails.map((email, index) => (
-                        <a
-                          key={index}
-                          href={`mailto:${email}`}
-                          className="text-muted-foreground hover:text-primary block transition-colors"
-                        >
-                          {email}
-                        </a>
-                      ))}
-                    </div>
+                    <p className="text-muted-foreground">
+                      {settings.businessHoursStart} -{" "}
+                      {settings.businessHoursEnd}
+                    </p>
                   </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                )}
+
+                {/* Support Information */}
+                {settings.supportEmails &&
+                  settings.supportEmails.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <h4 className="font-semibold mb-2 flex items-center gap-2">
+                          <Mail className="h-4 w-4" />
+                          {t("dashboard.contactSupport")}
+                        </h4>
+                        <div className="space-y-1">
+                          {settings.supportEmails.map((email, index) => (
+                            <a
+                              key={index}
+                              href={`mailto:${email}`}
+                              className="text-muted-foreground hover:text-primary block transition-colors"
+                            >
+                              {email}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+              </CardContent>
+            </Card>
+          )}
       </div>
 
       {/* Reservation Form Dialog */}
