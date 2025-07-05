@@ -287,7 +287,21 @@ export function ReservationsTable({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <div className="relative">
+                      <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-primary rounded-full animate-spin"></div>
+                    </div>
+                    <span className="text-sm text-muted-foreground">{t("loading.loadingReservations")}</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -309,9 +323,7 @@ export function ReservationsTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  {loading
-                    ? t("loading.loadingReservations")
-                    : t("reservations.noReservationsFound")}
+                  {t("reservations.noReservationsFound")}
                 </TableCell>
               </TableRow>
             )}

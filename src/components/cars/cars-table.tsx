@@ -4,7 +4,7 @@ import * as React from "react";
 
 import type { CarStatus, CarWithId } from "@/types/car";
 import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
-import { Loader2, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -13,7 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fetchCars, searchCars, updateCarStatus, type PaginationCursor } from "@/lib/cars-service";
+import {
+  fetchCars,
+  searchCars,
+  updateCarStatus,
+  type PaginationCursor,
+} from "@/lib/cars-service";
 import {
   flexRender,
   getCoreRowModel,
@@ -55,7 +60,9 @@ export function CarsTable({
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(25);
   const [localSearchTerm, setLocalSearchTerm] = React.useState(searchTerm);
-  const [cursors, setCursors] = React.useState<{ [key: number]: PaginationCursor }>({});
+  const [cursors, setCursors] = React.useState<{
+    [key: number]: PaginationCursor;
+  }>({});
 
   // Debounce search term
   const [debouncedSearchTerm, setDebouncedSearchTerm] =
@@ -117,9 +124,9 @@ export function CarsTable({
         pageSize,
         pageIndex,
         searchTerm: debouncedSearchTerm.trim() || undefined,
-        cursor
+        cursor,
       };
-      
+
       if (debouncedSearchTerm.trim()) {
         return searchCars(debouncedSearchTerm, queryParams);
       }
@@ -137,12 +144,12 @@ export function CarsTable({
   // Update cursor cache when new data is fetched
   React.useEffect(() => {
     if (carsResponse?.pagination?.endCursor && pageIndex >= 0) {
-      setCursors(prev => ({
+      setCursors((prev) => ({
         ...prev,
         [pageIndex + 1]: {
           docSnapshot: carsResponse.pagination.endCursor!,
-          direction: 'forward'
-        }
+          direction: "forward",
+        },
       }));
     }
   }, [carsResponse?.pagination?.endCursor, pageIndex]);
@@ -261,9 +268,13 @@ export function CarsTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  <div className="flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                    <span className="ml-2">{t("loading.loadingCars")}</span>
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <div className="relative">
+                      <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-primary rounded-full animate-spin"></div>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {t("loading.loadingCars")}
+                    </span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -322,7 +333,8 @@ export function CarsTable({
         }}
         onLastPage={() => {
           if (pagination?.totalCount) {
-            const lastPageIndex = Math.ceil(pagination.totalCount / pageSize) - 1;
+            const lastPageIndex =
+              Math.ceil(pagination.totalCount / pageSize) - 1;
             setPageIndex(lastPageIndex);
           }
         }}

@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
-import { Loader2, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,7 +12,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fetchUsers, searchUsers, type PaginationCursor } from "@/lib/users-service";
+import {
+  fetchUsers,
+  searchUsers,
+  type PaginationCursor,
+} from "@/lib/users-service";
 import {
   flexRender,
   getCoreRowModel,
@@ -59,7 +63,9 @@ export function UsersTable({
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(25);
   const [localSearchTerm, setLocalSearchTerm] = React.useState(searchTerm);
-  const [cursors, setCursors] = React.useState<{ [key: number]: PaginationCursor }>({});
+  const [cursors, setCursors] = React.useState<{
+    [key: number]: PaginationCursor;
+  }>({});
 
   // Debounce search term
   const [debouncedSearchTerm, setDebouncedSearchTerm] =
@@ -90,9 +96,9 @@ export function UsersTable({
         pageSize,
         pageIndex,
         searchTerm: debouncedSearchTerm.trim() || undefined,
-        cursor
+        cursor,
       };
-      
+
       if (debouncedSearchTerm.trim()) {
         return searchUsers(debouncedSearchTerm, queryParams);
       }
@@ -110,12 +116,12 @@ export function UsersTable({
   // Update cursor cache when new data is fetched
   React.useEffect(() => {
     if (usersResponse?.pagination?.endCursor && pageIndex >= 0) {
-      setCursors(prev => ({
+      setCursors((prev) => ({
         ...prev,
         [pageIndex + 1]: {
           docSnapshot: usersResponse.pagination.endCursor!,
-          direction: 'forward'
-        }
+          direction: "forward",
+        },
       }));
     }
   }, [usersResponse?.pagination?.endCursor, pageIndex]);
@@ -235,9 +241,13 @@ export function UsersTable({
                   colSpan={columns.length}
                   className="h-64 text-center"
                 >
-                  <div className="flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                    {t("loading.loadingUsers")}
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <div className="relative">
+                      <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-primary rounded-full animate-spin"></div>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {t("loading.loadingUsers")}
+                    </span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -294,7 +304,8 @@ export function UsersTable({
         }}
         onLastPage={() => {
           if (pagination?.totalCount) {
-            const lastPageIndex = Math.ceil(pagination.totalCount / pageSize) - 1;
+            const lastPageIndex =
+              Math.ceil(pagination.totalCount / pageSize) - 1;
             setPageIndex(lastPageIndex);
           }
         }}
