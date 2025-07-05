@@ -1,4 +1,4 @@
-import { Building, Calendar, Car, Clock, Mail, Plus } from "lucide-react";
+import { Building, Calendar, CarFront, Clock, Mail, Plus } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -7,6 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  countActiveUserReservations,
+  fetchUserReservations,
+} from "@/lib/reservations-service";
 import { format, getLocalizedFormats } from "@/lib/date-locale";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +21,6 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchCarsByIds } from "@/lib/cars-service";
-import { fetchUserReservations, countActiveUserReservations } from "@/lib/reservations-service";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -103,7 +106,10 @@ export default function AppPage() {
       if (!currentUser?.uid) throw new Error("User not authenticated");
       return countActiveUserReservations(currentUser.uid);
     },
-    enabled: !!currentUser?.uid && !!settings?.maxConcurrentReservations && settings.maxConcurrentReservations > 0,
+    enabled:
+      !!currentUser?.uid &&
+      !!settings?.maxConcurrentReservations &&
+      settings.maxConcurrentReservations > 0,
     staleTime: 30000, // Consider data fresh for 30 seconds
     gcTime: 300000, // Keep in cache for 5 minutes
   });
@@ -237,7 +243,7 @@ export default function AppPage() {
                       <div className="flex-1 min-w-0">
                         {/* Car info */}
                         <div className="flex items-center gap-2 mb-2 sm:mb-1">
-                          <Car className="h-4 w-4 flex-shrink-0" />
+                          <CarFront className="h-4 w-4 flex-shrink-0" />
                           {reservation.carInfo && (
                             <div className="flex items-center gap-2 min-w-0">
                               {getColorCircle(reservation.carInfo.color)}

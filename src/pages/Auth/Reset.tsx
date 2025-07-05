@@ -10,7 +10,7 @@ import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Car } from "lucide-react";
+import { CarFront } from "lucide-react";
 import type { FirebaseError } from "firebase/app";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,7 +64,7 @@ const Reset = () => {
     }
 
     verifyResetCode();
-  }, [oobCode]);
+  }, [oobCode, t]);
 
   // If user is already logged in, redirect to app
   if (currentUser) {
@@ -115,7 +115,7 @@ const Reset = () => {
             className="flex items-center gap-2 self-center font-medium"
           >
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <Car className="size-4" />
+              <CarFront className="size-4" />
             </div>
             {t("brand.name")}
           </Link>
@@ -145,14 +145,16 @@ const Reset = () => {
           className="flex items-center gap-2 self-center font-medium"
         >
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-            <Car className="size-4" />
+            <CarFront className="size-4" />
           </div>
           {t("brand.name")}
         </Link>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">{t("auth.setNewPassword")}</CardTitle>
+            <CardTitle className="text-xl">
+              {t("auth.setNewPassword")}
+            </CardTitle>
             <CardDescription>
               {validCode && userEmail
                 ? `${t("auth.resetPasswordFor")} ${userEmail}`
@@ -217,7 +219,9 @@ const Reset = () => {
                       className="w-full cursor-pointer"
                       disabled={loading}
                     >
-                      {loading ? t("auth.resetting") : t("auth.resetPasswordBtn")}
+                      {loading
+                        ? t("auth.resetting")
+                        : t("auth.resetPasswordBtn")}
                     </Button>
                   )}
                   <div className="text-center">
@@ -225,7 +229,9 @@ const Reset = () => {
                       to="/login"
                       className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
                     >
-                      {message ? t("auth.continueToLogin") : t("auth.backToLogin")}
+                      {message
+                        ? t("auth.continueToLogin")
+                        : t("auth.backToLogin")}
                     </Link>
                   </div>
                 </div>

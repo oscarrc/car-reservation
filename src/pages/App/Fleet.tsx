@@ -1,4 +1,4 @@
-import { Car, Users } from "lucide-react";
+import { CarFront, Users } from "lucide-react";
 import type { CarStatus, CarWithId } from "@/types/car";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
@@ -133,7 +133,7 @@ export default function FleetPage() {
           </div>
         ) : allCars.length === 0 ? (
           <div className="text-center py-12">
-            <Car className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <CarFront className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-lg font-medium text-muted-foreground">
               {t("fleet.noCarsFound")}
             </p>
@@ -149,7 +149,7 @@ export default function FleetPage() {
                 >
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3">
-                      <Car className="h-5 w-5" />
+                      <CarFront className="h-5 w-5" />
                       <span className="font-semibold text-lg">{car.model}</span>
                       <Badge variant={getStatusVariant(car.status)}>
                         {t(`fleet.${car.status}`)}

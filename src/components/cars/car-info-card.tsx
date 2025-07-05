@@ -1,6 +1,6 @@
 "use client";
 
-import { Car, Users } from "lucide-react";
+import { CarFront, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +47,7 @@ export function CarInfoCard({ car, t }: CarInfoCardProps) {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Car className="h-5 w-5" />
+            <CarFront className="h-5 w-5" />
             {t("reservations.carInformation")}
           </div>
           <Badge variant={getStatusVariant(car.status)}>

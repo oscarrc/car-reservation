@@ -2,7 +2,12 @@
 
 import * as React from "react";
 
-import { Calendar as CalendarIcon, Car, Clock2Icon, Users } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  CarFront,
+  Clock2Icon,
+  Users,
+} from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   Command,
@@ -48,6 +53,7 @@ import {
   fetchAvailableCarsForDateRange,
   fetchCarById,
 } from "@/lib/cars-service";
+import { format, getLocalizedFormats } from "@/lib/date-locale";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
@@ -57,7 +63,6 @@ import type { ReservationWithId } from "@/types/reservation";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { fetchUserById } from "@/lib/users-service";
-import { format, getLocalizedFormats } from "@/lib/date-locale";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
@@ -463,7 +468,7 @@ function CreateReservationForm({
                                 );
                                 return selectedCar ? (
                                   <div className="flex items-center gap-3 flex-1 text-left">
-                                    <Car className="h-4 w-4" />
+                                    <CarFront className="h-4 w-4" />
                                     <div className="flex items-center gap-2">
                                       {getColorCircle(selectedCar.color)}
                                       <span className="font-medium">
@@ -523,7 +528,7 @@ function CreateReservationForm({
                                   }}
                                   className="flex items-center gap-3 p-3"
                                 >
-                                  <Car className="h-4 w-4" />
+                                  <CarFront className="h-4 w-4" />
                                   <div className="flex items-center gap-2 flex-1">
                                     {getColorCircle(car.color)}
                                     <div className="flex flex-col">
@@ -765,7 +770,10 @@ function EditReservationForm({
                 {t("reservations.startDateTime")}
               </label>
               <Input
-                value={format(reservation.startDateTime, getLocalizedFormats().dateTime)}
+                value={format(
+                  reservation.startDateTime,
+                  getLocalizedFormats().dateTime
+                )}
                 disabled
               />
             </div>
@@ -773,7 +781,13 @@ function EditReservationForm({
               <label className="text-sm font-medium">
                 {t("reservations.endDateTime")}
               </label>
-              <Input value={format(reservation.endDateTime, getLocalizedFormats().dateTime)} disabled />
+              <Input
+                value={format(
+                  reservation.endDateTime,
+                  getLocalizedFormats().dateTime
+                )}
+                disabled
+              />
             </div>
           </div>
         </div>
@@ -846,7 +860,7 @@ function EditReservationForm({
                               );
                               return selectedCar ? (
                                 <div className="flex items-center gap-3 flex-1 text-left">
-                                  <Car className="h-4 w-4" />
+                                  <CarFront className="h-4 w-4" />
                                   <div className="flex items-center gap-2">
                                     {getColorCircle(selectedCar.color)}
                                     <span className="font-medium">
@@ -902,7 +916,7 @@ function EditReservationForm({
                                 }}
                                 className="flex items-center gap-3 p-3"
                               >
-                                <Car className="h-4 w-4" />
+                                <CarFront className="h-4 w-4" />
                                 <div className="flex items-center gap-2 flex-1">
                                   {getColorCircle(car.color)}
                                   <div className="flex flex-col">

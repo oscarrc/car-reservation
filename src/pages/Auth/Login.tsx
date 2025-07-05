@@ -1,9 +1,9 @@
 import { Link, Navigate } from "react-router-dom";
 
-import { Car } from "lucide-react";
+import { CarFront } from "lucide-react";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { LoginForm } from "@/components/login-form";
 import { useAuth } from "@/contexts/AuthContext";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { useTranslation } from "react-i18next";
 
 const Login = () => {
@@ -26,7 +26,7 @@ const Login = () => {
           className="flex items-center gap-2 self-center font-medium"
         >
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-            <Car className="size-4" />
+            <CarFront className="size-4" />
           </div>
           {t("brand.name")}
         </Link>

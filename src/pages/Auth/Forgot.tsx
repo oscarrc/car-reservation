@@ -8,7 +8,7 @@ import {
 import { Link, Navigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
-import { Car } from "lucide-react";
+import { CarFront } from "lucide-react";
 import type { FirebaseError } from "firebase/app";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,7 +67,7 @@ const Forgot = () => {
           className="flex items-center gap-2 self-center font-medium"
         >
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-            <Car className="size-4" />
+            <CarFront className="size-4" />
           </div>
           {t("brand.name")}
         </Link>
