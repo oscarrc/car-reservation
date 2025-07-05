@@ -6,9 +6,11 @@ import {
   EmailAuthProvider,
   type User
 } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import type { FirebaseError } from 'firebase/app';
+import { generateUserSearchKeywords } from './search-utils';
+import type { UserProfile } from '@/types/user';
 
 export interface UpdateProfileData {
   name: string;
@@ -31,10 +33,31 @@ export interface UpdatePasswordData {
 export async function updateUserProfile(uid: string, profileData: UpdateProfileData): Promise<void> {
   try {
     const userDocRef = doc(db, 'users', uid);
-    await updateDoc(userDocRef, {
-      name: profileData.name,
-      phone: profileData.phone,
-    });
+    
+    // Get current user data to merge with updates
+    const currentUserDoc = await getDoc(userDocRef);
+    if (currentUserDoc.exists()) {
+      const currentUserData = currentUserDoc.data() as UserProfile;
+      const mergedUserData = { 
+        ...currentUserData, 
+        name: profileData.name, 
+        phone: profileData.phone 
+      };
+      
+      // Generate new search keywords
+      const searchKeywords = generateUserSearchKeywords(mergedUserData);
+      
+      await updateDoc(userDocRef, {
+        name: profileData.name,
+        phone: profileData.phone,
+        searchKeywords
+      });
+    } else {
+      await updateDoc(userDocRef, {
+        name: profileData.name,
+        phone: profileData.phone,
+      });
+    }
   } catch (error) {
     console.error('Error updating user profile:', error);
     throw new Error('Failed to update profile');
@@ -59,9 +82,28 @@ export async function updateUserEmail(user: User, updateData: UpdateEmailData): 
     // Update email in Firestore profile
     if (user.uid) {
       const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, {
-        email: updateData.newEmail
-      });
+      
+      // Get current user data to merge with updates
+      const currentUserDoc = await getDoc(userDocRef);
+      if (currentUserDoc.exists()) {
+        const currentUserData = currentUserDoc.data() as UserProfile;
+        const mergedUserData = { 
+          ...currentUserData, 
+          email: updateData.newEmail 
+        };
+        
+        // Generate new search keywords
+        const searchKeywords = generateUserSearchKeywords(mergedUserData);
+        
+        await updateDoc(userDocRef, {
+          email: updateData.newEmail,
+          searchKeywords
+        });
+      } else {
+        await updateDoc(userDocRef, {
+          email: updateData.newEmail
+        });
+      }
     }
   } catch (error) {
     console.error('Error updating email:', error);

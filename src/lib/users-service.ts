@@ -17,6 +17,7 @@ import {
 
 import type { UserProfile } from '@/types/user';
 import { db } from './firebase';
+import { prepareSearchTerms } from './search-utils';
 
 // Common pagination interfaces (matching other services)
 export interface PaginationCursor {
@@ -58,15 +59,14 @@ export interface UsersQueryParams {
 function buildUsersQueryConstraints(params: UsersQueryParams): QueryConstraint[] {
   const constraints: QueryConstraint[] = [];
 
-  // Add search constraints if searchTerm is provided
+  // Add search constraints using array-contains-any
   if (params.searchTerm?.trim()) {
-    // For simple search, we'll search by name and email
-    // Note: Firestore doesn't support full-text search, so we use startsWith
-    const searchLower = params.searchTerm.toLowerCase();
-    constraints.push(
-      where('name', '>=', searchLower),
-      where('name', '<=', searchLower + '\uf8ff')
-    );
+    const searchTerms = prepareSearchTerms(params.searchTerm);
+    if (searchTerms.length > 0) {
+      constraints.push(
+        where('searchKeywords', 'array-contains-any', searchTerms)
+      );
+    }
   }
 
   // Add role filter

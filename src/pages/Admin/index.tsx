@@ -40,7 +40,6 @@ export default function AdminPage() {
           </p>
         )}
       </div>
-
       <div className="grid gap-4 lg:grid-cols-5 px-4 lg:px-6">
         <ReservationsChart
           className="lg:col-span-3"

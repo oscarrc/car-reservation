@@ -5,6 +5,7 @@ export interface UserProfile {
   role: 'admin' | 'teacher';
   language?: 'en' | 'th';
   suspended: boolean;
+  searchKeywords?: string[];
 }
 
 export interface AuthUser {

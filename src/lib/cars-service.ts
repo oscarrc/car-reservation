@@ -19,6 +19,7 @@ import {
 } from 'firebase/firestore';
 
 import { db } from './firebase';
+import { generateCarSearchKeywords, prepareSearchTerms } from './search-utils';
 
 // Common pagination interfaces
 export interface PaginationCursor {
@@ -55,13 +56,14 @@ export interface CarsQueryParams {
 function buildCarsQueryConstraints(params: CarsQueryParams): QueryConstraint[] {
   const constraints: QueryConstraint[] = [];
   
-  // Add search constraints
+  // Add search constraints using array-contains-any
   if (params.searchTerm?.trim()) {
-    const searchLower = params.searchTerm.toLowerCase();
-    constraints.push(
-      where('model', '>=', searchLower),
-      where('model', '<=', searchLower + '\uf8ff')
-    );
+    const searchTerms = prepareSearchTerms(params.searchTerm);
+    if (searchTerms.length > 0) {
+      constraints.push(
+        where('searchKeywords', 'array-contains-any', searchTerms)
+      );
+    }
   }
 
   // Add status filter
@@ -168,7 +170,16 @@ export async function searchCars(searchTerm: string, params: Omit<CarsQueryParam
 export async function createCar(carData: Car): Promise<string> {
   try {
     const carsCollection = collection(db, 'cars');
-    const docRef = await addDoc(carsCollection, carData);
+    
+    // Generate search keywords for the car
+    const searchKeywords = generateCarSearchKeywords(carData);
+    
+    const carWithSearchKeywords = {
+      ...carData,
+      searchKeywords
+    };
+    
+    const docRef = await addDoc(carsCollection, carWithSearchKeywords);
     return docRef.id;
   } catch (error) {
     console.error('Error creating car:', error);
@@ -180,7 +191,31 @@ export async function createCar(carData: Car): Promise<string> {
 export async function updateCar(carId: string, carData: Partial<Car>): Promise<void> {
   try {
     const carDocRef = doc(db, 'cars', carId);
-    await updateDoc(carDocRef, carData);
+    
+    // If any searchable fields are being updated, regenerate search keywords
+    const searchableFields = ['model', 'licensePlate', 'color'];
+    const isSearchableFieldUpdated = searchableFields.some(field => field in carData);
+    
+    if (isSearchableFieldUpdated) {
+      // Get current car data to merge with updates
+      const currentCarDoc = await getDoc(carDocRef);
+      if (currentCarDoc.exists()) {
+        const currentCarData = currentCarDoc.data() as Car;
+        const mergedCarData = { ...currentCarData, ...carData };
+        
+        // Generate new search keywords
+        const searchKeywords = generateCarSearchKeywords(mergedCarData);
+        
+        await updateDoc(carDocRef, {
+          ...carData,
+          searchKeywords
+        });
+      } else {
+        await updateDoc(carDocRef, carData);
+      }
+    } else {
+      await updateDoc(carDocRef, carData);
+    }
   } catch (error) {
     console.error('Error updating car:', error);
     throw error;

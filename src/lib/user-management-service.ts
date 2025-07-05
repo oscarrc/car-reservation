@@ -24,6 +24,7 @@ import {
 } from 'firebase/firestore';
 
 import type { UserProfile } from '@/types/user';
+import { generateUserSearchKeywords } from './search-utils';
 
 export interface CreateUserData {
   name: string;
@@ -61,7 +62,15 @@ export async function createUser(userData: CreateUserData): Promise<{ uid: strin
       suspended: false // New users are not suspended by default
     };
 
-    await setDoc(doc(db, 'users', newUser.uid), userProfile);
+    // Generate search keywords for the user
+    const searchKeywords = generateUserSearchKeywords(userProfile);
+    
+    const userProfileWithSearchKeywords = {
+      ...userProfile,
+      searchKeywords
+    };
+
+    await setDoc(doc(db, 'users', newUser.uid), userProfileWithSearchKeywords);
 
     // Send email verification to new user
     await sendEmailVerification(newUser);
@@ -102,7 +111,15 @@ export async function updateUser(
       language: currentProfile.language // Preserve existing language preference
     };
 
-    await updateDoc(userDocRef, updatedProfile as Partial<UserProfile>);
+    // Generate search keywords for the updated user profile
+    const searchKeywords = generateUserSearchKeywords(updatedProfile);
+    
+    const updatedProfileWithSearchKeywords = {
+      ...updatedProfile,
+      searchKeywords
+    };
+
+    await updateDoc(userDocRef, updatedProfileWithSearchKeywords as Partial<UserProfile>);
 
   } catch (error) {
     console.error('Error updating user:', error);
