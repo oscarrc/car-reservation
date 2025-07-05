@@ -17,9 +17,9 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore';
+import { generateCarSearchKeywords, prepareSearchTerms } from './search-utils';
 
 import { db } from './firebase';
-import { generateCarSearchKeywords, prepareSearchTerms } from './search-utils';
 
 // Common pagination interfaces
 export interface PaginationCursor {

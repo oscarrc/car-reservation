@@ -1,14 +1,13 @@
 import { CarFront, Users } from "lucide-react";
 import type { CarStatus, CarWithId } from "@/types/car";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchCars } from "@/lib/cars-service";
+import { fetchCars, type PaginationCursor } from "@/lib/cars-service";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
@@ -29,54 +28,58 @@ const getStatusVariant = (status: CarStatus) => {
 export default function FleetPage() {
   const { t } = useTranslation();
   const [allCars, setAllCars] = useState<CarWithId[]>([]);
-  const [lastDoc, setLastDoc] =
-    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [cursors, setCursors] = useState<{ [key: number]: PaginationCursor }>({});
+  const [pageIndex, setPageIndex] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   const pageSize = 25;
 
-  // Initial load
+  // Fetch cars with cursor pagination
   const {
-    data: initialData,
+    data: carsResponse,
     isLoading: initialLoading,
     error: initialError,
   } = useQuery({
-    queryKey: ["cars", "initial", pageSize],
-    queryFn: () => fetchCars({ pageSize }),
+    queryKey: ["cars", "fleet", pageIndex, pageSize],
+    queryFn: async () => {
+      const cursor = cursors[pageIndex];
+      return fetchCars({ 
+        pageSize, 
+        pageIndex,
+        cursor
+      });
+    },
   });
 
-  // Load more cars
-  const {
-    data: moreData,
-    isLoading: loadingMore,
-    refetch: loadMore,
-  } = useQuery({
-    queryKey: ["cars", "more", pageSize, lastDoc],
-    queryFn: () => fetchCars({ pageSize, lastDoc }),
-    enabled: false,
-  });
-
-  // Handle initial data
+  // Handle data updates
   useEffect(() => {
-    if (initialData) {
-      setAllCars(initialData.cars);
-      setLastDoc(initialData.lastDoc);
-      setHasMore(initialData.hasMore);
+    if (carsResponse) {
+      if (pageIndex === 0) {
+        // First page - replace all cars
+        setAllCars(carsResponse.cars);
+      } else {
+        // Subsequent pages - append cars
+        setAllCars(prev => [...prev, ...carsResponse.cars]);
+      }
+      
+      setHasNextPage(carsResponse.pagination.hasNextPage);
+      
+      // Update cursor cache
+      if (carsResponse.pagination.endCursor && pageIndex >= 0) {
+        setCursors(prev => ({
+          ...prev,
+          [pageIndex + 1]: {
+            docSnapshot: carsResponse.pagination.endCursor!,
+            direction: 'forward'
+          }
+        }));
+      }
     }
-  }, [initialData]);
-
-  // Handle more data
-  useEffect(() => {
-    if (moreData) {
-      setAllCars((prev) => [...prev, ...moreData.cars]);
-      setLastDoc(moreData.lastDoc);
-      setHasMore(moreData.hasMore);
-    }
-  }, [moreData]);
+  }, [carsResponse, pageIndex]);
 
   const handleLoadMore = () => {
-    if (hasMore && !loadingMore) {
-      loadMore();
+    if (hasNextPage && !initialLoading) {
+      setPageIndex(prev => prev + 1);
     }
   };
 
@@ -226,15 +229,15 @@ export default function FleetPage() {
             </div>
 
             {/* Load More Button */}
-            {hasMore && (
+            {hasNextPage && (
               <div className="flex justify-center mt-8">
                 <Button
                   onClick={handleLoadMore}
-                  disabled={loadingMore}
+                  disabled={initialLoading}
                   variant="outline"
                   size="lg"
                 >
-                  {loadingMore ? (
+                  {initialLoading ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
                       {t("common.loading")}
@@ -247,7 +250,7 @@ export default function FleetPage() {
             )}
 
             {/* No more cars message */}
-            {!hasMore && allCars.length > 0 && (
+            {!hasNextPage && allCars.length > 0 && (
               <div className="text-center mt-8">
                 <p className="text-sm text-muted-foreground">
                   {t("browse.noMoreCars")}
@@ -260,7 +263,7 @@ export default function FleetPage() {
               <p className="text-xs text-muted-foreground">
                 {t("browse.viewingCars", {
                   count: allCars.length,
-                  total: hasMore ? `${allCars.length}+` : allCars.length,
+                  total: hasNextPage ? `${allCars.length}+` : allCars.length,
                 })}
               </p>
             </div>
