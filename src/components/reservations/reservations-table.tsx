@@ -46,21 +46,41 @@ interface ReservationsTableProps {
   columns: ColumnDef<ReservationWithId>[];
   data: ReservationWithId[];
   loading?: boolean;
+  pagination?: {
+    pageIndex: number;
+    pageSize: number;
+    totalCount: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
   onStatusFilterChange: (status: ReservationStatus | "all") => void;
   onStartDateFilterChange: (date: Date | undefined) => void;
   onEndDateFilterChange: (date: Date | undefined) => void;
+  onPageChange?: (pageIndex: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  onFirstPage?: () => void;
+  onPreviousPage?: () => void;
+  onNextPage?: () => void;
+  onLastPage?: () => void;
   statusFilter: ReservationStatus | "all";
   startDateFilter: Date | undefined;
   endDateFilter: Date | undefined;
 }
 
-export function ReservationsTable({ 
-  columns, 
-  data, 
+export function ReservationsTable({
+  columns,
+  data,
   loading = false,
+  pagination,
   onStatusFilterChange,
   onStartDateFilterChange,
   onEndDateFilterChange,
+  onPageChange,
+  onPageSizeChange,
+  onFirstPage,
+  onPreviousPage,
+  onNextPage,
+  onLastPage,
   statusFilter,
   startDateFilter,
   endDateFilter,
@@ -68,32 +88,29 @@ export function ReservationsTable({
   const { t } = useTranslation();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
-  const [pageIndex, setPageIndex] = React.useState(0);
-  const [pageSize, setPageSize] = React.useState(25);
 
-  // Handle client-side pagination
-  const paginatedData = React.useMemo(() => {
-    if (!data) return [];
-    const start = pageIndex * pageSize;
-    const end = start + pageSize;
-    return data.slice(start, end);
-  }, [data, pageIndex, pageSize]);
-
-  const totalRows = data?.length || 0;
-  const totalPages = Math.ceil(totalRows / pageSize);
+  // Use provided pagination or fallback to defaults
+  const pageIndex = pagination?.pageIndex || 0;
+  const pageSize = pagination?.pageSize || 25;
+  const totalRows = pagination?.totalCount || data?.length || 0;
+  const hasNextPage = pagination?.hasNextPage || false;
+  const hasPreviousPage = pagination?.hasPreviousPage || false;
 
   // Pagination handlers
   const handlePageChange = (newPageIndex: number) => {
-    setPageIndex(newPageIndex);
+    if (onPageChange) {
+      onPageChange(newPageIndex);
+    }
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
-    setPageSize(newPageSize);
-    setPageIndex(0); // Reset to first page when changing page size
+    if (onPageSizeChange) {
+      onPageSizeChange(newPageSize);
+    }
   };
 
   const table = useReactTable({
-    data: paginatedData,
+    data: data || [],
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -106,7 +123,7 @@ export function ReservationsTable({
       rowSelection,
     },
     manualPagination: true,
-    pageCount: totalPages,
+    pageCount: Math.ceil(totalRows / pageSize),
   });
 
   const clearFilters = () => {
@@ -115,7 +132,10 @@ export function ReservationsTable({
     onEndDateFilterChange(undefined);
   };
 
-  const hasActiveFilters = statusFilter !== "all" || startDateFilter !== undefined || endDateFilter !== undefined;
+  const hasActiveFilters =
+    statusFilter !== "all" ||
+    startDateFilter !== undefined ||
+    endDateFilter !== undefined;
 
   // Function to get translated column name
   const getColumnDisplayName = (columnId: string) => {
@@ -146,17 +166,27 @@ export function ReservationsTable({
             {/* Status Filter */}
             <Select
               value={statusFilter}
-              onValueChange={(value) => onStatusFilterChange(value as ReservationStatus | "all")}
+              onValueChange={(value) =>
+                onStatusFilterChange(value as ReservationStatus | "all")
+              }
             >
               <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder={t("reservations.filterByStatus")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
-                <SelectItem value="pending">{t("reservations.pending")}</SelectItem>
-                <SelectItem value="confirmed">{t("reservations.confirmed")}</SelectItem>
-                <SelectItem value="cancelled">{t("reservations.cancelled")}</SelectItem>
-                <SelectItem value="cancellation_pending">{t("reservations.cancellation_pending")}</SelectItem>
+                <SelectItem value="pending">
+                  {t("reservations.pending")}
+                </SelectItem>
+                <SelectItem value="confirmed">
+                  {t("reservations.confirmed")}
+                </SelectItem>
+                <SelectItem value="cancelled">
+                  {t("reservations.cancelled")}
+                </SelectItem>
+                <SelectItem value="cancellation_pending">
+                  {t("reservations.cancellation_pending")}
+                </SelectItem>
               </SelectContent>
             </Select>
 
@@ -171,7 +201,11 @@ export function ReservationsTable({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDateFilter ? format(startDateFilter, getLocalizedFormats().dateShort) : <span>{t("reservations.startDate")}</span>}
+                  {startDateFilter ? (
+                    format(startDateFilter, getLocalizedFormats().dateShort)
+                  ) : (
+                    <span>{t("reservations.startDate")}</span>
+                  )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -194,7 +228,11 @@ export function ReservationsTable({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDateFilter ? format(endDateFilter, getLocalizedFormats().dateShort) : <span>{t("reservations.endDate")}</span>}
+                  {endDateFilter ? (
+                    format(endDateFilter, getLocalizedFormats().dateShort)
+                  ) : (
+                    <span>{t("reservations.endDate")}</span>
+                  )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -271,7 +309,9 @@ export function ReservationsTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  {loading ? t("loading.loadingReservations") : t("reservations.noReservationsFound")}
+                  {loading
+                    ? t("loading.loadingReservations")
+                    : t("reservations.noReservationsFound")}
                 </TableCell>
               </TableRow>
             )}
@@ -285,12 +325,16 @@ export function ReservationsTable({
           pageSize={pageSize}
           totalRows={totalRows}
           selectedCount={table.getFilteredSelectedRowModel().rows.length}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
+          onFirstPage={onFirstPage}
+          onPreviousPage={onPreviousPage}
+          onNextPage={onNextPage}
+          onLastPage={onLastPage}
         />
       </div>
     </div>
   );
 }
-
- 

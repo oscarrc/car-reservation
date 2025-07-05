@@ -6,6 +6,8 @@ import {
   collection,
   deleteDoc,
   doc,
+  endBefore,
+  getCountFromServer,
   getDoc,
   getDocs,
   limit,
@@ -18,55 +20,111 @@ import {
 
 import { db } from './firebase';
 
+// Common pagination interfaces
+export interface PaginationCursor {
+  docSnapshot: QueryDocumentSnapshot<DocumentData>;
+  direction: 'forward' | 'backward';
+}
+
+export interface PaginationState {
+  pageIndex: number;
+  pageSize: number;
+  totalCount?: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  startCursor?: QueryDocumentSnapshot<DocumentData>;
+  endCursor?: QueryDocumentSnapshot<DocumentData>;
+}
+
 export interface CarsResponse {
   cars: CarWithId[];
-  lastDoc: QueryDocumentSnapshot<DocumentData> | null;
-  hasMore: boolean;
-  total?: number;
+  pagination: PaginationState;
 }
 
 export interface CarsQueryParams {
   pageSize?: number;
-  lastDoc?: QueryDocumentSnapshot<DocumentData> | null;
+  pageIndex?: number;
+  cursor?: PaginationCursor;
   searchTerm?: string;
+  status?: CarStatus;
+  orderBy?: 'model' | 'licensePlate' | 'createdAt';
+  orderDirection?: 'asc' | 'desc';
 }
 
-export async function fetchCars({
-  pageSize = 10,
-  lastDoc = null,
-  searchTerm = ''
-}: CarsQueryParams): Promise<CarsResponse> {
+// Helper function to build query constraints
+function buildCarsQueryConstraints(params: CarsQueryParams): QueryConstraint[] {
+  const constraints: QueryConstraint[] = [];
+  
+  // Add search constraints
+  if (params.searchTerm?.trim()) {
+    const searchLower = params.searchTerm.toLowerCase();
+    constraints.push(
+      where('model', '>=', searchLower),
+      where('model', '<=', searchLower + '\uf8ff')
+    );
+  }
+
+  // Add status filter
+  if (params.status) {
+    constraints.push(where('status', '==', params.status));
+  }
+
+  // Add ordering
+  const orderField = params.orderBy || 'model';
+  const orderDir = params.orderDirection || 'asc';
+  constraints.push(orderBy(orderField, orderDir));
+
+  return constraints;
+}
+
+// Get total count with filters
+export async function getCarsCount(params: Omit<CarsQueryParams, 'pageSize' | 'pageIndex' | 'cursor'>): Promise<number> {
   try {
     const carsCollection = collection(db, 'cars');
-    const constraints: QueryConstraint[] = [];
+    const constraints = buildCarsQueryConstraints(params);
+    
+    const countQuery = query(carsCollection, ...constraints);
+    const countSnapshot = await getCountFromServer(countQuery);
+    
+    return countSnapshot.data().count;
+  } catch (error) {
+    console.error('Error getting cars count:', error);
+    throw error;
+  }
+}
 
-    // Add search constraints if searchTerm is provided
-    if (searchTerm.trim()) {
-      // Search by model (Firestore limitation - we'll do client-side filtering for license plate)
-      const searchLower = searchTerm.toLowerCase();
-      constraints.push(
-        where('model', '>=', searchLower),
-        where('model', '<=', searchLower + '\uf8ff')
-      );
+export async function fetchCars(params: CarsQueryParams): Promise<CarsResponse> {
+  try {
+    const {
+      pageSize = 25,
+      pageIndex = 0,
+      cursor,
+      ...filterParams
+    } = params;
+
+    const carsCollection = collection(db, 'cars');
+    const constraints = buildCarsQueryConstraints(params);
+
+    // Add cursor pagination
+    if (cursor) {
+      if (cursor.direction === 'forward') {
+        constraints.push(startAfter(cursor.docSnapshot));
+      } else {
+        constraints.push(endBefore(cursor.docSnapshot));
+      }
     }
 
-    // Add ordering
-    constraints.push(orderBy('model'));
-    
-    // Add pagination
-    if (lastDoc) {
-      constraints.push(startAfter(lastDoc));
-    }
-    
-    constraints.push(limit(pageSize + 1)); // Get one extra to check if there are more
+    // Add limit (get one extra to check if there are more pages)
+    constraints.push(limit(pageSize + 1));
 
     const q = query(carsCollection, ...constraints);
     const querySnapshot = await getDocs(q);
     
-    const cars: CarWithId[] = [];
     const docs = querySnapshot.docs;
-    
-    // Process documents
+    const hasNextPage = docs.length > pageSize;
+    const cars: CarWithId[] = [];
+
+    // Process documents (exclude the extra one used for pagination check)
     docs.slice(0, pageSize).forEach((doc) => {
       cars.push({
         id: doc.id,
@@ -74,14 +132,26 @@ export async function fetchCars({
       });
     });
 
-    // Check if there are more documents
-    const hasMore = docs.length > pageSize;
-    const newLastDoc = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : null;
+    // Get total count for pagination info
+    const totalCount = await getCarsCount(filterParams);
+
+    // Calculate pagination state
+    const startCursor = docs.length > 0 ? docs[0] : undefined;
+    const endCursor = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : undefined;
+    const hasPreviousPage = pageIndex > 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
 
     return {
       cars,
-      lastDoc: newLastDoc,
-      hasMore
+      pagination: {
+        pageIndex,
+        pageSize,
+        totalCount,
+        hasNextPage: hasNextPage && pageIndex < totalPages - 1,
+        hasPreviousPage,
+        startCursor,
+        endCursor
+      }
     };
   } catch (error) {
     console.error('Error fetching cars:', error);
@@ -89,105 +159,9 @@ export async function fetchCars({
   }
 }
 
-// Combined search function that searches both model and license plate
-export async function searchCars(searchTerm: string, pageSize = 10): Promise<CarsResponse> {
-  if (!searchTerm.trim()) {
-    return fetchCars({ pageSize });
-  }
-
-  try {
-    const carsCollection = collection(db, 'cars');
-    const searchLower = searchTerm.toLowerCase().trim();
-    const searchUpper = searchTerm.toUpperCase().trim();
-        
-    // Search by model (case-insensitive)
-    const modelQuery = query(
-      carsCollection,
-      where('model', '>=', searchLower),
-      where('model', '<=', searchLower + '\uf8ff'),
-      orderBy('model'),
-      limit(pageSize)
-    );
-    
-    // Search by license plate (case-insensitive)
-    const plateQuery = query(
-      carsCollection,
-      where('licensePlate', '>=', searchUpper),
-      where('licensePlate', '<=', searchUpper + '\uf8ff'),
-      orderBy('licensePlate'),
-      limit(pageSize)
-    );
-    
-    // Execute both queries in parallel
-    const [modelSnapshot, plateSnapshot] = await Promise.all([
-      getDocs(modelQuery),
-      getDocs(plateQuery)
-    ]);
-    
-    // Process model results
-    const modelCars: CarWithId[] = [];
-    modelSnapshot.docs.forEach((doc) => {
-      const carData = doc.data() as Car;
-      // Additional client-side filtering for exact match
-      if (carData.model.toLowerCase().includes(searchLower)) {
-        modelCars.push({
-          id: doc.id,
-          ...carData
-        });
-      }
-    });
-    
-    // Process license plate results
-    const plateCars: CarWithId[] = [];
-    plateSnapshot.docs.forEach((doc) => {
-      const carData = doc.data() as Car;
-      // Additional client-side filtering for exact match
-      if (carData.licensePlate.toUpperCase().includes(searchUpper)) {
-        plateCars.push({
-          id: doc.id,
-          ...carData
-        });
-      }
-    });
-    
-    // Combine and deduplicate results
-    const combinedCars = [...modelCars];
-    plateCars.forEach(car => {
-      if (!combinedCars.some(existing => existing.id === car.id)) {
-        combinedCars.push(car);
-      }
-    });
-    
-    // Sort combined results by relevance (exact matches first, then alphabetical)
-    combinedCars.sort((a, b) => {
-      const aModelExact = a.model.toLowerCase() === searchLower;
-      const bModelExact = b.model.toLowerCase() === searchLower;
-      const aPlateExact = a.licensePlate.toUpperCase() === searchUpper;
-      const bPlateExact = b.licensePlate.toUpperCase() === searchUpper;
-      
-      // Exact matches first
-      if (aModelExact || aPlateExact) {
-        if (!(bModelExact || bPlateExact)) return -1;
-      } else if (bModelExact || bPlateExact) {
-        return 1;
-      }
-      
-      // Then sort by model
-      return a.model.localeCompare(b.model);
-    });
-    
-    // Limit to requested page size
-    const cars = combinedCars.slice(0, pageSize);
-    
-    return {
-      cars,
-      lastDoc: null, // For search, we don't use pagination
-      hasMore: combinedCars.length > pageSize
-    };
-  } catch (error) {
-    console.error('Error searching cars:', error);
-    throw error;
-  }
+// Search cars with cursor pagination
+export async function searchCars(searchTerm: string, params: Omit<CarsQueryParams, 'searchTerm'>): Promise<CarsResponse> {
+  return fetchCars({ ...params, searchTerm });
 }
 
 // Create a new car
@@ -294,24 +268,12 @@ export async function deleteCar(carId: string): Promise<void> {
 // Fetch available cars for reservations
 export async function fetchAvailableCars(): Promise<CarWithId[]> {
   try {
-    const carsCollection = collection(db, 'cars');
-    const q = query(
-      carsCollection,
-      where('status', '==', 'available'),
-      orderBy('model')
-    );
-    
-    const querySnapshot = await getDocs(q);
-    const cars: CarWithId[] = [];
-    
-    querySnapshot.docs.forEach((doc) => {
-      cars.push({
-        id: doc.id,
-        ...doc.data() as Car
-      });
+    const response = await fetchCars({ 
+      status: 'available',
+      pageSize: 1000, // Get all available cars
+      orderBy: 'model' 
     });
-
-    return cars;
+    return response.cars;
   } catch (error) {
     console.error('Error fetching available cars:', error);
     throw error;

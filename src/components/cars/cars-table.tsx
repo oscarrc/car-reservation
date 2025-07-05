@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fetchCars, searchCars, updateCarStatus } from "@/lib/cars-service";
+import { fetchCars, searchCars, updateCarStatus, type PaginationCursor } from "@/lib/cars-service";
 import {
   flexRender,
   getCoreRowModel,
@@ -55,6 +55,7 @@ export function CarsTable({
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(25);
   const [localSearchTerm, setLocalSearchTerm] = React.useState(searchTerm);
+  const [cursors, setCursors] = React.useState<{ [key: number]: PaginationCursor }>({});
 
   // Debounce search term
   const [debouncedSearchTerm, setDebouncedSearchTerm] =
@@ -65,6 +66,7 @@ export function CarsTable({
       setDebouncedSearchTerm(localSearchTerm);
       onSearchChange?.(localSearchTerm);
       setPageIndex(0); // Reset to first page when searching
+      setCursors({}); // Clear cursor cache when searching
     }, 300);
 
     return () => clearTimeout(timer);
@@ -103,32 +105,47 @@ export function CarsTable({
 
   // Fetch cars with React Query
   const {
-    data: carsData,
+    data: carsResponse,
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["cars", debouncedSearchTerm, pageSize],
+    queryKey: ["cars", debouncedSearchTerm, pageIndex, pageSize],
     queryFn: async () => {
+      const cursor = cursors[pageIndex];
+      const queryParams = {
+        pageSize,
+        pageIndex,
+        searchTerm: debouncedSearchTerm.trim() || undefined,
+        cursor
+      };
+      
       if (debouncedSearchTerm.trim()) {
-        return searchCars(debouncedSearchTerm, pageSize * 5); // Get more results for search
+        return searchCars(debouncedSearchTerm, queryParams);
       }
-      return fetchCars({ pageSize: pageSize * 5 }); // Get more for pagination
+      return fetchCars(queryParams);
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const data = React.useMemo(() => {
-    if (!carsData?.cars) return [];
+  const data = carsResponse?.cars || [];
+  const pagination = carsResponse?.pagination;
+  const totalRows = pagination?.totalCount || 0;
+  const hasNextPage = pagination?.hasNextPage || false;
+  const hasPreviousPage = pagination?.hasPreviousPage || false;
 
-    // Handle client-side pagination for search results
-    const start = pageIndex * pageSize;
-    const end = start + pageSize;
-    return carsData.cars.slice(start, end);
-  }, [carsData?.cars, pageIndex, pageSize]);
-
-  const totalRows = carsData?.cars.length || 0;
-  const totalPages = Math.ceil(totalRows / pageSize);
+  // Update cursor cache when new data is fetched
+  React.useEffect(() => {
+    if (carsResponse?.pagination?.endCursor && pageIndex >= 0) {
+      setCursors(prev => ({
+        ...prev,
+        [pageIndex + 1]: {
+          docSnapshot: carsResponse.pagination.endCursor!,
+          direction: 'forward'
+        }
+      }));
+    }
+  }, [carsResponse?.pagination?.endCursor, pageIndex]);
 
   // Create columns with callbacks
   const columns = createCarColumns({
@@ -155,7 +172,7 @@ export function CarsTable({
       rowSelection,
     },
     manualPagination: true,
-    pageCount: totalPages,
+    pageCount: Math.ceil(totalRows / pageSize),
   });
 
   const handleSearchChange = (value: string) => {
@@ -288,8 +305,27 @@ export function CarsTable({
         pageSize={pageSize}
         totalRows={totalRows}
         selectedCount={table.getFilteredSelectedRowModel().rows.length}
+        hasNextPage={hasNextPage}
+        hasPreviousPage={hasPreviousPage}
         onPageChange={setPageIndex}
         onPageSizeChange={handlePageSizeChange}
+        onFirstPage={() => {
+          setPageIndex(0);
+          setCursors({});
+        }}
+        onPreviousPage={() => {
+          const newPageIndex = Math.max(0, pageIndex - 1);
+          setPageIndex(newPageIndex);
+        }}
+        onNextPage={() => {
+          setPageIndex(pageIndex + 1);
+        }}
+        onLastPage={() => {
+          if (pagination?.totalCount) {
+            const lastPageIndex = Math.ceil(pagination.totalCount / pageSize) - 1;
+            setPageIndex(lastPageIndex);
+          }
+        }}
       />
     </div>
   );

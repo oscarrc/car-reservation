@@ -1,10 +1,12 @@
-import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import type { DocumentData, FieldValue, QueryDocumentSnapshot } from 'firebase/firestore';
 import {
   QueryConstraint,
   Timestamp,
   addDoc,
   collection,
   doc,
+  endBefore,
+  getCountFromServer,
   getDoc,
   getDocs,
   limit,
@@ -18,76 +20,121 @@ import type { ReservationStatus, ReservationWithId } from '@/types/reservation';
 
 import { db } from './firebase';
 
+// Common pagination interfaces (matching cars service)
+export interface PaginationCursor {
+  docSnapshot: QueryDocumentSnapshot<DocumentData>;
+  direction: 'forward' | 'backward';
+}
+
+export interface PaginationState {
+  pageIndex: number;
+  pageSize: number;
+  totalCount?: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  startCursor?: QueryDocumentSnapshot<DocumentData>;
+  endCursor?: QueryDocumentSnapshot<DocumentData>;
+}
+
 export interface ReservationsResponse {
   reservations: ReservationWithId[];
-  lastDoc: QueryDocumentSnapshot<DocumentData> | null;
-  hasMore: boolean;
-  total?: number;
+  pagination: PaginationState;
 }
 
 export interface ReservationsQueryParams {
   pageSize?: number;
-  lastDoc?: QueryDocumentSnapshot<DocumentData> | null;
+  pageIndex?: number;
+  cursor?: PaginationCursor;
   statusFilter?: ReservationStatus | 'all';
   startDate?: Date;
   endDate?: Date;
   userId?: string;
   carId?: string;
+  orderBy?: 'startDateTime' | 'endDateTime' | 'createdAt';
+  orderDirection?: 'asc' | 'desc';
 }
 
-export async function fetchReservations({
-  pageSize = 10,
-  lastDoc = null,
-  statusFilter = 'all',
-  startDate,
-  endDate,
-  userId,
-  carId
-}: ReservationsQueryParams): Promise<ReservationsResponse> {
+// Helper function to build query constraints
+function buildReservationsQueryConstraints(params: ReservationsQueryParams): QueryConstraint[] {
+  const constraints: QueryConstraint[] = [];
+
+  // Add user filter if specified (for user-specific reservations)
+  if (params.userId) {
+    constraints.push(where('userRef', '==', doc(db, 'users', params.userId)));
+  }
+
+  // Add car filter if specified (for car-specific reservations)
+  if (params.carId) {
+    constraints.push(where('carRef', '==', doc(db, 'cars', params.carId)));
+  }
+
+  // Add status filter if specified
+  if (params.statusFilter && params.statusFilter !== 'all') {
+    constraints.push(where('status', '==', params.statusFilter));
+  }
+
+  // Add date range filter if specified
+  if (params.startDate && params.endDate) {
+    // Filter by date range: startDateTime >= startDate AND endDateTime <= endDate
+    constraints.push(
+      where('startDateTime', '>=', Timestamp.fromDate(params.startDate)),
+      where('endDateTime', '<=', Timestamp.fromDate(params.endDate))
+    );
+  } else if (params.startDate) {
+    // Filter by start date only: startDateTime >= startDate
+    constraints.push(
+      where('startDateTime', '>=', Timestamp.fromDate(params.startDate))
+    );
+  } else if (params.endDate) {
+    // Filter by end date only: endDateTime <= endDate
+    constraints.push(
+      where('endDateTime', '<=', Timestamp.fromDate(params.endDate))
+    );
+  }
+
+  // Add ordering
+  const orderField = params.orderBy || 'startDateTime';
+  const orderDir = params.orderDirection || 'desc';
+  constraints.push(orderBy(orderField, orderDir));
+
+  return constraints;
+}
+
+// Get total count with filters
+export async function getReservationsCount(params: Omit<ReservationsQueryParams, 'pageSize' | 'pageIndex' | 'cursor'>): Promise<number> {
   try {
     const reservationsCollection = collection(db, 'reservations');
-    const constraints: QueryConstraint[] = [];
-
-    // Add user filter if specified (for user-specific reservations)
-    if (userId) {
-      constraints.push(where('userRef', '==', doc(db, 'users', userId)));
-    }
-
-    // Add car filter if specified (for car-specific reservations)
-    if (carId) {
-      constraints.push(where('carRef', '==', doc(db, 'cars', carId)));
-    }
-
-    // Add status filter if specified
-    if (statusFilter && statusFilter !== 'all') {
-      constraints.push(where('status', '==', statusFilter));
-    }
-
-    // Add date range filter if specified
-    if (startDate && endDate) {
-      // Filter by date range: startDateTime >= startDate AND endDateTime <= endDate
-      constraints.push(
-        where('startDateTime', '>=', Timestamp.fromDate(startDate)),
-        where('endDateTime', '<=', Timestamp.fromDate(endDate))
-      );
-    } else if (startDate) {
-      // Filter by start date only: startDateTime >= startDate
-      constraints.push(
-        where('startDateTime', '>=', Timestamp.fromDate(startDate))
-      );
-    } else if (endDate) {
-      // Filter by end date only: endDateTime <= endDate
-      constraints.push(
-        where('endDateTime', '<=', Timestamp.fromDate(endDate))
-      );
-    }
-
-    // Add ordering
-    constraints.push(orderBy('startDateTime', 'desc'));
+    const constraints = buildReservationsQueryConstraints(params);
     
-    // Add pagination
-    if (lastDoc) {
-      constraints.push(startAfter(lastDoc));
+    const countQuery = query(reservationsCollection, ...constraints);
+    const countSnapshot = await getCountFromServer(countQuery);
+    
+    return countSnapshot.data().count;
+  } catch (error) {
+    console.error('Error getting reservations count:', error);
+    throw error;
+  }
+}
+
+export async function fetchReservations(params: ReservationsQueryParams): Promise<ReservationsResponse> {
+  try {
+    const {
+      pageSize = 25,
+      pageIndex = 0,
+      cursor,
+      ...filterParams
+    } = params;
+
+    const reservationsCollection = collection(db, 'reservations');
+    const constraints = buildReservationsQueryConstraints(params);
+    
+    // Add cursor pagination
+    if (cursor) {
+      if (cursor.direction === 'forward') {
+        constraints.push(startAfter(cursor.docSnapshot));
+      } else {
+        constraints.push(endBefore(cursor.docSnapshot));
+      }
     }
     
     constraints.push(limit(pageSize + 1)); // Get one extra to check if there are more
@@ -95,10 +142,11 @@ export async function fetchReservations({
     const q = query(reservationsCollection, ...constraints);
     const querySnapshot = await getDocs(q);
     
-    const reservations: ReservationWithId[] = [];
     const docs = querySnapshot.docs;
+    const hasNextPage = docs.length > pageSize;
+    const reservations: ReservationWithId[] = [];
     
-    // Process documents
+    // Process documents (exclude the extra one used for pagination check)
     docs.slice(0, pageSize).forEach((doc) => {
       const data = doc.data();
       reservations.push({
@@ -111,14 +159,26 @@ export async function fetchReservations({
       } as ReservationWithId);
     });
 
-    // Check if there are more documents
-    const hasMore = docs.length > pageSize;
-    const newLastDoc = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : null;
+    // Get total count for pagination info
+    const totalCount = await getReservationsCount(filterParams);
+
+    // Calculate pagination state
+    const startCursor = docs.length > 0 ? docs[0] : undefined;
+    const endCursor = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : undefined;
+    const hasPreviousPage = pageIndex > 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
 
     return {
       reservations,
-      lastDoc: newLastDoc,
-      hasMore
+      pagination: {
+        pageIndex,
+        pageSize,
+        totalCount,
+        hasNextPage: hasNextPage && pageIndex < totalPages - 1,
+        hasPreviousPage,
+        startCursor,
+        endCursor
+      }
     };
   } catch (error) {
     console.error('Error fetching reservations:', error);
@@ -127,22 +187,8 @@ export async function fetchReservations({
 }
 
 // New function specifically for fetching user reservations
-export async function fetchUserReservations({
-  userId,
-  pageSize = 10,
-  lastDoc = null,
-  statusFilter = 'all',
-  startDate,
-  endDate
-}: ReservationsQueryParams & { userId: string }): Promise<ReservationsResponse> {
-  return fetchReservations({
-    userId,
-    pageSize,
-    lastDoc,
-    statusFilter,
-    startDate,
-    endDate
-  });
+export async function fetchUserReservations(params: ReservationsQueryParams & { userId: string }): Promise<ReservationsResponse> {
+  return fetchReservations(params);
 }
 
 export async function updateReservationStatus(
@@ -281,7 +327,7 @@ export async function updateReservation(
 ): Promise<void> {
   try {
     const reservationDoc = doc(db, 'reservations', reservationId);
-    const updates: any = {
+    const updates: { [x: string]: FieldValue | Partial<unknown> | undefined; } = {
       updatedAt: Timestamp.fromDate(new Date())
     };
 

@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fetchUsers, searchUsers } from "@/lib/users-service";
+import { fetchUsers, searchUsers, type PaginationCursor } from "@/lib/users-service";
 import {
   flexRender,
   getCoreRowModel,
@@ -59,6 +59,7 @@ export function UsersTable({
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(25);
   const [localSearchTerm, setLocalSearchTerm] = React.useState(searchTerm);
+  const [cursors, setCursors] = React.useState<{ [key: number]: PaginationCursor }>({});
 
   // Debounce search term
   const [debouncedSearchTerm, setDebouncedSearchTerm] =
@@ -69,6 +70,7 @@ export function UsersTable({
       setDebouncedSearchTerm(localSearchTerm);
       onSearchChange?.(localSearchTerm);
       setPageIndex(0); // Reset to first page when searching
+      setCursors({}); // Clear cursor cache when searching
     }, 300);
 
     return () => clearTimeout(timer);
@@ -76,32 +78,47 @@ export function UsersTable({
 
   // Fetch users with React Query
   const {
-    data: usersData,
+    data: usersResponse,
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["users", debouncedSearchTerm, pageSize],
+    queryKey: ["users", debouncedSearchTerm, pageIndex, pageSize],
     queryFn: async () => {
+      const cursor = cursors[pageIndex];
+      const queryParams = {
+        pageSize,
+        pageIndex,
+        searchTerm: debouncedSearchTerm.trim() || undefined,
+        cursor
+      };
+      
       if (debouncedSearchTerm.trim()) {
-        return searchUsers(debouncedSearchTerm, pageSize * 5); // Get more results for search
+        return searchUsers(debouncedSearchTerm, queryParams);
       }
-      return fetchUsers({ pageSize: pageSize * 5 }); // Get more for pagination
+      return fetchUsers(queryParams);
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const data = React.useMemo(() => {
-    if (!usersData?.users) return [];
+  const data = usersResponse?.users || [];
+  const pagination = usersResponse?.pagination;
+  const totalRows = pagination?.totalCount || 0;
+  const hasNextPage = pagination?.hasNextPage || false;
+  const hasPreviousPage = pagination?.hasPreviousPage || false;
 
-    // Handle client-side pagination for search results
-    const start = pageIndex * pageSize;
-    const end = start + pageSize;
-    return usersData.users.slice(start, end);
-  }, [usersData?.users, pageIndex, pageSize]);
-
-  const totalRows = usersData?.users.length || 0;
-  const totalPages = Math.ceil(totalRows / pageSize);
+  // Update cursor cache when new data is fetched
+  React.useEffect(() => {
+    if (usersResponse?.pagination?.endCursor && pageIndex >= 0) {
+      setCursors(prev => ({
+        ...prev,
+        [pageIndex + 1]: {
+          docSnapshot: usersResponse.pagination.endCursor!,
+          direction: 'forward'
+        }
+      }));
+    }
+  }, [usersResponse?.pagination?.endCursor, pageIndex]);
 
   // Create columns with callbacks
   const columns = createUserColumns({
@@ -129,7 +146,7 @@ export function UsersTable({
       rowSelection,
     },
     manualPagination: true,
-    pageCount: totalPages,
+    pageCount: Math.ceil(totalRows / pageSize),
   });
 
   const handleSearchChange = (value: string) => {
@@ -260,8 +277,27 @@ export function UsersTable({
         pageSize={pageSize}
         totalRows={totalRows}
         selectedCount={table.getFilteredSelectedRowModel().rows.length}
+        hasNextPage={hasNextPage}
+        hasPreviousPage={hasPreviousPage}
         onPageChange={setPageIndex}
         onPageSizeChange={handlePageSizeChange}
+        onFirstPage={() => {
+          setPageIndex(0);
+          setCursors({});
+        }}
+        onPreviousPage={() => {
+          const newPageIndex = Math.max(0, pageIndex - 1);
+          setPageIndex(newPageIndex);
+        }}
+        onNextPage={() => {
+          setPageIndex(pageIndex + 1);
+        }}
+        onLastPage={() => {
+          if (pagination?.totalCount) {
+            const lastPageIndex = Math.ceil(pagination.totalCount / pageSize) - 1;
+            setPageIndex(lastPageIndex);
+          }
+        }}
       />
     </div>
   );

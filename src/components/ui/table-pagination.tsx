@@ -23,10 +23,16 @@ interface TablePaginationProps {
   pageSize: number;
   totalRows: number;
   selectedCount: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 
   // Pagination actions
   onPageChange: (pageIndex: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  onFirstPage?: () => void;
+  onPreviousPage?: () => void;
+  onNextPage?: () => void;
+  onLastPage?: () => void;
 
   // Optional customization
   pageSizeOptions?: number[];
@@ -38,21 +44,54 @@ export function TablePagination({
   pageSize,
   totalRows,
   selectedCount,
+  hasNextPage,
+  hasPreviousPage,
   onPageChange,
   onPageSizeChange,
+  onFirstPage,
+  onPreviousPage,
+  onNextPage,
+  onLastPage,
   pageSizeOptions = [25, 50, 100],
   showSelectedCount = true,
 }: TablePaginationProps) {
   const { t } = useTranslation();
 
   const totalPages = Math.ceil(totalRows / pageSize);
-  const canGoPrevious = pageIndex > 0;
-  const canGoNext = pageIndex < totalPages - 1;
+  const canGoPrevious = hasPreviousPage;
+  const canGoNext = hasNextPage;
 
-  const handleFirstPage = () => onPageChange(0);
-  const handlePreviousPage = () => onPageChange(pageIndex - 1);
-  const handleNextPage = () => onPageChange(pageIndex + 1);
-  const handleLastPage = () => onPageChange(totalPages - 1);
+  const handleFirstPage = () => {
+    if (onFirstPage) {
+      onFirstPage();
+    } else {
+      onPageChange(0);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (onPreviousPage) {
+      onPreviousPage();
+    } else {
+      onPageChange(pageIndex - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (onNextPage) {
+      onNextPage();
+    } else {
+      onPageChange(pageIndex + 1);
+    }
+  };
+
+  const handleLastPage = () => {
+    if (onLastPage) {
+      onLastPage();
+    } else {
+      onPageChange(totalPages - 1);
+    }
+  };
 
   const startItem = totalRows > 0 ? pageIndex * pageSize + 1 : 0;
   const endItem = Math.min((pageIndex + 1) * pageSize, totalRows);

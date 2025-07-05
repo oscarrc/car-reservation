@@ -13,6 +13,7 @@ import {
   fetchReservations,
   updateReservationStatus,
   type ReservationsQueryParams,
+  type PaginationCursor,
 } from "@/lib/reservations-service";
 import { fetchCarsByIds } from "@/lib/cars-service";
 import { fetchUsersByIds } from "@/lib/users-service";
@@ -31,13 +32,18 @@ export default function AdminReservationsPage() {
   );
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingReservation, setEditingReservation] = useState<ReservationWithId | null>(null);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+  const [cursors, setCursors] = useState<{ [key: number]: PaginationCursor }>({});
   const queryClient = useQueryClient();
 
   const queryParams: ReservationsQueryParams = {
-    pageSize: 50,
+    pageSize,
+    pageIndex,
     statusFilter,
     startDate: startDateFilter,
     endDate: endDateFilter,
+    cursor: cursors[pageIndex],
   };
 
   // Fetch all reservations (admin view)
@@ -46,11 +52,18 @@ export default function AdminReservationsPage() {
     isLoading: reservationsLoading,
     error: reservationsError,
   } = useQuery({
-    queryKey: ["reservations", queryParams.pageSize, queryParams.statusFilter, queryParams.startDate, queryParams.endDate],
+    queryKey: ["reservations", queryParams.pageSize, queryParams.pageIndex, queryParams.statusFilter, queryParams.startDate, queryParams.endDate],
     queryFn: () => fetchReservations(queryParams),
   });
 
   const reservations = reservationsResponse?.reservations || [];
+  const pagination = reservationsResponse?.pagination ? {
+    pageIndex: reservationsResponse.pagination.pageIndex,
+    pageSize: reservationsResponse.pagination.pageSize,
+    totalCount: reservationsResponse.pagination.totalCount || 0,
+    hasNextPage: reservationsResponse.pagination.hasNextPage,
+    hasPreviousPage: reservationsResponse.pagination.hasPreviousPage,
+  } : undefined;
 
   // Extract unique car and user IDs from DocumentReferences
   const carIds = [
@@ -179,9 +192,32 @@ export default function AdminReservationsPage() {
           columns={columns}
           data={reservationsWithData}
           loading={isLoading}
+          pagination={pagination}
           onStatusFilterChange={handleStatusFilterChange}
           onStartDateFilterChange={handleStartDateFilterChange}
           onEndDateFilterChange={handleEndDateFilterChange}
+          onPageChange={setPageIndex}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setPageIndex(0);
+            setCursors({});
+          }}
+          onFirstPage={() => {
+            setPageIndex(0);
+            setCursors({});
+          }}
+          onPreviousPage={() => {
+            setPageIndex(Math.max(0, pageIndex - 1));
+          }}
+          onNextPage={() => {
+            setPageIndex(pageIndex + 1);
+          }}
+          onLastPage={() => {
+            if (pagination?.totalCount) {
+              const lastPageIndex = Math.ceil(pagination.totalCount / pageSize) - 1;
+              setPageIndex(lastPageIndex);
+            }
+          }}
           statusFilter={statusFilter}
           startDateFilter={startDateFilter}
           endDateFilter={endDateFilter}

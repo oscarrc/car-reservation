@@ -17,6 +17,7 @@ import {
   fetchReservations,
   updateReservationStatus,
   type ReservationsQueryParams,
+  type PaginationCursor,
 } from "@/lib/reservations-service";
 import { fetchUsersByIds } from "@/lib/users-service";
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
@@ -39,6 +40,9 @@ export default function CarPage() {
   const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(
     undefined
   );
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+  const [cursors, setCursors] = useState<{ [key: number]: PaginationCursor }>({});
 
   // Fetch car details
   const {
@@ -53,11 +57,13 @@ export default function CarPage() {
 
   // Fetch reservations for this car
   const queryParams: ReservationsQueryParams = {
-    pageSize: 50,
+    pageSize,
+    pageIndex,
     carId,
     statusFilter,
     startDate: startDateFilter,
     endDate: endDateFilter,
+    cursor: cursors[pageIndex],
   };
 
   const {
@@ -71,12 +77,21 @@ export default function CarPage() {
       statusFilter,
       startDateFilter,
       endDateFilter,
+      pageIndex,
+      pageSize,
     ],
     queryFn: () => fetchReservations(queryParams),
     enabled: !!carId,
   });
 
   const reservations = reservationsResponse?.reservations || [];
+  const pagination = reservationsResponse?.pagination ? {
+    pageIndex: reservationsResponse.pagination.pageIndex,
+    pageSize: reservationsResponse.pagination.pageSize,
+    totalCount: reservationsResponse.pagination.totalCount || 0,
+    hasNextPage: reservationsResponse.pagination.hasNextPage,
+    hasPreviousPage: reservationsResponse.pagination.hasPreviousPage,
+  } : undefined;
 
   // Extract unique user IDs from DocumentReferences
   const userIds = [
@@ -210,9 +225,32 @@ export default function CarPage() {
             columns={columns}
             data={reservationsWithData}
             loading={isLoading}
+            pagination={pagination}
             onStatusFilterChange={setStatusFilter}
             onStartDateFilterChange={setStartDateFilter}
             onEndDateFilterChange={setEndDateFilter}
+            onPageChange={setPageIndex}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPageIndex(0);
+              setCursors({});
+            }}
+            onFirstPage={() => {
+              setPageIndex(0);
+              setCursors({});
+            }}
+            onPreviousPage={() => {
+              setPageIndex(Math.max(0, pageIndex - 1));
+            }}
+            onNextPage={() => {
+              setPageIndex(pageIndex + 1);
+            }}
+            onLastPage={() => {
+              if (pagination?.totalCount) {
+                const lastPageIndex = Math.ceil(pagination.totalCount / pageSize) - 1;
+                setPageIndex(lastPageIndex);
+              }
+            }}
             statusFilter={statusFilter}
             startDateFilter={startDateFilter}
             endDateFilter={endDateFilter}

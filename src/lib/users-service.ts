@@ -1,25 +1,42 @@
-import { 
-  collection, 
-  query, 
-  orderBy, 
-  limit, 
-  startAfter, 
-  getDocs, 
-  where,
+import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import {
   QueryConstraint,
+  collection,
   doc,
+  endBefore,
+  getCountFromServer,
+  getDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  startAfter,
   updateDoc,
-  getDoc
+  where
 } from 'firebase/firestore';
-import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
-import { db } from './firebase';
+
 import type { UserProfile } from '@/types/user';
+import { db } from './firebase';
+
+// Common pagination interfaces (matching other services)
+export interface PaginationCursor {
+  docSnapshot: QueryDocumentSnapshot<DocumentData>;
+  direction: 'forward' | 'backward';
+}
+
+export interface PaginationState {
+  pageIndex: number;
+  pageSize: number;
+  totalCount?: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  startCursor?: QueryDocumentSnapshot<DocumentData>;
+  endCursor?: QueryDocumentSnapshot<DocumentData>;
+}
 
 export interface UsersResponse {
   users: UserProfileWithId[];
-  lastDoc: QueryDocumentSnapshot<DocumentData> | null;
-  hasMore: boolean;
-  total?: number;
+  pagination: PaginationState;
 }
 
 export interface UserProfileWithId extends UserProfile {
@@ -28,36 +45,83 @@ export interface UserProfileWithId extends UserProfile {
 
 export interface UsersQueryParams {
   pageSize?: number;
-  lastDoc?: QueryDocumentSnapshot<DocumentData> | null;
+  pageIndex?: number;
+  cursor?: PaginationCursor;
   searchTerm?: string;
+  role?: string;
+  suspended?: boolean;
+  orderBy?: 'name' | 'email' | 'createdAt';
+  orderDirection?: 'asc' | 'desc';
 }
 
-export async function fetchUsers({
-  pageSize = 10,
-  lastDoc = null,
-  searchTerm = ''
-}: UsersQueryParams): Promise<UsersResponse> {
+// Helper function to build query constraints
+function buildUsersQueryConstraints(params: UsersQueryParams): QueryConstraint[] {
+  const constraints: QueryConstraint[] = [];
+
+  // Add search constraints if searchTerm is provided
+  if (params.searchTerm?.trim()) {
+    // For simple search, we'll search by name and email
+    // Note: Firestore doesn't support full-text search, so we use startsWith
+    const searchLower = params.searchTerm.toLowerCase();
+    constraints.push(
+      where('name', '>=', searchLower),
+      where('name', '<=', searchLower + '\uf8ff')
+    );
+  }
+
+  // Add role filter
+  if (params.role) {
+    constraints.push(where('role', '==', params.role));
+  }
+
+  // Add suspended filter
+  if (params.suspended !== undefined) {
+    constraints.push(where('suspended', '==', params.suspended));
+  }
+
+  // Add ordering
+  const orderField = params.orderBy || 'name';
+  const orderDir = params.orderDirection || 'asc';
+  constraints.push(orderBy(orderField, orderDir));
+
+  return constraints;
+}
+
+// Get total count with filters
+export async function getUsersCount(params: Omit<UsersQueryParams, 'pageSize' | 'pageIndex' | 'cursor'>): Promise<number> {
   try {
     const usersCollection = collection(db, 'users');
-    const constraints: QueryConstraint[] = [];
-
-    // Add search constraints if searchTerm is provided
-    if (searchTerm.trim()) {
-      // For simple search, we'll search by name and email
-      // Note: Firestore doesn't support full-text search, so we use startsWith
-      const searchLower = searchTerm.toLowerCase();
-      constraints.push(
-        where('name', '>=', searchLower),
-        where('name', '<=', searchLower + '\uf8ff')
-      );
-    }
-
-    // Add ordering
-    constraints.push(orderBy('name'));
+    const constraints = buildUsersQueryConstraints(params);
     
-    // Add pagination
-    if (lastDoc) {
-      constraints.push(startAfter(lastDoc));
+    const countQuery = query(usersCollection, ...constraints);
+    const countSnapshot = await getCountFromServer(countQuery);
+    
+    return countSnapshot.data().count;
+  } catch (error) {
+    console.error('Error getting users count:', error);
+    throw error;
+  }
+}
+
+export async function fetchUsers(params: UsersQueryParams): Promise<UsersResponse> {
+  try {
+    const {
+      pageSize = 25,
+      pageIndex = 0,
+      cursor,
+      ...filterParams
+    } = params;
+
+    const usersCollection = collection(db, 'users');
+    const constraints = buildUsersQueryConstraints(params);
+    
+    // Add cursor pagination
+    if (cursor) {
+      if (cursor.direction === 'forward') {
+        constraints.push(startAfter(cursor.docSnapshot));
+      } else {
+        constraints.push(endBefore(cursor.docSnapshot));
+      }
     }
     
     constraints.push(limit(pageSize + 1)); // Get one extra to check if there are more
@@ -65,10 +129,11 @@ export async function fetchUsers({
     const q = query(usersCollection, ...constraints);
     const querySnapshot = await getDocs(q);
     
-    const users: UserProfileWithId[] = [];
     const docs = querySnapshot.docs;
+    const hasNextPage = docs.length > pageSize;
+    const users: UserProfileWithId[] = [];
     
-    // Process documents
+    // Process documents (exclude the extra one used for pagination check)
     docs.slice(0, pageSize).forEach((doc) => {
       users.push({
         id: doc.id,
@@ -76,14 +141,26 @@ export async function fetchUsers({
       });
     });
 
-    // Check if there are more documents
-    const hasMore = docs.length > pageSize;
-    const newLastDoc = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : null;
+    // Get total count for pagination info
+    const totalCount = await getUsersCount(filterParams);
+
+    // Calculate pagination state
+    const startCursor = docs.length > 0 ? docs[0] : undefined;
+    const endCursor = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : undefined;
+    const hasPreviousPage = pageIndex > 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
 
     return {
       users,
-      lastDoc: newLastDoc,
-      hasMore
+      pagination: {
+        pageIndex,
+        pageSize,
+        totalCount,
+        hasNextPage: hasNextPage && pageIndex < totalPages - 1,
+        hasPreviousPage,
+        startCursor,
+        endCursor
+      }
     };
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -92,21 +169,49 @@ export async function fetchUsers({
 }
 
 // Alternative search function for email search
-export async function searchUsersByEmail(email: string, pageSize = 10): Promise<UsersResponse> {
+export async function searchUsersByEmail(email: string, params: Omit<UsersQueryParams, 'searchTerm'>): Promise<UsersResponse> {
   try {
-    const usersCollection = collection(db, 'users');
     const emailLower = email.toLowerCase();
     
-    const q = query(
-      usersCollection,
+    // Use the main fetch function with email search constraints
+    const usersCollection = collection(db, 'users');
+    const constraints: QueryConstraint[] = [];
+    
+    // Add email search constraint
+    constraints.push(
       where('email', '>=', emailLower),
-      where('email', '<=', emailLower + '\uf8ff'),
-      orderBy('email'),
-      limit(pageSize + 1)
+      where('email', '<=', emailLower + '\uf8ff')
     );
+    
+    // Add other filters
+    if (params.role) {
+      constraints.push(where('role', '==', params.role));
+    }
+    if (params.suspended !== undefined) {
+      constraints.push(where('suspended', '==', params.suspended));
+    }
+    
+    // Add ordering
+    constraints.push(orderBy('email', 'asc'));
+    
+    // Add cursor pagination
+    if (params.cursor) {
+      if (params.cursor.direction === 'forward') {
+        constraints.push(startAfter(params.cursor.docSnapshot));
+      } else {
+        constraints.push(endBefore(params.cursor.docSnapshot));
+      }
+    }
+    
+    const pageSize = params.pageSize || 25;
+    const pageIndex = params.pageIndex || 0;
+    
+    constraints.push(limit(pageSize + 1));
 
+    const q = query(usersCollection, ...constraints);
     const querySnapshot = await getDocs(q);
     const docs = querySnapshot.docs;
+    const hasNextPage = docs.length > pageSize;
     
     const users: UserProfileWithId[] = [];
     docs.slice(0, pageSize).forEach((doc) => {
@@ -116,13 +221,31 @@ export async function searchUsersByEmail(email: string, pageSize = 10): Promise<
       });
     });
 
-    const hasMore = docs.length > pageSize;
-    const lastDoc = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : null;
+    // Get total count for email search
+    const countQuery = query(usersCollection, 
+      where('email', '>=', emailLower),
+      where('email', '<=', emailLower + '\uf8ff')
+    );
+    const countSnapshot = await getCountFromServer(countQuery);
+    const totalCount = countSnapshot.data().count;
+    
+    // Calculate pagination state
+    const startCursor = docs.length > 0 ? docs[0] : undefined;
+    const endCursor = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : undefined;
+    const hasPreviousPage = pageIndex > 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
 
     return {
       users,
-      lastDoc,
-      hasMore
+      pagination: {
+        pageIndex,
+        pageSize,
+        totalCount,
+        hasNextPage: hasNextPage && pageIndex < totalPages - 1,
+        hasPreviousPage,
+        startCursor,
+        endCursor
+      }
     };
   } catch (error) {
     console.error('Error searching users by email:', error);
@@ -131,44 +254,13 @@ export async function searchUsersByEmail(email: string, pageSize = 10): Promise<
 }
 
 // Combined search function that searches both name and email
-export async function searchUsers(searchTerm: string, pageSize = 10): Promise<UsersResponse> {
+export async function searchUsers(searchTerm: string, params: Omit<UsersQueryParams, 'searchTerm'>): Promise<UsersResponse> {
   if (!searchTerm.trim()) {
-    return fetchUsers({ pageSize });
+    return fetchUsers(params);
   }
 
-  try {
-    // Search by name
-    const nameResults = await fetchUsers({ 
-      pageSize: Math.ceil(pageSize / 2), 
-      searchTerm 
-    });
-    
-    // Search by email
-    const emailResults = await searchUsersByEmail(searchTerm, Math.ceil(pageSize / 2));
-    
-    // Combine and deduplicate results
-    const combinedUsers = [...nameResults.users];
-    emailResults.users.forEach(user => {
-      if (!combinedUsers.some(existing => existing.id === user.id)) {
-        combinedUsers.push(user);
-      }
-    });
-
-    // Sort combined results by name
-    combinedUsers.sort((a, b) => a.name.localeCompare(b.name));
-    
-    // Limit to requested page size
-    const users = combinedUsers.slice(0, pageSize);
-    
-    return {
-      users,
-      lastDoc: null, // For search, we don't use pagination
-      hasMore: combinedUsers.length > pageSize
-    };
-  } catch (error) {
-    console.error('Error searching users:', error);
-    throw error;
-  }
+  // For search, we use the main fetchUsers function with the searchTerm
+  return fetchUsers({ ...params, searchTerm });
 }
 
 // New function to fetch multiple users by their IDs
