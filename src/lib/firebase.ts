@@ -4,6 +4,7 @@ import { ReCaptchaV3Provider, initializeAppCheck } from "firebase/app-check";
 
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getMessaging } from "firebase/messaging";
 import { initializeApp } from "firebase/app";
 
 // Your web app's Firebase configuration
@@ -27,10 +28,13 @@ export const auth = getAuth(app);
 // Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore(app);
 
-const appCheck = initializeAppCheck(app, {
+// Initialize appCheck for reCAPTCHA v3
+export const appCheck = initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider(import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY),
   isTokenAutoRefreshEnabled: true
 });
 
-export { appCheck };
+// Initialize Firebase Cloud Messaging and get a reference to the service
+export const messaging = getMessaging(app);
+
 export default app;
