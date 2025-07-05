@@ -151,9 +151,6 @@ export default function FleetPage() {
                     <CardTitle className="flex items-center gap-3">
                       <Car className="h-5 w-5" />
                       <span className="font-semibold text-lg">{car.model}</span>
-                      {car.year && (
-                        <span className="ml-2 text-base text-muted-foreground">{car.year}</span>
-                      )}
                       <Badge variant={getStatusVariant(car.status)}>
                         {t(`fleet.${car.status}`)}
                       </Badge>
@@ -170,6 +167,18 @@ export default function FleetPage() {
                           {car.licensePlate}
                         </span>
                       </div>
+
+                      {/* Year */}
+                      {car.year && (
+                        <div className="flex flex-col space-y-1">
+                          <span className="text-sm font-medium text-muted-foreground">
+                            {t("fleet.year")}
+                          </span>
+                          <span className="font-mono font-semibold text-primary">
+                            {car.year}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Color */}
                       <div className="flex flex-col space-y-1">
