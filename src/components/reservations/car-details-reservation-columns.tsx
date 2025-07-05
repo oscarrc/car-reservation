@@ -1,20 +1,21 @@
 "use client";
 
-import { Checkbox } from "@/components/ui/checkbox";
-import type { ColumnDef } from "@tanstack/react-table";
-import type { ReservationStatus } from "@/types/reservation";
-import type { ReservationWithCarAndUser } from "@/components/reservations/admin-reservations-columns";
-import { StatusSelect } from "@/components/ui/status-select";
-import { format } from "date-fns";
-import { Link } from "react-router-dom";
-import { Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Eye, MoreHorizontal } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Link } from "react-router-dom";
+import type { ReservationStatus } from "@/types/reservation";
+import type { ReservationWithCarAndUser } from "@/components/reservations/admin-reservations-columns";
+import { StatusSelect } from "@/components/ui/status-select";
+import { format } from "date-fns";
 
 interface CreateCarDetailsReservationColumnsProps {
   onStatusChange: (
@@ -130,7 +131,7 @@ export function createCarDetailsReservationColumns({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">{t("common.actions")}</span>
-                <Eye className="h-4 w-4" />
+                <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

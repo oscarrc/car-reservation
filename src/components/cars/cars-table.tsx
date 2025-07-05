@@ -3,11 +3,8 @@
 import * as React from "react";
 
 import type { CarStatus, CarWithId } from "@/types/car";
+import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
 import { Loader2, Search } from "lucide-react";
-import type {
-  ColumnFiltersState,
-  SortingState,
-} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -28,10 +25,10 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
+import { ColumnSelector } from "@/components/ui/column-selector";
 import { Input } from "@/components/ui/input";
 import { TablePagination } from "@/components/ui/table-pagination";
-import { ColumnSelector } from "@/components/ui/column-selector";
-import { createColumns } from "./cars-columns";
+import { createCarColumns } from "./cars-columns";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
@@ -134,11 +131,12 @@ export function CarsTable({
   const totalPages = Math.ceil(totalRows / pageSize);
 
   // Create columns with callbacks
-  const columns = createColumns({
+  const columns = createCarColumns({
     onEditCar,
     onDeleteCar,
     onStatusChange: handleStatusChange,
     isUpdatingStatus: statusMutation.isPending,
+    t,
   });
 
   const table = useReactTable({

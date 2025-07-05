@@ -18,35 +18,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import type { AuthUser } from "@/types/user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Link } from "react-router-dom";
 import type { UserProfileWithId } from "@/lib/users-service";
-import { useAuth } from "@/contexts/AuthContext";
-import { useTranslation } from "react-i18next";
 
-interface ColumnsProps {
+interface UserColumnsProps {
   onViewUser?: (user: UserProfileWithId) => void;
   onEditUser: (user: UserProfileWithId) => void;
   onDeleteUser?: (user: UserProfileWithId) => void;
   onSuspendUser?: (user: UserProfileWithId) => void;
   onUnsuspendUser?: (user: UserProfileWithId) => void;
+  t: (key: string, options?: Record<string, string>) => string;
+  authUser: AuthUser | null;
 }
 
-export const createColumns = ({
-  onViewUser,
+export const createUserColumns = ({
   onEditUser,
   onDeleteUser,
   onSuspendUser,
   onUnsuspendUser,
-}: ColumnsProps): ColumnDef<UserProfileWithId>[] => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { t } = useTranslation();
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { authUser } = useAuth();
-
+  t,
+  authUser,
+}: UserColumnsProps): ColumnDef<UserProfileWithId>[] => {
   return [
     {
       id: "select",

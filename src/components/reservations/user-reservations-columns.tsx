@@ -53,11 +53,9 @@ const getStatusVariant = (
 
 // User columns for user reservations page
 export function createUserColumns({
-  onView,
   onCancel,
   t,
 }: {
-  onView?: (reservation: ReservationWithCarAndUser) => void;
   onCancel?: (reservation: ReservationWithCarAndUser) => void;
   t: (key: string) => string;
 }): ColumnDef<ReservationWithCarAndUser>[] {

@@ -1,22 +1,22 @@
 "use client";
 
-import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
-
-import type { CarWithId } from "@/types/car";
-import { Checkbox } from "@/components/ui/checkbox";
-import type { ColumnDef } from "@tanstack/react-table";
-import { StatusSelect } from "@/components/ui/status-select";
-import type { UserProfileWithId } from "@/lib/users-service";
-import { format } from "date-fns";
-import { Link } from "react-router-dom";
-import { Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Eye, MoreHorizontal } from "lucide-react";
+import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
+
+import { Button } from "@/components/ui/button";
+import type { CarWithId } from "@/types/car";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Link } from "react-router-dom";
+import { StatusSelect } from "@/components/ui/status-select";
+import type { UserProfileWithId } from "@/lib/users-service";
+import { format } from "date-fns";
 
 // Extended reservation type with car and user information
 export interface ReservationWithCarAndUser extends ReservationWithId {
@@ -171,7 +171,7 @@ export function createUserDetailsReservationColumns({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">{t("common.actions")}</span>
-                <Eye className="h-4 w-4" />
+                <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

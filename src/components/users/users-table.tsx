@@ -2,11 +2,8 @@
 
 import * as React from "react";
 
+import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
 import { Loader2, Search } from "lucide-react";
-import type {
-  ColumnFiltersState,
-  SortingState,
-} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -15,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TablePagination } from "@/components/ui/table-pagination";
 import { fetchUsers, searchUsers } from "@/lib/users-service";
 import {
   flexRender,
@@ -27,10 +23,12 @@ import {
 } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ColumnSelector } from "@/components/ui/column-selector";
+import { Input } from "@/components/ui/input";
+import { TablePagination } from "@/components/ui/table-pagination";
 import type { UserProfileWithId } from "@/lib/users-service";
-import { createColumns } from "./users-columns";
+import { createUserColumns } from "./users-columns";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
@@ -54,6 +52,7 @@ export function UsersTable({
   onUnsuspendUser,
 }: UsersTableProps) {
   const { t } = useTranslation();
+  const { authUser } = useAuth();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -107,12 +106,14 @@ export function UsersTable({
   const totalPages = Math.ceil(totalRows / pageSize);
 
   // Create columns with callbacks
-  const columns = createColumns({ 
+  const columns = createUserColumns({
     onViewUser,
-    onEditUser, 
-    onDeleteUser, 
-    onSuspendUser, 
+    onEditUser,
+    onDeleteUser,
+    onSuspendUser,
     onUnsuspendUser,
+    t,
+    authUser,
   });
 
   const table = useReactTable({

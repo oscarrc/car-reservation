@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -18,26 +17,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Link } from "react-router-dom";
 
-interface CreateColumnsProps {
+interface CreateCarColumnsProps {
   onEditCar: (car: CarWithId) => void;
   onDeleteCar?: (car: CarWithId) => void;
   onStatusChange: (carId: string, status: CarStatus) => void;
   isUpdatingStatus: boolean;
+  t: (key: string, options?: Record<string, string>) => string;
 }
 
-export function createColumns({
+export function createCarColumns({
   onEditCar,
   onDeleteCar,
   onStatusChange,
   isUpdatingStatus,
-}: CreateColumnsProps): ColumnDef<CarWithId>[] {
+  t,
+}: CreateCarColumnsProps): ColumnDef<CarWithId>[] {
   const getStatusVariant = (status: CarStatus) => {
     switch (status) {
       case "available":
@@ -50,9 +51,6 @@ export function createColumns({
         return "warning";
     }
   };
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { t } = useTranslation();
 
   return [
     {
@@ -105,7 +103,9 @@ export function createColumns({
       header: t("fleet.color"),
       cell: ({ row }) => {
         const color = row.getValue("color") as string;
-        const translatedColor = t(`fleet.colors.${color}`, { defaultValue: color });
+        const translatedColor = t(`fleet.colors.${color}`, {
+          defaultValue: color,
+        });
         return (
           <div className="flex items-center gap-2">
             <div
@@ -144,7 +144,9 @@ export function createColumns({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="available">
-                <Badge variant={getStatusVariant("available")}>{t("fleet.available")}</Badge>
+                <Badge variant={getStatusVariant("available")}>
+                  {t("fleet.available")}
+                </Badge>
               </SelectItem>
               <SelectItem value="maintenance">
                 <Badge variant={getStatusVariant("maintenance")}>
@@ -207,4 +209,3 @@ export function createColumns({
     },
   ];
 }
- 
