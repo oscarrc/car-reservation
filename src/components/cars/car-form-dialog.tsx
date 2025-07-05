@@ -61,6 +61,7 @@ const carSchema = z.object({
     .min(1, "Seats must be between 1 and 20")
     .max(20, "Seats must be between 1 and 20"),
   status: z.enum(["available", "maintenance", "out_of_service"]),
+  year: z.number().min(1900).max(new Date().getFullYear() + 1).optional(),
   description: z.string().optional(),
 });
 
@@ -179,6 +180,7 @@ function CreateCarForm({
       color: "",
       seats: 4,
       status: "available",
+      year: undefined,
       description: "",
     },
   });
@@ -211,6 +213,7 @@ function CreateCarForm({
       licensePlate: data.licensePlate.trim().toUpperCase(),
       model: data.model.trim(),
       color: data.color.trim(),
+      year: data.year,
       description: data.description?.trim() || undefined,
     };
     createMutation.mutate(carData);
@@ -285,6 +288,30 @@ function CreateCarForm({
                     onChange={(e) =>
                       field.onChange(parseInt(e.target.value) || 4)
                     }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="year"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("fleet.year")}</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="1900"
+                    max={new Date().getFullYear() + 1}
+                    placeholder={t("fleet.yearPlaceholder")}
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(e.target.value ? parseInt(e.target.value) : undefined)
+                    }
+                    value={field.value || ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -375,6 +402,7 @@ function EditCarForm({
       color: car.color,
       seats: car.seats,
       status: car.status,
+      year: car.year,
       description: car.description || "",
     },
   });
@@ -407,6 +435,7 @@ function EditCarForm({
       licensePlate: data.licensePlate.trim().toUpperCase(),
       model: data.model.trim(),
       color: data.color.trim(),
+      year: data.year,
       description: data.description?.trim() || undefined,
     };
     updateMutation.mutate(carData);
@@ -481,6 +510,30 @@ function EditCarForm({
                     onChange={(e) =>
                       field.onChange(parseInt(e.target.value) || 4)
                     }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="year"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("fleet.year")}</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="1900"
+                    max={new Date().getFullYear() + 1}
+                    placeholder={t("fleet.yearPlaceholder")}
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(e.target.value ? parseInt(e.target.value) : undefined)
+                    }
+                    value={field.value || ""}
                   />
                 </FormControl>
                 <FormMessage />

@@ -94,6 +94,13 @@ export function createColumns({
       ),
     },
     {
+      accessorKey: "year",
+      header: t("fleet.year"),
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("year") || "-"}</div>
+      ),
+    },
+    {
       accessorKey: "color",
       header: t("fleet.color"),
       cell: ({ row }) => {

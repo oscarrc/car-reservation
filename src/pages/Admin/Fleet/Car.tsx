@@ -6,8 +6,6 @@ import { useTranslation } from "react-i18next";
 import { Edit } from "lucide-react";
 
 import { SectionHeader } from "@/components/ui/section-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
 import { CarFormDialog } from "@/components/cars/car-form-dialog";
 import { createCarDetailsReservationColumns } from "@/components/reservations/car-details-reservation-columns";
@@ -21,6 +19,8 @@ import {
 } from "@/lib/reservations-service";
 import { fetchUsersByIds } from "@/lib/users-service";
 import type { ReservationStatus } from "@/types/reservation";
+import { CarInfoSkeleton } from "@/components/cars/car-info-skeleton";
+import { CarInfoCard } from "@/components/cars/car-info-card";
 
 export default function CarPage() {
   const { carId } = useParams<{ carId: string }>();
@@ -62,7 +62,13 @@ export default function CarPage() {
     isLoading: reservationsLoading,
     error: reservationsError,
   } = useQuery({
-    queryKey: ["carReservations", carId, statusFilter, startDateFilter, endDateFilter],
+    queryKey: [
+      "carReservations",
+      carId,
+      statusFilter,
+      startDateFilter,
+      endDateFilter,
+    ],
     queryFn: () => fetchReservations(queryParams),
     enabled: !!carId,
   });
@@ -126,21 +132,6 @@ export default function CarPage() {
     statusMutation.mutate({ reservationId: reservation.id, status });
   };
 
-
-
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case "available":
-        return "success";
-      case "maintenance":
-        return "warning";
-      case "out_of_service":
-        return "destructive";
-      default:
-        return "secondary";
-    }
-  };
-
   const columns = createCarDetailsReservationColumns({
     isUpdatingStatus: statusMutation.isPending,
     onStatusChange: handleStatusChange,
@@ -162,22 +153,6 @@ export default function CarPage() {
             <p className="text-destructive">
               {t("fleet.errorLoadingCarDetails")}
             </p>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  if (carLoading) {
-    return (
-      <>
-        <SectionHeader
-          title={t("fleet.carDetails")}
-          subtitle={t("fleet.carDetailsSubtitle")}
-        />
-        <div className="px-4 lg:px-6">
-          <div className="text-center">
-            <p>{t("loading.loadingCars")}</p>
           </div>
         </div>
       </>
@@ -212,72 +187,11 @@ export default function CarPage() {
 
       <div className="px-4 lg:px-6 space-y-6">
         {/* Car Information Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("fleet.carInformation")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("fleet.licensePlate")}
-                </label>
-                <p className="text-lg font-mono font-medium">
-                  {car.licensePlate}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("fleet.model")}
-                </label>
-                <p className="text-lg font-medium">{car.model}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("fleet.color")}
-                </label>
-                <div className="flex items-center gap-2 mt-1">
-                  <div
-                    className="w-4 h-4 rounded-full border border-gray-300"
-                    style={{ backgroundColor: car.color.toLowerCase() }}
-                  />
-                  <span className="text-lg">
-                    {t(`fleet.colors.${car.color}`, {
-                      defaultValue: car.color,
-                    })}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("fleet.seats")}
-                </label>
-                <p className="text-lg font-medium">{car.seats}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("common.status")}
-                </label>
-                <div className="mt-1">
-                  <Badge variant={getStatusVariant(car.status)}>
-                    {t(`fleet.${car.status}`)}
-                  </Badge>
-                </div>
-              </div>
-              {car.description && (
-                <div className="md:col-span-2 lg:col-span-3">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    {t("fleet.otherInformation")}
-                  </label>
-                  <p className="text-sm mt-1 text-muted-foreground">
-                    {car.description}
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
+        {carLoading ? (
+          <CarInfoSkeleton />
+        ) : car ? (
+          <CarInfoCard car={car} t={t} />
+        ) : null}
         {/* Reservations Table */}
         <div>
           <h3 className="text-lg font-semibold mb-4">

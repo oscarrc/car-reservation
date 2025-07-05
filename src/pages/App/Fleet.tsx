@@ -151,6 +151,9 @@ export default function FleetPage() {
                     <CardTitle className="flex items-center gap-3">
                       <Car className="h-5 w-5" />
                       <span className="font-semibold text-lg">{car.model}</span>
+                      {car.year && (
+                        <span className="ml-2 text-base text-muted-foreground">{car.year}</span>
+                      )}
                       <Badge variant={getStatusVariant(car.status)}>
                         {t(`fleet.${car.status}`)}
                       </Badge>

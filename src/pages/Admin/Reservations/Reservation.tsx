@@ -1,16 +1,16 @@
 "use client";
 
-import { Edit } from "lucide-react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
-import { CarInfoCard } from "@/components/reservations/car-info-card";
-import { CarInfoSkeleton } from "@/components/reservations/car-info-skeleton";
+import { CarInfoCard } from "@/components/cars/car-info-card";
+import { CarInfoSkeleton } from "@/components/cars/car-info-skeleton";
+import { Edit } from "lucide-react";
 import { ReservationDetailsCard } from "@/components/reservations/reservation-details-card";
 import { ReservationDetailsSkeleton } from "@/components/reservations/reservation-details-skeleton";
 import { SectionHeader } from "@/components/ui/section-header";
-import { UserInfoCard } from "@/components/reservations/user-info-card";
-import { UserInfoSkeleton } from "@/components/reservations/user-info-skeleton";
+import { UserInfoCard } from "@/components/users/user-info-card";
+import { UserInfoSkeleton } from "@/components/users/user-info-skeleton";
 import { fetchCarById } from "@/lib/cars-service";
 import { fetchReservationById } from "@/lib/reservations-service";
 import { fetchUserById } from "@/lib/users-service";

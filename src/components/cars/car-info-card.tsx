@@ -75,6 +75,16 @@ export function CarInfoCard({ car, t }: CarInfoCardProps) {
             <span className="font-medium">{car.model}</span>
           </div>
 
+          {/* Year */}
+          {car.year && (
+            <div className="flex flex-col space-y-1">
+              <span className="text-sm font-medium text-muted-foreground">
+                {t("fleet.year")}
+              </span>
+              <span className="font-medium">{car.year}</span>
+            </div>
+          )}
+
           {/* Color */}
           <div className="flex flex-col space-y-1">
             <span className="text-sm font-medium text-muted-foreground">

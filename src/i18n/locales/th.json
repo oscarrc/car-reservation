@@ -230,6 +230,7 @@
     "seats": "ที่นั่ง",
     "seatsLabel": "ที่นั่ง",
     "year": "ปี",
+    "yearPlaceholder": "กรอกปี (ไม่บังคับ)",
     "description": "รายละเอียด",
     "addedOn": "เพิ่มเมื่อ",
     "carDetails": "รายละเอียดรถยนต์",
