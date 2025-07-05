@@ -1,11 +1,10 @@
 "use client";
 
-import * as React from "react";
-
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Home, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 
@@ -95,14 +94,12 @@ export function ErrorDisplay({
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           {showHomeButton && (
-            <Button
-              variant="outline"
-              onClick={() => (window.location.href = finalHomePath)}
-              className="flex items-center gap-2"
-            >
-              <Home className="w-4 h-4" />
-              {t("error.goHome", "Go to Homepage")}
-            </Button>
+            <Link to={finalHomePath}>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Home className="w-4 h-4" />
+                {t("error.goHome", "Go to Homepage")}
+              </Button>
+            </Link>
           )}
 
           {onRetry && (
