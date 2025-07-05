@@ -544,7 +544,7 @@
     "reservationManagement": "Reservation Management",
     "reservationSubtitle": "Configure reservation policies and automation",
     "advanceReservation": "Advance Reservation (Days)",
-    "advanceReservationDesc": "Maximum days in advance for reservations",
+    "advanceReservationDesc": "Days in advance for reservations",
     "maxReservationDuration": "Maximum Reservation Duration (Days)",
     "maxReservationDurationDesc": "Maximum number of days a car can be reserved",
     "advanceCancellation": "Advance Cancellation (Hours)",

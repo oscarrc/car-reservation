@@ -542,7 +542,7 @@
     "reservationManagement": "จัดการการจอง",
     "reservationSubtitle": "กำหนดค่าการจัดการและการตรวจสอบการจอง",
     "advanceReservation": "การจองล่วงหน้า (วัน)",
-    "advanceReservationDesc": "จำนวนวันสูงสุดล่วงหน้าสำหรับการจอง",
+    "advanceReservationDesc": "ต้องจองล่วงหน้ากี่วัน",
     "maxReservationDuration": "ระยะเวลาการจองสูงสุด (วัน)",
     "maxReservationDurationDesc": "จำนวนวันสูงสุดที่การจองครั้งเดียวสามารถใช้ได้",
     "advanceCancellation": "เวลายกเลิกล่วงหน้า (ชั่วโมง)",
