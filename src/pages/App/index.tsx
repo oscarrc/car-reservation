@@ -365,6 +365,7 @@ export default function AppPage() {
       <ReservationFormDialog
         open={reservationDialogOpen}
         onOpenChange={setReservationDialogOpen}
+        mode="create"
       />
     </>
   );

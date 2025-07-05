@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Eye, MoreHorizontal } from "lucide-react";
+import { Edit, Eye, MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,12 +22,14 @@ interface CreateCarDetailsReservationColumnsProps {
     reservation: ReservationWithCarAndUser,
     status: ReservationStatus
   ) => void;
+  onEdit?: (reservation: ReservationWithCarAndUser) => void;
   isUpdatingStatus?: boolean;
   t: (key: string, options?: Record<string, string>) => string;
 }
 
 export function createCarDetailsReservationColumns({
   onStatusChange,
+  onEdit,
   isUpdatingStatus,
   t,
 }: CreateCarDetailsReservationColumnsProps): ColumnDef<ReservationWithCarAndUser>[] {
@@ -140,6 +142,13 @@ export function createCarDetailsReservationColumns({
                   <Eye className="mr-2 h-4 w-4" />
                   {t("reservations.viewDetails")}
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onEdit?.(reservation)}
+                disabled={!onEdit}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                {t("reservations.editDetails")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

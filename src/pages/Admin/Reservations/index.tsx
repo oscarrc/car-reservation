@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
+import { ReservationFormDialog } from "@/components/reservations/reservation-form-dialog";
 import {
   createAdminColumns,
   type ReservationWithCarAndUser,
@@ -15,7 +16,7 @@ import {
 } from "@/lib/reservations-service";
 import { fetchCarsByIds } from "@/lib/cars-service";
 import { fetchUsersByIds } from "@/lib/users-service";
-import type { ReservationStatus } from "@/types/reservation";
+import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
 
 export default function AdminReservationsPage() {
   const { t } = useTranslation();
@@ -28,6 +29,8 @@ export default function AdminReservationsPage() {
   const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(
     undefined
   );
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingReservation, setEditingReservation] = useState<ReservationWithId | null>(null);
   const queryClient = useQueryClient();
 
   const queryParams: ReservationsQueryParams = {
@@ -131,11 +134,15 @@ export default function AdminReservationsPage() {
     setEndDateFilter(date);
   };
 
-
+  const handleEditReservation = (reservation: ReservationWithCarAndUser) => {
+    setEditingReservation(reservation);
+    setEditDialogOpen(true);
+  };
 
   const columns = createAdminColumns({
     isUpdatingStatus: statusMutation.isPending,
     onStatusChange: handleStatusChange,
+    onEdit: handleEditReservation,
     t,
   });
 
@@ -180,6 +187,13 @@ export default function AdminReservationsPage() {
           endDateFilter={endDateFilter}
         />
       </div>
+
+      <ReservationFormDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        reservation={editingReservation}
+        mode="edit"
+      />
     </>
   );
 }

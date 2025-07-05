@@ -8,6 +8,7 @@ import { Edit } from "lucide-react";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
 import { CarFormDialog } from "@/components/cars/car-form-dialog";
+import { ReservationFormDialog } from "@/components/reservations/reservation-form-dialog";
 import { createCarDetailsReservationColumns } from "@/components/reservations/car-details-reservation-columns";
 import type { ReservationWithCarAndUser } from "@/components/reservations/admin-reservations-columns";
 
@@ -18,7 +19,7 @@ import {
   type ReservationsQueryParams,
 } from "@/lib/reservations-service";
 import { fetchUsersByIds } from "@/lib/users-service";
-import type { ReservationStatus } from "@/types/reservation";
+import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
 import { CarInfoSkeleton } from "@/components/cars/car-info-skeleton";
 import { CarInfoCard } from "@/components/cars/car-info-card";
 
@@ -27,6 +28,8 @@ export default function CarPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [editCarOpen, setEditCarOpen] = useState(false);
+  const [editReservationOpen, setEditReservationOpen] = useState(false);
+  const [editingReservation, setEditingReservation] = useState<ReservationWithId | null>(null);
   const [statusFilter, setStatusFilter] = useState<ReservationStatus | "all">(
     "all"
   );
@@ -132,9 +135,15 @@ export default function CarPage() {
     statusMutation.mutate({ reservationId: reservation.id, status });
   };
 
+  const handleEditReservation = (reservation: ReservationWithCarAndUser) => {
+    setEditingReservation(reservation);
+    setEditReservationOpen(true);
+  };
+
   const columns = createCarDetailsReservationColumns({
     isUpdatingStatus: statusMutation.isPending,
     onStatusChange: handleStatusChange,
+    onEdit: handleEditReservation,
     t,
   });
 
@@ -217,6 +226,14 @@ export default function CarPage() {
         onOpenChange={setEditCarOpen}
         mode="edit"
         car={car}
+      />
+
+      {/* Edit Reservation Dialog */}
+      <ReservationFormDialog
+        open={editReservationOpen}
+        onOpenChange={setEditReservationOpen}
+        reservation={editingReservation}
+        mode="edit"
       />
     </>
   );

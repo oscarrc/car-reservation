@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
 import { UserFormDialog } from "@/components/users/user-form-dialog";
+import { ReservationFormDialog } from "@/components/reservations/reservation-form-dialog";
 import { createUserDetailsReservationColumns } from "@/components/reservations/user-details-reservation-columns";
 import type { ReservationWithCarAndUser } from "@/components/reservations/user-details-reservation-columns";
 
@@ -20,13 +21,15 @@ import {
   type ReservationsQueryParams,
 } from "@/lib/reservations-service";
 import { fetchCarsByIds } from "@/lib/cars-service";
-import type { ReservationStatus } from "@/types/reservation";
+import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
 
 export default function UserPage() {
   const { userId } = useParams<{ userId: string }>();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [editUserOpen, setEditUserOpen] = useState(false);
+  const [editReservationOpen, setEditReservationOpen] = useState(false);
+  const [editingReservation, setEditingReservation] = useState<ReservationWithId | null>(null);
   const [statusFilter, setStatusFilter] = useState<ReservationStatus | "all">(
     "all"
   );
@@ -126,7 +129,10 @@ export default function UserPage() {
     statusMutation.mutate({ reservationId: reservation.id, status });
   };
 
-
+  const handleEditReservation = (reservation: ReservationWithCarAndUser) => {
+    setEditingReservation(reservation);
+    setEditReservationOpen(true);
+  };
 
   const getStatusVariant = (suspended: boolean) => {
     return suspended ? "destructive" : "success";
@@ -139,6 +145,7 @@ export default function UserPage() {
   const columns = createUserDetailsReservationColumns({
     t,
     onStatusChange: handleStatusChange,
+    onEdit: handleEditReservation,
     isUpdatingStatus: statusMutation.isPending,
   });
 
@@ -282,6 +289,14 @@ export default function UserPage() {
         onOpenChange={setEditUserOpen}
         mode="edit"
         user={user}
+      />
+
+      {/* Edit Reservation Dialog */}
+      <ReservationFormDialog
+        open={editReservationOpen}
+        onOpenChange={setEditReservationOpen}
+        reservation={editingReservation}
+        mode="edit"
       />
     </>
   );

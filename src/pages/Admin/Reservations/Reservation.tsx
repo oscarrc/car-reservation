@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -8,13 +9,13 @@ import { CarInfoSkeleton } from "@/components/cars/car-info-skeleton";
 import { Edit } from "lucide-react";
 import { ReservationDetailsCard } from "@/components/reservations/reservation-details-card";
 import { ReservationDetailsSkeleton } from "@/components/reservations/reservation-details-skeleton";
+import { ReservationFormDialog } from "@/components/reservations/reservation-form-dialog";
 import { SectionHeader } from "@/components/ui/section-header";
 import { UserInfoCard } from "@/components/users/user-info-card";
 import { UserInfoSkeleton } from "@/components/users/user-info-skeleton";
 import { fetchCarById } from "@/lib/cars-service";
 import { fetchReservationById } from "@/lib/reservations-service";
 import { fetchUserById } from "@/lib/users-service";
-import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
@@ -22,6 +23,7 @@ export default function AdminReservationPage() {
   const { reservationId } = useParams<{ reservationId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Fetch reservation details
   const {
@@ -50,8 +52,7 @@ export default function AdminReservationPage() {
 
   // Handle edit reservation
   const handleEditReservation = () => {
-    // TODO: Implement edit reservation functionality
-    toast.info(t("reservations.editFeatureComingSoon"));
+    setEditDialogOpen(true);
   };
 
   // Show loading state first
@@ -125,6 +126,13 @@ export default function AdminReservationPage() {
           ) : null}
         </div>
       </div>
+
+      <ReservationFormDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        reservation={reservation}
+        mode="edit"
+      />
     </>
   );
 }

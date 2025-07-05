@@ -267,4 +267,40 @@ export async function createReservation(reservationData: {
     console.error('Error creating reservation:', error);
     throw error;
   }
+}
+
+// Update a reservation
+export async function updateReservation(
+  reservationId: string,
+  updateData: {
+    carRef?: string;
+    status?: ReservationStatus;
+    driver?: string;
+    comments?: string;
+  }
+): Promise<void> {
+  try {
+    const reservationDoc = doc(db, 'reservations', reservationId);
+    const updates: any = {
+      updatedAt: Timestamp.fromDate(new Date())
+    };
+
+    if (updateData.carRef) {
+      updates.carRef = doc(db, 'cars', updateData.carRef);
+    }
+    if (updateData.status !== undefined) {
+      updates.status = updateData.status;
+    }
+    if (updateData.driver !== undefined) {
+      updates.driver = updateData.driver;
+    }
+    if (updateData.comments !== undefined) {
+      updates.comments = updateData.comments;
+    }
+
+    await updateDoc(reservationDoc, updates);
+  } catch (error) {
+    console.error('Error updating reservation:', error);
+    throw error;
+  }
 } 

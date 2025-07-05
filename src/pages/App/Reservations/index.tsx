@@ -285,6 +285,7 @@ export default function UserReservationsPage() {
       <ReservationFormDialog
         open={reservationDialogOpen}
         onOpenChange={setReservationDialogOpen}
+        mode="create"
       />
 
       {/* Cancellation Confirmation Dialog */}
