@@ -127,7 +127,9 @@
     "logoutSuccess": "You have been logged out successfully",
     "profileNotFound": "User profile not found. Please contact an administrator.",
     "accountSuspended": "Your account has been suspended. Please contact an administrator.",
-    "firstTime": "First time here? Activate your account"
+    "firstTime": "First time here? Activate your account",
+    "loginSuccess": "Welcome back!",
+    "sendResetEmail": "Send Reset Email"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -179,6 +181,7 @@
     "adminSubtitle": "You're logged in as an administrator. Here's an overview of your car reservation system.",
     "appWelcome": "Welcome, {{name}}!",
     "appSubtitle": "Ready to book your next car reservation?",
+    "userWelcome": "Welcome to your dashboard",
     "upcomingReservations": "Upcoming Reservations",
     "upcomingReservationsDesc": "Your next reservations",
     "noUpcomingReservations": "No upcoming reservations",
@@ -541,7 +544,7 @@
     "reservationManagement": "Reservation Management",
     "reservationSubtitle": "Configure reservation policies and automation",
     "advanceReservation": "Advance Reservation (Days)",
-    "advanceReservationDesc": "Maximum days in advance users can make reservations",
+    "advanceReservationDesc": "Maximum days in advance for reservations",
     "maxReservationDuration": "Maximum Reservation Duration (Days)",
     "maxReservationDurationDesc": "Maximum number of days a car can be reserved",
     "advanceCancellation": "Advance Cancellation (Hours)",

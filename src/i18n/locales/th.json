@@ -100,7 +100,36 @@
     "logoutSuccess": "คุณได้ออกจากระบบเรียบร้อยแล้ว",
     "profileNotFound": "ไม่พบโปรไฟล์ผู้ใช้ กรุณาติดต่อผู้ดูแลระบบ",
     "accountSuspended": "บัญชีของคุณถูกระงับ กรุณาติดต่อผู้ดูแลระบบ",
-    "firstTime": "ครั้งแรกที่มาที่นี่หรือ เปิดใช้งานบัญชีของคุณ"
+    "firstTime": "ครั้งแรกที่มาที่นี่หรือ เปิดใช้งานบัญชีของคุณ",
+    "brandName": "Car Reservation System",
+    "codeMismatch": "รหัสผ่านไม่ตรงกัน",
+    "codeNotFound": "ไม่ได้รีเซ็ตรหัส",
+    "confirmPasswordPlaceholder": "ยืนยันรหัสผ่านของคุณ",
+    "emailPlaceholder": "ป้อนอีเมลของคุณ",
+    "emailRequired": "จำเป็นต้องมีอีเมล",
+    "emailSentFailed": "ไม่สามารถส่งอีเมลรีเซ็ตได้",
+    "emailSentFailedDesc": "โปรดตรวจสอบที่อยู่อีเมลของคุณและลองอีกครั้ง",
+    "forgotPasswordDesc": "ป้อนที่อยู่อีเมลของคุณแล้วเราจะส่งลิงค์เพื่อรีเซ็ตรหัสผ่านให้คุณ",
+    "forgotPasswordTitle": "รีเซ็ตรหัสผ่านของคุณ",
+    "invalidOrExpiredCode": "รหัสรีเซ็ตที่ไม่ถูกต้องหรือหมดอายุ",
+    "loginDesc": "ป้อนข้อมูลรับรองของคุณเพื่อเข้าถึงบัญชีของคุณ",
+    "loginFailed": "เข้าสู่ระบบล้มเหลว",
+    "loginFailedDesc": "โปรดตรวจสอบข้อมูลประจำตัวของคุณและลองอีกครั้ง",
+    "passwordPlaceholder": "ป้อนรหัสผ่านของคุณ",
+    "passwordRequired": "ต้องใช้รหัสผ่าน",
+    "passwordResetSuccessDesc": "ตอนนี้คุณสามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ของคุณ",
+    "resetEmailSent": "ส่งอีเมลรีเซ็ตรหัสผ่าน! \nตรวจสอบกล่องจดหมายของคุณ",
+    "resetEmailSentDesc": "เราได้ส่งลิงค์รีเซ็ตรหัสผ่านไปยัง",
+    "resetFailed": "ไม่สามารถรีเซ็ตรหัสผ่านได้",
+    "resetFailedDesc": "โปรดลองอีกครั้งหรือขอลิงค์รีเซ็ตใหม่",
+    "resetLinkExpired": "ลิงค์รีเซ็ตรหัสผ่านนี้หมดอายุแล้ว \nโปรดขอใหม่",
+    "resetLinkInvalid": "ลิงค์รีเซ็ตรหัสผ่านนี้ไม่ถูกต้อง \nโปรดขอใหม่",
+    "resetPasswordDesc": "ป้อนรหัสผ่านใหม่ของคุณด้านล่าง",
+    "resetPasswordTitle": "รีเซ็ตรหัสผ่านของคุณ",
+    "resettingPassword": "รีเซ็ต ...",
+    "returnHome": "กลับไปที่เว็บไซต์",
+    "sendingResetLink": "ส่ง ...",
+    "signingIn": "ลงชื่อเข้าใช้ ..."
   },
   "navigation": {
     "dashboard": "แดชบอร์ด",
@@ -119,7 +148,16 @@
     "support": "ฝ่ายสนับสนุน",
     "administrativePortal": "พอร์ทัลผู้ดูแลระบบ",
     "userPortal": "พอร์ทัลผู้ใช้",
-    "logOut": "ออกจากระบบ"
+    "logOut": "ออกจากระบบ",
+    "admin": {
+      "description": "จัดการกองทัพเรือการจองผู้ใช้และการตั้งค่าระบบ",
+      "title": "พอร์ทัลการบริหาร"
+    },
+    "app": {
+      "description": "จองและจัดการการจองรถของคุณ",
+      "title": "การจองรถยนต์"
+    },
+    "company": "ระบบจองรถยนต์"
   },
   "dashboard": {
     "welcome": "ยินดีต้อนรับกลับมา, {{name}}!",
@@ -149,7 +187,10 @@
     "businessHours": "เวลาทำการ",
     "contactSupport": "ติดต่อฝ่ายสนับสนุน",
     "supportEmails": "อีเมลสนับสนุน",
-    "viewAllReservations": "ดูการจองทั้งหมด"
+    "viewAllReservations": "ดูการจองทั้งหมด",
+    "adminSubtitle": "คุณเข้าสู่ระบบในฐานะผู้ดูแลระบบ \nนี่คือภาพรวมของระบบการจองรถยนต์ของคุณ",
+    "appSubtitle": "พร้อมจองการจองรถคันต่อไปแล้วหรือยัง?",
+    "appWelcome": "ยินดีต้อนรับ {{ชื่อ}}!"
   },
   "notFound": {
     "title": "404 ไม่พบหน้าที่ต้องการ",
@@ -418,8 +459,6 @@
     "editFeatureComingSoon": "ฟีเจอร์แก้ไขจะมาเร็วๆ นี้!",
     "reservationCancelled": "ยกเลิกการจองแล้ว",
     "reservationCancelledDesc": "การจอง {{car}} ของคุณถูกยกเลิกสำเร็จแล้ว",
-    "cancellationRequested": "ส่งคำขอยกเลิกแล้ว",
-    "cancellationRequestedDesc": "คำขอยกเลิกการจอง {{car}} ของคุณได้ถูกส่งให้ผู้ดูแลระบบพิจารณาแล้ว",
     "failedToCancelReservation": "ไม่สามารถยกเลิกการจองได้",
     "cancelReservationConfirmAuto": "การดำเนินการนี้จะยกเลิกการจองของคุณทันที การดำเนินการนี้ไม่สามารถย้อนกลับได้",
     "cancelReservationConfirmManual": "การดำเนินการนี้จะส่งคำขอยกเลิกให้ผู้ดูแลระบบพิจารณา คุณจะได้รับการแจ้งเตือนเมื่อดำเนินการเสร็จสิ้น",
@@ -503,7 +542,7 @@
     "reservationManagement": "จัดการการจอง",
     "reservationSubtitle": "กำหนดค่าการจัดการและการตรวจสอบการจอง",
     "advanceReservation": "การจองล่วงหน้า (วัน)",
-    "advanceReservationDesc": "จำนวนวันขั้นต่ำก่อนที่จะสามารถทำการจองได้ (จันทร์-ศุกร์)",
+    "advanceReservationDesc": "จำนวนวันสูงสุดล่วงหน้าสำหรับการจอง",
     "maxReservationDuration": "ระยะเวลาการจองสูงสุด (วัน)",
     "maxReservationDurationDesc": "จำนวนวันสูงสุดที่การจองครั้งเดียวสามารถใช้ได้",
     "advanceCancellation": "เวลายกเลิกล่วงหน้า (ชั่วโมง)",
