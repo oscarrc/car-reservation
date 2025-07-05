@@ -27,7 +27,6 @@ import { Link } from "react-router-dom";
 import type { UserProfileWithId } from "@/lib/users-service";
 
 interface UserColumnsProps {
-  onViewUser?: (user: UserProfileWithId) => void;
   onEditUser: (user: UserProfileWithId) => void;
   onDeleteUser?: (user: UserProfileWithId) => void;
   onSuspendUser?: (user: UserProfileWithId) => void;

@@ -55,7 +55,14 @@ export default function UserReservationsPage() {
     isLoading: reservationsLoading,
     error: reservationsError,
   } = useQuery({
-    queryKey: ["userReservations", currentUser?.uid, queryParams.pageSize, queryParams.statusFilter, queryParams.startDate, queryParams.endDate],
+    queryKey: [
+      "userReservations",
+      currentUser?.uid,
+      queryParams.pageSize,
+      queryParams.statusFilter,
+      queryParams.startDate,
+      queryParams.endDate,
+    ],
     queryFn: () => {
       if (!currentUser?.uid) throw new Error("User not authenticated");
       return fetchUserReservations({ ...queryParams, userId: currentUser.uid });
@@ -126,11 +133,6 @@ export default function UserReservationsPage() {
     },
   });
 
-  const handleView = (reservation: ReservationWithCarAndUser) => {
-    // TODO: Implement view reservation details dialog
-    console.log("View reservation:", reservation);
-  };
-
   const handleCancel = (reservation: ReservationWithCarAndUser) => {
     if (!settings) return;
 
@@ -177,7 +179,6 @@ export default function UserReservationsPage() {
   };
 
   const columns = createUserColumns({
-    onView: handleView,
     onCancel: handleCancel,
     t,
   });

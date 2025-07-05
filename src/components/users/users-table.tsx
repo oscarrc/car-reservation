@@ -35,7 +35,6 @@ import { useTranslation } from "react-i18next";
 interface UsersTableProps {
   searchTerm?: string;
   onSearchChange?: (searchTerm: string) => void;
-  onViewUser?: (user: UserProfileWithId) => void;
   onEditUser: (user: UserProfileWithId) => void;
   onDeleteUser?: (user: UserProfileWithId) => void;
   onSuspendUser?: (user: UserProfileWithId) => void;
@@ -45,7 +44,6 @@ interface UsersTableProps {
 export function UsersTable({
   searchTerm = "",
   onSearchChange,
-  onViewUser,
   onEditUser,
   onDeleteUser,
   onSuspendUser,
@@ -107,7 +105,6 @@ export function UsersTable({
 
   // Create columns with callbacks
   const columns = createUserColumns({
-    onViewUser,
     onEditUser,
     onDeleteUser,
     onSuspendUser,
