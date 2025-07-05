@@ -29,8 +29,8 @@ import {
 } from "@tanstack/react-table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { Button } from "@/components/ui/button";
 import { ColumnSelector } from "@/components/ui/column-selector";
+import { ErrorDisplay } from "@/components/ui/error-display";
 import { Input } from "@/components/ui/input";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { createCarColumns } from "./cars-columns";
@@ -207,14 +207,16 @@ export function CarsTable({
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-red-600 mb-2">{t("fleet.errorLoadingCars")}</p>
-          <Button onClick={() => refetch()} className="cursor-pointer">
-            {t("common.retryButton")}
-          </Button>
-        </div>
-      </div>
+      <ErrorDisplay
+        error={error}
+        onRetry={() => refetch()}
+        title={t("fleet.errorLoadingCars")}
+        description={t(
+          "fleet.errorLoadingCarsDescription",
+          "Unable to load cars. Please try again."
+        )}
+        showHomeButton={false}
+      />
     );
   }
 

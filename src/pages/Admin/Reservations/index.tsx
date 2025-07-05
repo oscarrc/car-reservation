@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { ErrorDisplay } from "@/components/ui/error-display";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
 import { ReservationFormDialog } from "@/components/reservations/reservation-form-dialog";
@@ -170,11 +171,13 @@ export default function AdminReservationsPage() {
           subtitle={t("reservations.subtitle")}
         />
         <div className="px-4 lg:px-6">
-          <div className="text-center">
-            <p className="text-destructive">
-              {t("reservations.errorLoadingReservations")}
-            </p>
-          </div>
+          <ErrorDisplay
+            error={hasError}
+            onRetry={() => window.location.reload()}
+            title={t("reservations.errorLoadingReservations")}
+            description={t("reservations.errorLoadingReservationsDescription", "Unable to load reservations. Please try again.")}
+            homePath="/admin"
+          />
         </div>
       </>
     );

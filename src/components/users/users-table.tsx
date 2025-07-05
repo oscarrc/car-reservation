@@ -26,8 +26,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { Button } from "@/components/ui/button";
 import { ColumnSelector } from "@/components/ui/column-selector";
+import { ErrorDisplay } from "@/components/ui/error-display";
 import { Input } from "@/components/ui/input";
 import { TablePagination } from "@/components/ui/table-pagination";
 import type { UserProfileWithId } from "@/lib/users-service";
@@ -180,14 +180,16 @@ export function UsersTable({
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-red-600 mb-2">{t("users.errorLoadingUsers")}</p>
-          <Button onClick={() => refetch()} className="cursor-pointer">
-            {t("common.retryButton")}
-          </Button>
-        </div>
-      </div>
+      <ErrorDisplay
+        error={error}
+        onRetry={() => refetch()}
+        title={t("users.errorLoadingUsers")}
+        description={t(
+          "users.errorLoadingUsersDescription",
+          "Unable to load users. Please try again."
+        )}
+        showHomeButton={false}
+      />
     );
   }
 

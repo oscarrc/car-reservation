@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ErrorDisplay } from "@/components/ui/error-display";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchCars, type PaginationCursor } from "@/lib/cars-service";
@@ -98,9 +99,13 @@ export default function FleetPage() {
           subtitle={t("browse.subtitle")}
         />
         <div className="px-4 lg:px-6">
-          <div className="text-center">
-            <p className="text-destructive">{t("browse.errorLoadingCars")}</p>
-          </div>
+          <ErrorDisplay
+            error={initialError}
+            onRetry={() => window.location.reload()}
+            title={t("browse.errorLoadingCars")}
+            description={t("browse.errorLoadingCarsDescription", "Unable to load cars. Please try again.")}
+            homePath="/app"
+          />
         </div>
       </>
     );

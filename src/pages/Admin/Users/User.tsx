@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Edit } from "lucide-react";
 
+import { ErrorDisplay } from "@/components/ui/error-display";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -173,11 +174,13 @@ export default function UserPage() {
           subtitle={t("users.userDetailsSubtitle")}
         />
         <div className="px-4 lg:px-6">
-          <div className="text-center">
-            <p className="text-destructive">
-              {t("users.errorLoadingUserDetails")}
-            </p>
-          </div>
+          <ErrorDisplay
+            error={hasError}
+            onRetry={() => window.location.reload()}
+            title={t("users.errorLoadingUserDetails")}
+            description={t("users.errorLoadingUserDetailsDescription", "Unable to load user details. Please try again.")}
+            homePath="/admin/users"
+          />
         </div>
       </>
     );

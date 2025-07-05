@@ -26,6 +26,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { ErrorDisplay } from "@/components/ui/error-display";
 import { Separator } from "@/components/ui/separator";
 import { SectionHeader } from "@/components/ui/section-header";
 import {
@@ -119,17 +120,13 @@ export default function SettingsPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-xl font-semibold text-destructive mb-2">
-            {t("settings.errorLoadingSettings")}
-          </h2>
-          <p className="text-muted-foreground">
-            {t("settings.failedToLoadSettings")}
-          </p>
-        </div>
-      </div>
+      <ErrorDisplay
+        error={error}
+        onRetry={() => window.location.reload()}
+        title={t("settings.errorLoadingSettings")}
+        description={t("settings.failedToLoadSettings")}
+        homePath="/admin"
+      />
     );
   }
 

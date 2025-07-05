@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Edit } from "lucide-react";
 
+import { ErrorDisplay } from "@/components/ui/error-display";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
 import { CarFormDialog } from "@/components/cars/car-form-dialog";
@@ -173,11 +174,13 @@ export default function CarPage() {
           subtitle={t("fleet.carDetailsSubtitle")}
         />
         <div className="px-4 lg:px-6">
-          <div className="text-center">
-            <p className="text-destructive">
-              {t("fleet.errorLoadingCarDetails")}
-            </p>
-          </div>
+          <ErrorDisplay
+            error={hasError}
+            onRetry={() => window.location.reload()}
+            title={t("fleet.errorLoadingCarDetails")}
+            description={t("fleet.errorLoadingCarDetailsDescription", "Unable to load car details. Please try again.")}
+            homePath="/admin/fleet"
+          />
         </div>
       </>
     );
