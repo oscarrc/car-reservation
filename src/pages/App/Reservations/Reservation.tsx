@@ -70,6 +70,8 @@ export default function AppReservationPage() {
 
       queryClient.invalidateQueries({ queryKey: ["userReservations"] });
       queryClient.invalidateQueries({ queryKey: ["reservation", reservationId] });
+      queryClient.invalidateQueries({ queryKey: ["activeReservationsCount"] });
+      queryClient.invalidateQueries({ queryKey: ["availableCarsForDateRange"] });
       navigate("/app/reservations");
     },
     onError: (error) => {
@@ -87,9 +89,26 @@ export default function AppReservationPage() {
 
   // Handle cancel action
   const handleCancelAction = () => {
-    if (canCancel) {
-      setShowCancelDialog(true);
+    if (!canCancel || !settings) return;
+
+    // Check if advance cancellation time is enabled (> 0) and if cancellation is allowed
+    if (settings.advanceCancellationTime > 0) {
+      const now = new Date();
+      const startTime = new Date(reservation.startDateTime);
+      const hoursUntilStart =
+        (startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+      if (hoursUntilStart < settings.advanceCancellationTime) {
+        toast.error(t("reservations.cancellationTooLate"), {
+          description: t("reservations.cancellationTooLateDesc", {
+            hours: settings.advanceCancellationTime,
+          }),
+        });
+        return;
+      }
     }
+
+    setShowCancelDialog(true);
   };
 
   // Handle cancel confirmation

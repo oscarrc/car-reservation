@@ -316,4 +316,50 @@ export async function fetchAvailableCars(): Promise<CarWithId[]> {
     console.error('Error fetching available cars:', error);
     throw error;
   }
+}
+
+// Fetch cars available for a specific date/time range
+export async function fetchAvailableCarsForDateRange(
+  startDateTime: Date,
+  endDateTime: Date
+): Promise<CarWithId[]> {
+  try {
+    // First get all cars with status 'available'
+    const availableCars = await fetchAvailableCars();
+    
+    if (availableCars.length === 0) {
+      return [];
+    }
+
+    // Get all confirmed/pending reservations that might conflict with the requested time range
+    const reservationsCollection = collection(db, 'reservations');
+    const reservationsQuery = query(
+      reservationsCollection,
+      where('status', 'in', ['pending', 'confirmed']),
+      where('startDateTime', '<', endDateTime)
+    );
+
+    const reservationsSnapshot = await getDocs(reservationsQuery);
+    const conflictingCarIds = new Set<string>();
+
+    // Check each reservation for date/time conflicts
+    reservationsSnapshot.docs.forEach((reservationDoc) => {
+      const reservation = reservationDoc.data();
+      const reservationStart = reservation.startDateTime.toDate();
+      const reservationEnd = reservation.endDateTime.toDate();
+
+      // Check if there's any overlap between requested time and existing reservation
+      const hasOverlap = startDateTime < reservationEnd && endDateTime > reservationStart;
+      
+      if (hasOverlap) {
+        conflictingCarIds.add(reservation.carRef.id);
+      }
+    });
+
+    // Filter out cars that have conflicting reservations
+    return availableCars.filter(car => !conflictingCarIds.has(car.id));
+  } catch (error) {
+    console.error('Error fetching available cars for date range:', error);
+    throw error;
+  }
 } 

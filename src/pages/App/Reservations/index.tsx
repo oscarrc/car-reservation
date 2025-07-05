@@ -17,6 +17,7 @@ import {
 import {
   fetchUserReservations,
   requestCancellation,
+  countActiveUserReservations,
   type ReservationsQueryParams,
 } from "@/lib/reservations-service";
 import { fetchCarsByIds } from "@/lib/cars-service";
@@ -122,6 +123,8 @@ export default function UserReservationsPage() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["userReservations"] });
+      queryClient.invalidateQueries({ queryKey: ["activeReservationsCount"] });
+      queryClient.invalidateQueries({ queryKey: ["availableCarsForDateRange"] });
       setCancelDialogOpen(false);
       setReservationToCancel(null);
     },
@@ -136,19 +139,21 @@ export default function UserReservationsPage() {
   const handleCancel = (reservation: ReservationWithCarAndUser) => {
     if (!settings) return;
 
-    // Check if cancellation is allowed based on advance cancellation time
-    const now = new Date();
-    const startTime = new Date(reservation.startDateTime);
-    const hoursUntilStart =
-      (startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    // Check if advance cancellation time is enabled (> 0) and if cancellation is allowed
+    if (settings.advanceCancellationTime > 0) {
+      const now = new Date();
+      const startTime = new Date(reservation.startDateTime);
+      const hoursUntilStart =
+        (startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-    if (hoursUntilStart < settings.advanceCancellationTime) {
-      toast.error(t("reservations.cancellationTooLate"), {
-        description: t("reservations.cancellationTooLateDesc", {
-          hours: settings.advanceCancellationTime,
-        }),
-      });
-      return;
+      if (hoursUntilStart < settings.advanceCancellationTime) {
+        toast.error(t("reservations.cancellationTooLate"), {
+          description: t("reservations.cancellationTooLateDesc", {
+            hours: settings.advanceCancellationTime,
+          }),
+        });
+        return;
+      }
     }
 
     // Show confirmation dialog
@@ -162,7 +167,33 @@ export default function UserReservationsPage() {
     }
   };
 
+  // Query for active reservations count
+  const { data: activeReservationsCount = 0 } = useQuery({
+    queryKey: ["activeReservationsCount", currentUser?.uid],
+    queryFn: () => {
+      if (!currentUser?.uid) throw new Error("User not authenticated");
+      return countActiveUserReservations(currentUser.uid);
+    },
+    enabled: !!currentUser?.uid && !!settings?.maxConcurrentReservations && settings.maxConcurrentReservations > 0,
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    gcTime: 300000, // Keep in cache for 5 minutes
+  });
+
   const handleNewReservation = () => {
+    if (!currentUser?.uid || !settings) return;
+
+    // Check if maxConcurrentReservations is enabled (> 0)
+    if (settings.maxConcurrentReservations > 0) {
+      if (activeReservationsCount >= settings.maxConcurrentReservations) {
+        toast.error(t("reservations.maxConcurrentReservationsReached"), {
+          description: t("reservations.maxConcurrentReservationsReachedDesc", {
+            maxReservations: settings.maxConcurrentReservations,
+          }),
+        });
+        return;
+      }
+    }
+
     setReservationDialogOpen(true);
   };
 

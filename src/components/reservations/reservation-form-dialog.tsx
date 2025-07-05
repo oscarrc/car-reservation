@@ -41,7 +41,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { createReservation } from "@/lib/reservations-service";
-import { fetchAvailableCars } from "@/lib/cars-service";
+import { fetchAvailableCarsForDateRange } from "@/lib/cars-service";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
@@ -92,6 +92,7 @@ export function ReservationFormDialog({
   const { settings } = useSettings();
   const queryClient = useQueryClient();
   const [carDropdownOpen, setCarDropdownOpen] = React.useState(false);
+  const [calendarMonth, setCalendarMonth] = React.useState<Date>(new Date());
 
   console.log(JSON.stringify(settings, null, 2));
 
@@ -108,11 +109,39 @@ export function ReservationFormDialog({
     },
   });
 
-  // Fetch available cars
+  // Watch form values for date/time changes
+  const startDate = form.watch("startDate");
+  const startTime = form.watch("startTime");
+  const endDate = form.watch("endDate");
+  const endTime = form.watch("endTime");
+
+  // Calculate start and end date times
+  const startDateTime = React.useMemo(() => {
+    if (!startDate || !startTime) return null;
+    return new Date(`${startDate.toDateString()} ${startTime}`);
+  }, [startDate, startTime]);
+
+  const endDateTime = React.useMemo(() => {
+    if (!endDate || !endTime) return null;
+    return new Date(`${endDate.toDateString()} ${endTime}`);
+  }, [endDate, endTime]);
+
+  // Fetch available cars for the selected date/time range
   const { data: availableCars = [], isLoading: carsLoading } = useQuery({
-    queryKey: ["availableCars"],
-    queryFn: fetchAvailableCars,
-    enabled: open,
+    queryKey: [
+      "availableCarsForDateRange",
+      startDateTime?.toISOString(),
+      endDateTime?.toISOString(),
+    ],
+    queryFn: () => {
+      if (!startDateTime || !endDateTime) {
+        throw new Error("Start and end date/time are required");
+      }
+      return fetchAvailableCarsForDateRange(startDateTime, endDateTime);
+    },
+    enabled: !!startDateTime && !!endDateTime && open,
+    staleTime: 60000, // 1 minute
+    gcTime: 300000, // 5 minutes
   });
 
   // Create reservation mutation
@@ -159,6 +188,8 @@ export function ReservationFormDialog({
 
       queryClient.invalidateQueries({ queryKey: ["userReservations"] });
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["activeReservationsCount"] });
+      queryClient.invalidateQueries({ queryKey: ["availableCarsForDateRange"] });
       onOpenChange(false);
       form.reset();
     },
@@ -222,12 +253,24 @@ export function ReservationFormDialog({
                                   mode="single"
                                   selected={field.value}
                                   onSelect={field.onChange}
+                                  month={calendarMonth}
+                                  onMonthChange={setCalendarMonth}
                                   className="bg-transparent p-0 scale-110 md:scale-100"
                                   disabled={(date) => {
                                     const today = new Date(
                                       new Date().setHours(0, 0, 0, 0)
                                     );
                                     const isPastDate = date < today;
+
+                                    // Check advance reservation requirement
+                                    const advanceReservationDays =
+                                      settings?.advanceReservation || 0;
+                                    const minReservationDate = new Date(today);
+                                    minReservationDate.setDate(
+                                      today.getDate() + advanceReservationDays
+                                    );
+                                    const isWithinAdvanceReservation =
+                                      date < minReservationDate;
 
                                     // Check if weekends should be disabled
                                     const isWeekend =
@@ -239,6 +282,7 @@ export function ReservationFormDialog({
 
                                     return (
                                       isPastDate ||
+                                      isWithinAdvanceReservation ||
                                       (weekendsDisabled && isWeekend)
                                     );
                                   }}
@@ -262,6 +306,8 @@ export function ReservationFormDialog({
                                   mode="single"
                                   selected={field.value}
                                   onSelect={field.onChange}
+                                  month={calendarMonth}
+                                  onMonthChange={setCalendarMonth}
                                   className="bg-transparent p-0 scale-110 md:scale-100"
                                   disabled={(date) => {
                                     const today = new Date(
@@ -272,6 +318,25 @@ export function ReservationFormDialog({
                                     const isPastDate = date < today;
                                     const isBeforeStartDate =
                                       startDate && date < startDate;
+
+                                    // Check advance reservation requirement
+                                    const advanceReservationDays =
+                                      settings?.advanceReservation || 0;
+                                    const minReservationDate = new Date(today);
+                                    minReservationDate.setDate(
+                                      today.getDate() + advanceReservationDays
+                                    );
+                                    const isWithinAdvanceReservation =
+                                      date < minReservationDate;
+
+                                    // Check maximum reservation duration (only if enabled - maxReservationDuration > 0)
+                                    const maxReservationDuration = settings?.maxReservationDuration || 0;
+                                    let isExceedsMaxDuration = false;
+                                    if (startDate && maxReservationDuration > 0) {
+                                      const maxEndDate = new Date(startDate);
+                                      maxEndDate.setDate(startDate.getDate() + maxReservationDuration);
+                                      isExceedsMaxDuration = date > maxEndDate;
+                                    }
 
                                     // Check if weekends should be disabled
                                     const isWeekend =
@@ -284,6 +349,8 @@ export function ReservationFormDialog({
                                     return (
                                       isPastDate ||
                                       isBeforeStartDate ||
+                                      isWithinAdvanceReservation ||
+                                      isExceedsMaxDuration ||
                                       (weekendsDisabled && isWeekend)
                                     );
                                   }}
@@ -420,6 +487,8 @@ export function ReservationFormDialog({
                               <CommandEmpty>
                                 {carsLoading
                                   ? "Loading cars..."
+                                  : startDateTime && endDateTime
+                                  ? t("reservations.noCarsAvailableForDates")
                                   : t("reservations.noCarsFound")}
                               </CommandEmpty>
                               <CommandGroup>
@@ -430,7 +499,9 @@ export function ReservationFormDialog({
                                     </CommandItem>
                                   ) : availableCars.length === 0 ? (
                                     <CommandItem disabled>
-                                      No cars available
+                                      {startDateTime && endDateTime
+                                        ? t("reservations.noCarsAvailableForDates")
+                                        : "No cars available"}
                                     </CommandItem>
                                   ) : (
                                     availableCars.map((car) => (

@@ -17,7 +17,8 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchCarsByIds } from "@/lib/cars-service";
-import { fetchUserReservations } from "@/lib/reservations-service";
+import { fetchUserReservations, countActiveUserReservations } from "@/lib/reservations-service";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -95,7 +96,33 @@ export default function AppPage() {
       carInfo: carsData?.find((car) => car.id === reservation.carRef.id),
     }));
 
+  // Query for active reservations count
+  const { data: activeReservationsCount = 0 } = useQuery({
+    queryKey: ["activeReservationsCount", currentUser?.uid],
+    queryFn: () => {
+      if (!currentUser?.uid) throw new Error("User not authenticated");
+      return countActiveUserReservations(currentUser.uid);
+    },
+    enabled: !!currentUser?.uid && !!settings?.maxConcurrentReservations && settings.maxConcurrentReservations > 0,
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    gcTime: 300000, // Keep in cache for 5 minutes
+  });
+
   const handleNewReservation = () => {
+    if (!currentUser?.uid || !settings) return;
+
+    // Check if maxConcurrentReservations is enabled (> 0)
+    if (settings.maxConcurrentReservations > 0) {
+      if (activeReservationsCount >= settings.maxConcurrentReservations) {
+        toast.error(t("reservations.maxConcurrentReservationsReached"), {
+          description: t("reservations.maxConcurrentReservationsReachedDesc", {
+            maxReservations: settings.maxConcurrentReservations,
+          }),
+        });
+        return;
+      }
+    }
+
     setReservationDialogOpen(true);
   };
 

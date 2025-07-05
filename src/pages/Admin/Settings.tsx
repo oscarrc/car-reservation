@@ -36,13 +36,12 @@ import {
 
 const settingsSchema = z.object({
   // Reservation Management
-  advanceReservation: z.number().min(0).max(30),
+  advanceReservation: z.number().min(0),
   autoReservation: z.boolean(),
   autoCancelation: z.boolean(),
-  maxReservationDuration: z.number().min(1).max(30),
-  advanceCancellationTime: z.number().min(1).max(168), // max 1 week
-  maxConcurrentReservations: z.number().min(1).max(10),
-  minTimeBetweenReservations: z.number().min(0).max(72), // max 3 days
+  maxReservationDuration: z.number().min(0),
+  advanceCancellationTime: z.number().min(0), // max 1 week
+  maxConcurrentReservations: z.number().min(0).max(10),
 
   // System Configuration
   weekendReservations: z.boolean(),
@@ -199,11 +198,11 @@ export default function SettingsPage() {
                         <FormControl>
                           <Input
                             type="number"
-                            min="1"
+                            min="0"
                             max="30"
                             {...field}
                             onChange={(e) =>
-                              field.onChange(parseInt(e.target.value) || 1)
+                              field.onChange(parseInt(e.target.value) || 0)
                             }
                           />
                         </FormControl>
@@ -226,11 +225,11 @@ export default function SettingsPage() {
                         <FormControl>
                           <Input
                             type="number"
-                            min="1"
+                            min="0"
                             max="168"
                             {...field}
                             onChange={(e) =>
-                              field.onChange(parseInt(e.target.value) || 1)
+                              field.onChange(parseInt(e.target.value) || 0)
                             }
                           />
                         </FormControl>
@@ -251,35 +250,8 @@ export default function SettingsPage() {
                         <FormControl>
                           <Input
                             type="number"
-                            min="1"
-                            max="10"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value) || 1)
-                            }
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          {t("settings.maxConcurrentDesc")}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="minTimeBetweenReservations"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t("settings.minTimeBetweenReservations")}
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
                             min="0"
-                            max="72"
+                            max="10"
                             {...field}
                             onChange={(e) =>
                               field.onChange(parseInt(e.target.value) || 0)
@@ -287,7 +259,7 @@ export default function SettingsPage() {
                           />
                         </FormControl>
                         <FormDescription>
-                          {t("settings.minTimeBetweenReservationsDesc")}
+                          {t("settings.maxConcurrentDesc")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

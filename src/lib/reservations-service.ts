@@ -214,6 +214,27 @@ export async function fetchReservationById(reservationId: string): Promise<Reser
   }
 }
 
+// Count active reservations for a user (reservations where endDateTime > now)
+export async function countActiveUserReservations(userId: string): Promise<number> {
+  try {
+    const reservationsCollection = collection(db, 'reservations');
+    const now = new Date();
+    
+    const q = query(
+      reservationsCollection,
+      where('userRef', '==', doc(db, 'users', userId)),
+      where('endDateTime', '>', Timestamp.fromDate(now)),
+      where('status', 'in', ['pending', 'confirmed'])
+    );
+    
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.size;
+  } catch (error) {
+    console.error('Error counting active reservations:', error);
+    throw error;
+  }
+}
+
 // Create a new reservation
 export async function createReservation(reservationData: {
   userRef: string;
