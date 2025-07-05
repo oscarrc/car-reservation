@@ -473,7 +473,8 @@
     "cancelReservationConfirmAuto": "การดำเนินการนี้จะยกเลิกการจองของคุณทันที การดำเนินการนี้ไม่สามารถย้อนกลับได้",
     "cancelReservationConfirmManual": "การดำเนินการนี้จะส่งคำขอยกเลิกให้ผู้ดูแลระบบพิจารณา คุณจะได้รับการแจ้งเตือนเมื่อดำเนินการเสร็จสิ้น",
     "userInformation": "ข้อมูลผู้ใช้",
-    "carInformation": "ข้อมูลรถยนต์"
+    "carInformation": "ข้อมูลรถยนต์",
+    "selectStatus": "เลือกสถานะ"
   },
   "users": {
     "management": "จัดการผู้ใช้",
