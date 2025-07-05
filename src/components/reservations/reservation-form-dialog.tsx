@@ -203,14 +203,14 @@ function CreateReservationForm({
       );
 
       if (settings?.autoReservation) {
-        toast.success(t("reservations.reservationSubmitted"), {
-          description: t("reservations.reservationSubmittedDesc", {
+        toast.success(t("reservations.reservationConfirmed"), {
+          description: t("reservations.reservationConfirmedDesc", {
             car: selectedCar?.model || t("common.unknown"),
           }),
         });
       } else {
-        toast.success(t("reservations.reservationConfirmed"), {
-          description: t("reservations.reservationConfirmedDesc", {
+        toast.success(t("reservations.reservationSubmitted"), {
+          description: t("reservations.reservationSubmittedDesc", {
             car: selectedCar?.model || t("common.unknown"),
           }),
         });
