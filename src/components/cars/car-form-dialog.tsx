@@ -1,6 +1,15 @@
 "use client";
 
 import type { Car, CarWithId } from "@/types/car";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +27,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -26,31 +40,17 @@ import {
 } from "@/components/ui/select";
 import { createCar, updateCar } from "@/lib/cars-service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Loader2, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 const carSchema = z.object({
   licensePlate: z.string().min(1, "License plate is required"),
@@ -61,7 +61,11 @@ const carSchema = z.object({
     .min(1, "Seats must be between 1 and 20")
     .max(20, "Seats must be between 1 and 20"),
   status: z.enum(["available", "maintenance", "out_of_service"]),
-  year: z.number().min(1900).max(new Date().getFullYear() + 1).optional(),
+  year: z
+    .number()
+    .min(1900)
+    .max(new Date().getFullYear() + 1)
+    .optional(),
   description: z.string().optional(),
 });
 
@@ -76,31 +80,72 @@ interface CarFormDialogProps {
 
 // Color list data - this should match the colors in the translations
 const colorKeys = [
-  "red", "blue", "green", "yellow", "orange", "purple", "pink", "brown",
-  "black", "white", "gray", "grey", "silver", "gold", "beige", "navy",
-  "maroon", "olive", "lime", "aqua", "teal", "fuchsia", "crimson", "indigo",
-  "violet", "turquoise", "coral", "salmon", "khaki", "tan", "chocolate",
-  "peru", "sienna", "darkred", "darkblue", "darkgreen", "darkgray",
-  "lightgray", "lightblue", "lightgreen", "lightyellow", "lightpink",
-  "lightcoral", "steelblue", "royalblue", "skyblue", "forestgreen",
-  "seagreen", "springgreen"
+  "red",
+  "blue",
+  "green",
+  "yellow",
+  "orange",
+  "purple",
+  "pink",
+  "brown",
+  "black",
+  "white",
+  "gray",
+  "grey",
+  "silver",
+  "gold",
+  "beige",
+  "navy",
+  "maroon",
+  "olive",
+  "lime",
+  "aqua",
+  "teal",
+  "fuchsia",
+  "crimson",
+  "indigo",
+  "violet",
+  "turquoise",
+  "coral",
+  "salmon",
+  "khaki",
+  "tan",
+  "chocolate",
+  "peru",
+  "sienna",
+  "darkred",
+  "darkblue",
+  "darkgreen",
+  "darkgray",
+  "lightgray",
+  "lightblue",
+  "lightgreen",
+  "lightyellow",
+  "lightpink",
+  "lightcoral",
+  "steelblue",
+  "royalblue",
+  "skyblue",
+  "forestgreen",
+  "seagreen",
+  "springgreen",
 ];
 
-function ColorCombobox({ 
-  value, 
-  onValueChange, 
-  placeholder 
-}: { 
-  value: string; 
-  onValueChange: (value: string) => void; 
+function ColorCombobox({
+  value,
+  onValueChange,
+  placeholder,
+}: {
+  value: string;
+  onValueChange: (value: string) => void;
   placeholder: string;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
-  const colors = colorKeys.map(key => ({
+  const colors = colorKeys.map((key) => ({
     value: key,
-    label: t(`fleet.colors.${key}`)
+    label: t(`fleet.colors.${key}`),
   }));
 
   return (
@@ -118,7 +163,9 @@ function ColorCombobox({
                 className="w-4 h-4 rounded-full border border-gray-300"
                 style={{ backgroundColor: value.toLowerCase() }}
               />
-              <span>{colors.find((color) => color.value === value)?.label}</span>
+              <span>
+                {colors.find((color) => color.value === value)?.label}
+              </span>
             </div>
           ) : (
             placeholder
@@ -309,7 +356,9 @@ function CreateCarForm({
                     placeholder={t("fleet.yearPlaceholder")}
                     {...field}
                     onChange={(e) =>
-                      field.onChange(e.target.value ? parseInt(e.target.value) : undefined)
+                      field.onChange(
+                        e.target.value ? parseInt(e.target.value) : undefined
+                      )
                     }
                     value={field.value || ""}
                   />
@@ -332,10 +381,14 @@ function CreateCarForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="available">{t("fleet.available")}</SelectItem>
-                    <SelectItem value="maintenance">{t("fleet.maintenance")}</SelectItem>
+                    <SelectItem value="available">
+                      {t("fleet.available")}
+                    </SelectItem>
+                    <SelectItem value="maintenance">
+                      {t("fleet.maintenance")}
+                    </SelectItem>
                     <SelectItem value="out_of_service">
-                      {t("fleet.outOfService")}
+                      {t("fleet.out_of_service")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -531,7 +584,9 @@ function EditCarForm({
                     placeholder={t("fleet.yearPlaceholder")}
                     {...field}
                     onChange={(e) =>
-                      field.onChange(e.target.value ? parseInt(e.target.value) : undefined)
+                      field.onChange(
+                        e.target.value ? parseInt(e.target.value) : undefined
+                      )
                     }
                     value={field.value || ""}
                   />
@@ -554,8 +609,12 @@ function EditCarForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="available">{t("fleet.available")}</SelectItem>
-                    <SelectItem value="maintenance">{t("fleet.maintenance")}</SelectItem>
+                    <SelectItem value="available">
+                      {t("fleet.available")}
+                    </SelectItem>
+                    <SelectItem value="maintenance">
+                      {t("fleet.maintenance")}
+                    </SelectItem>
                     <SelectItem value="out_of_service">
                       {t("fleet.outOfService")}
                     </SelectItem>

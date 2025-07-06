@@ -14,8 +14,10 @@ import {
 } from "@/components/ui/table";
 import {
   fetchUsers,
+  getUsersCount,
   searchUsers,
   type PaginationCursor,
+  type UsersFilterParams,
 } from "@/lib/users-service";
 import {
   flexRender,
@@ -82,6 +84,11 @@ export function UsersTable({
     return () => clearTimeout(timer);
   }, [localSearchTerm, onSearchChange]);
 
+  // Filter params for count query (without pagination params)
+  const filterParams: UsersFilterParams = {
+    searchTerm: debouncedSearchTerm.trim() || undefined,
+  };
+
   // Fetch users with React Query
   const {
     data: usersResponse,
@@ -107,12 +114,22 @@ export function UsersTable({
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const data = usersResponse?.users || [];
-  const pagination = usersResponse?.pagination;
-  const totalRows = pagination?.totalCount || 0;
-  const hasNextPage = pagination?.hasNextPage || false;
-  const hasPreviousPage = pagination?.hasPreviousPage || false;
+  // Fetch total count (separate query that only invalidates when filters change)
+  const {
+    data: totalCount,
+    isLoading: countLoading,
+    error: countError,
+  } = useQuery({
+    queryKey: ["users", "count", pageSize, filterParams],
+    queryFn: async () => {
+      return getUsersCount(filterParams);
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
+  const data = usersResponse?.users || [];
+  const totalRows = totalCount || 0;
+  
   // Update cursor cache when new data is fetched
   React.useEffect(() => {
     if (usersResponse?.pagination?.endCursor && pageIndex >= 0) {
@@ -241,7 +258,7 @@ export function UsersTable({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-64 text-center"
+                  className="h-24 text-center"
                 >
                   <div className="flex flex-col items-center justify-center space-y-2">
                     <div className="relative">
@@ -275,7 +292,9 @@ export function UsersTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  {t("users.noUsersFound")}
+                  {debouncedSearchTerm
+                    ? t("users.searchNoUsersFound")
+                    : t("users.noUsersFound")}
                 </TableCell>
               </TableRow>
             )}
@@ -287,10 +306,8 @@ export function UsersTable({
       <TablePagination
         pageIndex={pageIndex}
         pageSize={pageSize}
-        totalRows={totalRows}
+        totalRows={countError ? 0 : totalRows}
         selectedCount={table.getFilteredSelectedRowModel().rows.length}
-        hasNextPage={hasNextPage}
-        hasPreviousPage={hasPreviousPage}
         onPageChange={setPageIndex}
         onPageSizeChange={handlePageSizeChange}
         onFirstPage={() => {
@@ -305,12 +322,13 @@ export function UsersTable({
           setPageIndex(pageIndex + 1);
         }}
         onLastPage={() => {
-          if (pagination?.totalCount) {
-            const lastPageIndex =
-              Math.ceil(pagination.totalCount / pageSize) - 1;
+          if (totalCount) {
+            const lastPageIndex = Math.ceil(totalCount / pageSize) - 1;
             setPageIndex(lastPageIndex);
           }
         }}
+        countError={countError}
+        countLoading={countLoading}
       />
     </div>
   );

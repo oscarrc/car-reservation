@@ -15,9 +15,11 @@ import {
 } from "@/components/ui/table";
 import {
   fetchCars,
+  getCarsCount,
   searchCars,
   updateCarStatus,
   type PaginationCursor,
+  type CarsFilterParams,
 } from "@/lib/cars-service";
 import {
   flexRender,
@@ -110,6 +112,11 @@ export function CarsTable({
     statusMutation.mutate({ carId, status: newStatus });
   };
 
+  // Filter params for count query (without pagination params)
+  const filterParams: CarsFilterParams = {
+    searchTerm: debouncedSearchTerm.trim() || undefined,
+  };
+
   // Fetch cars with React Query
   const {
     data: carsResponse,
@@ -135,12 +142,22 @@ export function CarsTable({
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const data = carsResponse?.cars || [];
-  const pagination = carsResponse?.pagination;
-  const totalRows = pagination?.totalCount || 0;
-  const hasNextPage = pagination?.hasNextPage || false;
-  const hasPreviousPage = pagination?.hasPreviousPage || false;
+  // Fetch total count (separate query that only invalidates when filters change)
+  const {
+    data: totalCount,
+    isLoading: countLoading,
+    error: countError,
+  } = useQuery({
+    queryKey: ["cars", "count", pageSize, filterParams],
+    queryFn: async () => {
+      return getCarsCount(filterParams);
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
+  const data = carsResponse?.cars || [];
+  const totalRows = totalCount || 0;
+  
   // Update cursor cache when new data is fetched
   React.useEffect(() => {
     if (carsResponse?.pagination?.endCursor && pageIndex >= 0) {
@@ -316,10 +333,8 @@ export function CarsTable({
       <TablePagination
         pageIndex={pageIndex}
         pageSize={pageSize}
-        totalRows={totalRows}
+        totalRows={countError ? 0 : totalRows}
         selectedCount={table.getFilteredSelectedRowModel().rows.length}
-        hasNextPage={hasNextPage}
-        hasPreviousPage={hasPreviousPage}
         onPageChange={setPageIndex}
         onPageSizeChange={handlePageSizeChange}
         onFirstPage={() => {
@@ -334,12 +349,13 @@ export function CarsTable({
           setPageIndex(pageIndex + 1);
         }}
         onLastPage={() => {
-          if (pagination?.totalCount) {
-            const lastPageIndex =
-              Math.ceil(pagination.totalCount / pageSize) - 1;
+          if (totalCount) {
+            const lastPageIndex = Math.ceil(totalCount / pageSize) - 1;
             setPageIndex(lastPageIndex);
           }
         }}
+        countError={countError}
+        countLoading={countLoading}
       />
     </div>
   );

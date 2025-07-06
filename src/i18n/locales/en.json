@@ -52,7 +52,8 @@
     "pickDate": "Pick a date",
     "unknown": "Unknown",
     "cancelling": "Cancelling...",
-    "settingsError": "Settings Error"
+    "settingsError": "Settings Error",
+    "errorLoadingCount": "Error loading count"
   },
   "auth": {
     "welcome": "Welcome back",
@@ -264,7 +265,7 @@
     "deleteConfirmation": "Are you sure you want to delete {{model}} ({{licensePlate}})? This action cannot be undone and will remove the car from the fleet.",
     "available": "Available",
     "maintenance": "Maintenance",
-    "outOfService": "Out of Service",
+    "out_of_service": "Out of Service",
     "licensePlate": "License Plate",
     "model": "Model",
     "color": "Color",

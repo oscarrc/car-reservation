@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Edit } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -18,9 +19,10 @@ import type { ReservationWithCarAndUser } from "@/components/reservations/user-d
 import { fetchUserById } from "@/lib/users-service";
 import {
   fetchReservations,
+  getReservationsCount,
   updateReservationStatus,
   type ReservationsQueryParams,
-  type PaginationCursor,
+  type ReservationsFilterParams,
 } from "@/lib/reservations-service";
 import { fetchCarsByIds } from "@/lib/cars-service";
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
@@ -31,7 +33,8 @@ export default function UserPage() {
   const queryClient = useQueryClient();
   const [editUserOpen, setEditUserOpen] = useState(false);
   const [editReservationOpen, setEditReservationOpen] = useState(false);
-  const [editingReservation, setEditingReservation] = useState<ReservationWithId | null>(null);
+  const [editingReservation, setEditingReservation] =
+    useState<ReservationWithId | null>(null);
   const [statusFilter, setStatusFilter] = useState<ReservationStatus | "all">(
     "all"
   );
@@ -43,7 +46,6 @@ export default function UserPage() {
   );
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
-  const [cursors, setCursors] = useState<{ [key: number]: PaginationCursor }>({});
 
   // Fetch user details
   const {
@@ -64,7 +66,14 @@ export default function UserPage() {
     statusFilter,
     startDate: startDateFilter,
     endDate: endDateFilter,
-    cursor: cursors[pageIndex],
+  };
+
+  // Filter params for count query (without pagination params)
+  const filterParams: ReservationsFilterParams = {
+    userId,
+    statusFilter,
+    startDate: startDateFilter,
+    endDate: endDateFilter,
   };
 
   const {
@@ -72,19 +81,44 @@ export default function UserPage() {
     isLoading: reservationsLoading,
     error: reservationsError,
   } = useQuery({
-    queryKey: ["userReservations", userId, statusFilter, startDateFilter, endDateFilter, pageIndex, pageSize],
+    queryKey: [
+      "userReservations",
+      userId,
+      statusFilter,
+      startDateFilter,
+      endDateFilter,
+      pageIndex,
+      pageSize,
+    ],
     queryFn: () => fetchReservations(queryParams),
     enabled: !!userId,
   });
 
+  // Fetch total count (separate query that only invalidates when filters change)
+  const {
+    data: totalCount,
+    isLoading: countLoading,
+    error: countError,
+  } = useQuery({
+    queryKey: ["userReservations", "count", userId, pageSize, filterParams],
+    queryFn: () => getReservationsCount(filterParams),
+    enabled: !!userId,
+  });
+
   const reservations = reservationsResponse?.reservations || [];
-  const pagination = reservationsResponse?.pagination ? {
-    pageIndex: reservationsResponse.pagination.pageIndex,
-    pageSize: reservationsResponse.pagination.pageSize,
-    totalCount: reservationsResponse.pagination.totalCount || 0,
-    hasNextPage: reservationsResponse.pagination.hasNextPage,
-    hasPreviousPage: reservationsResponse.pagination.hasPreviousPage,
-  } : undefined;
+
+  // Calculate pagination state locally
+  const totalRows = totalCount || 0;
+  const hasNextPage = pageIndex < Math.ceil(totalRows / pageSize) - 1;
+  const hasPreviousPage = pageIndex > 0;
+
+  const pagination = {
+    pageIndex: reservationsResponse?.pagination.pageIndex || 0,
+    pageSize: reservationsResponse?.pagination.pageSize || 25,
+    totalCount: totalRows,
+    hasNextPage,
+    hasPreviousPage,
+  };
 
   // Extract unique car IDs from DocumentReferences
   const carIds = [
@@ -163,7 +197,8 @@ export default function UserPage() {
     isUpdatingStatus: statusMutation.isPending,
   });
 
-  const isLoading = userLoading || reservationsLoading || carsLoading;
+  const isLoading =
+    userLoading || reservationsLoading || carsLoading;
   const hasError = userError || reservationsError || carsError;
 
   if (hasError) {
@@ -178,7 +213,10 @@ export default function UserPage() {
             error={hasError}
             onRetry={() => window.location.reload()}
             title={t("users.errorLoadingUserDetails")}
-            description={t("users.errorLoadingUserDetailsDescription", "Unable to load user details. Please try again.")}
+            description={t(
+              "users.errorLoadingUserDetailsDescription",
+              "Unable to load user details. Please try again."
+            )}
             homePath="/admin/users"
           />
         </div>
@@ -211,7 +249,7 @@ export default function UserPage() {
         />
         <div className="px-4 lg:px-6">
           <div className="text-center">
-            <p className="text-destructive">{t("users.userNotFound")}</p>
+            <p>{t("users.userNotFound")}</p>
           </div>
         </div>
       </>
@@ -223,64 +261,67 @@ export default function UserPage() {
       <SectionHeader
         title={t("users.userDetails")}
         subtitle={t("users.userDetailsSubtitle")}
-        action={() => setEditUserOpen(true)}
-        actionText={t("users.editUser")}
-        actionIcon={Edit}
       />
 
       <div className="px-4 lg:px-6 space-y-6">
-        {/* User Information Card */}
+        {/* User Info Card */}
         <Card>
-          <CardHeader>
-            <CardTitle>{t("users.userInformation")}</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {t("users.userInformation")}
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditUserOpen(true)}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              {t("common.edit")}
+            </Button>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-muted-foreground">
                   {t("users.name")}
-                </label>
-                <p className="text-lg font-medium">{user.name}</p>
+                </p>
+                <p className="text-sm">{user.name}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-muted-foreground">
                   {t("users.email")}
-                </label>
-                <p className="text-lg">{user.email}</p>
+                </p>
+                <p className="text-sm">{user.email}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-muted-foreground">
                   {t("users.phone")}
-                </label>
-                <p className="text-lg">
-                  {user.phone || (
-                    <span className="text-muted-foreground">-</span>
-                  )}
+                </p>
+                <p className="text-sm">
+                  {user.phone || t("common.notProvided")}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-muted-foreground">
                   {t("users.role")}
-                </label>
-                <div className="mt-1">
-                  <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>
-                </div>
+                </p>
+                <Badge variant={getRoleVariant(user.role)}>
+                  {t(`users.roles.${user.role}`)}
+                </Badge>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("common.status")}
-                </label>
-                <div className="mt-1">
-                  <Badge variant={getStatusVariant(user.suspended || false)}>
-                    {user.suspended ? t("users.suspended") : t("users.active")}
-                  </Badge>
-                </div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {t("users.status")}
+                </p>
+                <Badge variant={getStatusVariant(user.suspended)}>
+                  {user.suspended ? t("users.suspended") : t("users.active")}
+                </Badge>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* User Reservations Table */}
+        {/* Reservations Table */}
         <div>
           <h3 className="text-lg font-semibold mb-4">
             {t("users.userReservations")}
@@ -297,46 +338,35 @@ export default function UserPage() {
             onPageSizeChange={(newSize) => {
               setPageSize(newSize);
               setPageIndex(0);
-              setCursors({});
-            }}
-            onFirstPage={() => {
-              setPageIndex(0);
-              setCursors({});
-            }}
-            onPreviousPage={() => {
-              setPageIndex(Math.max(0, pageIndex - 1));
-            }}
-            onNextPage={() => {
-              setPageIndex(pageIndex + 1);
-            }}
-            onLastPage={() => {
-              if (pagination?.totalCount) {
-                const lastPageIndex = Math.ceil(pagination.totalCount / pageSize) - 1;
-                setPageIndex(lastPageIndex);
-              }
             }}
             statusFilter={statusFilter}
             startDateFilter={startDateFilter}
             endDateFilter={endDateFilter}
+            countError={countError}
+            countLoading={countLoading}
           />
         </div>
       </div>
 
       {/* Edit User Dialog */}
-      <UserFormDialog
-        open={editUserOpen}
-        onOpenChange={setEditUserOpen}
-        mode="edit"
-        user={user}
-      />
+      {editUserOpen && (
+        <UserFormDialog
+          open={editUserOpen}
+          onOpenChange={setEditUserOpen}
+          user={user}
+          mode="edit"
+        />
+      )}
 
       {/* Edit Reservation Dialog */}
-      <ReservationFormDialog
-        open={editReservationOpen}
-        onOpenChange={setEditReservationOpen}
-        reservation={editingReservation}
-        mode="edit"
-      />
+      {editReservationOpen && editingReservation && (
+        <ReservationFormDialog
+          open={editReservationOpen}
+          onOpenChange={setEditReservationOpen}
+          reservation={editingReservation}
+          mode="edit"
+        />
+      )}
     </>
   );
 }

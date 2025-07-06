@@ -155,7 +155,7 @@ export function createCarColumns({
               </SelectItem>
               <SelectItem value="out_of_service">
                 <Badge variant={getStatusVariant("out_of_service")}>
-                  {t("fleet.outOfService")}
+                  {t("fleet.out_of_service")}
                 </Badge>
               </SelectItem>
             </SelectContent>

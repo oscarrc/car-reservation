@@ -12,9 +12,10 @@ import {
 } from "@/components/reservations/admin-reservations-columns";
 import {
   fetchReservations,
+  getReservationsCount,
   updateReservationStatus,
   type ReservationsQueryParams,
-  type PaginationCursor,
+  type ReservationsFilterParams,
 } from "@/lib/reservations-service";
 import { fetchCarsByIds } from "@/lib/cars-service";
 import { fetchUsersByIds } from "@/lib/users-service";
@@ -32,10 +33,10 @@ export default function AdminReservationsPage() {
     undefined
   );
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editingReservation, setEditingReservation] = useState<ReservationWithId | null>(null);
+  const [editingReservation, setEditingReservation] =
+    useState<ReservationWithId | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
-  const [cursors, setCursors] = useState<{ [key: number]: PaginationCursor }>({});
   const queryClient = useQueryClient();
 
   const queryParams: ReservationsQueryParams = {
@@ -44,7 +45,13 @@ export default function AdminReservationsPage() {
     statusFilter,
     startDate: startDateFilter,
     endDate: endDateFilter,
-    cursor: cursors[pageIndex],
+  };
+
+  // Filter params for count query (without pagination params)
+  const filterParams: ReservationsFilterParams = {
+    statusFilter,
+    startDate: startDateFilter,
+    endDate: endDateFilter,
   };
 
   // Fetch all reservations (admin view)
@@ -52,19 +59,43 @@ export default function AdminReservationsPage() {
     data: reservationsResponse,
     isLoading: reservationsLoading,
     error: reservationsError,
+    refetch,
   } = useQuery({
-    queryKey: ["reservations", queryParams.pageSize, queryParams.pageIndex, queryParams.statusFilter, queryParams.startDate, queryParams.endDate],
+    queryKey: [
+      "reservations",
+      queryParams.pageSize,
+      queryParams.pageIndex,
+      queryParams.statusFilter,
+      queryParams.startDate,
+      queryParams.endDate,
+    ],
     queryFn: () => fetchReservations(queryParams),
   });
 
+  // Fetch total count (separate query that only invalidates when filters change)
+  const {
+    data: totalCount,
+    isLoading: countLoading,
+    error: countError,
+  } = useQuery({
+    queryKey: ["reservations", "count", pageSize, filterParams],
+    queryFn: () => getReservationsCount(filterParams),
+  });
+
   const reservations = reservationsResponse?.reservations || [];
-  const pagination = reservationsResponse?.pagination ? {
-    pageIndex: reservationsResponse.pagination.pageIndex,
-    pageSize: reservationsResponse.pagination.pageSize,
-    totalCount: reservationsResponse.pagination.totalCount || 0,
-    hasNextPage: reservationsResponse.pagination.hasNextPage,
-    hasPreviousPage: reservationsResponse.pagination.hasPreviousPage,
-  } : undefined;
+
+  // Calculate pagination state locally
+  const totalRows = totalCount || 0;
+  const hasNextPage = pageIndex < Math.ceil(totalRows / pageSize) - 1;
+  const hasPreviousPage = pageIndex > 0;
+
+  const pagination = {
+    pageIndex: reservationsResponse?.pagination.pageIndex || 0,
+    pageSize: reservationsResponse?.pagination.pageSize || 25,
+    totalCount: totalRows,
+    hasNextPage,
+    hasPreviousPage,
+  };
 
   // Extract unique car and user IDs from DocumentReferences
   const carIds = [
@@ -173,10 +204,13 @@ export default function AdminReservationsPage() {
         <div className="px-4 lg:px-6">
           <ErrorDisplay
             error={hasError}
-            onRetry={() => window.location.reload()}
+            onRetry={() => refetch()}
             title={t("reservations.errorLoadingReservations")}
-            description={t("reservations.errorLoadingReservationsDescription", "Unable to load reservations. Please try again.")}
-            homePath="/admin"
+            description={t(
+              "reservations.errorLoadingReservationsDescription",
+              "Unable to load reservations. Please try again."
+            )}
+            showHomeButton={false}
           />
         </div>
       </>
@@ -203,36 +237,24 @@ export default function AdminReservationsPage() {
           onPageSizeChange={(newSize) => {
             setPageSize(newSize);
             setPageIndex(0);
-            setCursors({});
-          }}
-          onFirstPage={() => {
-            setPageIndex(0);
-            setCursors({});
-          }}
-          onPreviousPage={() => {
-            setPageIndex(Math.max(0, pageIndex - 1));
-          }}
-          onNextPage={() => {
-            setPageIndex(pageIndex + 1);
-          }}
-          onLastPage={() => {
-            if (pagination?.totalCount) {
-              const lastPageIndex = Math.ceil(pagination.totalCount / pageSize) - 1;
-              setPageIndex(lastPageIndex);
-            }
           }}
           statusFilter={statusFilter}
           startDateFilter={startDateFilter}
           endDateFilter={endDateFilter}
+          countError={countError}
+          countLoading={countLoading}
         />
-      </div>
 
-      <ReservationFormDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        reservation={editingReservation}
-        mode="edit"
-      />
+        {/* Edit Reservation Dialog */}
+        {editDialogOpen && editingReservation && (
+          <ReservationFormDialog
+            open={editDialogOpen}
+            onOpenChange={setEditDialogOpen}
+            reservation={editingReservation}
+            mode="edit"
+          />
+        )}
+      </div>
     </>
   );
 }

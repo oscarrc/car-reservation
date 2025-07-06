@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 
 interface TablePaginationProps {
@@ -23,8 +24,6 @@ interface TablePaginationProps {
   pageSize: number;
   totalRows: number;
   selectedCount: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
 
   // Pagination actions
   onPageChange: (pageIndex: number) => void;
@@ -37,6 +36,10 @@ interface TablePaginationProps {
   // Optional customization
   pageSizeOptions?: number[];
   showSelectedCount?: boolean;
+
+  // Count state
+  countError?: Error | null;
+  countLoading?: boolean;
 }
 
 export function TablePagination({
@@ -44,8 +47,6 @@ export function TablePagination({
   pageSize,
   totalRows,
   selectedCount,
-  hasNextPage,
-  hasPreviousPage,
   onPageChange,
   onPageSizeChange,
   onFirstPage,
@@ -54,12 +55,14 @@ export function TablePagination({
   onLastPage,
   pageSizeOptions = [25, 50, 100],
   showSelectedCount = true,
+  countError,
+  countLoading,
 }: TablePaginationProps) {
   const { t } = useTranslation();
 
   const totalPages = Math.ceil(totalRows / pageSize);
-  const canGoPrevious = hasPreviousPage;
-  const canGoNext = hasNextPage;
+  const hasPreviousPage = pageIndex > 0;
+  const hasNextPage = pageIndex < totalPages - 1;
 
   const handleFirstPage = () => {
     if (onFirstPage) {
@@ -96,14 +99,41 @@ export function TablePagination({
   const startItem = totalRows > 0 ? pageIndex * pageSize + 1 : 0;
   const endItem = Math.min((pageIndex + 1) * pageSize, totalRows);
 
+  // Render count display based on state
+  const renderCountDisplay = () => {
+    if (countError) {
+      return (
+        <div>
+          {t("common.showing")} {startItem} {t("common.to")} {endItem}{" "}
+          {t("common.of")}{" "}
+          <span className="text-destructive text-sm">
+            {t("common.errorLoadingCount")}
+          </span>
+        </div>
+      );
+    }
+
+    if (countLoading) {
+      return (
+        <div>
+          <Skeleton className="inline-block h-4 w-32" />
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        {t("common.showing")} {startItem} {t("common.to")} {endItem}{" "}
+        {t("common.of")} {totalRows}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
       {/* Selected count and showing info */}
       <div className="flex flex-col items-center sm:items-start text-sm text-muted-foreground w-full sm:w-auto">
-        <div>
-          {t("common.showing")} {startItem} {t("common.to")} {endItem}{" "}
-          {t("common.of")} {totalRows}
-        </div>
+        {renderCountDisplay()}
         {showSelectedCount && selectedCount > 0 && (
           <div>
             {selectedCount} {t("common.of")} {totalRows} {t("common.selected")}.
@@ -138,7 +168,7 @@ export function TablePagination({
             variant="outline"
             size="sm"
             onClick={handleFirstPage}
-            disabled={!canGoPrevious}
+            disabled={!hasPreviousPage}
             aria-label={t("common.first")}
           >
             <ChevronsLeft className="h-4 w-4" />
@@ -147,7 +177,7 @@ export function TablePagination({
             variant="outline"
             size="sm"
             onClick={handlePreviousPage}
-            disabled={!canGoPrevious}
+            disabled={!hasPreviousPage}
             aria-label={t("common.previous")}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -160,7 +190,7 @@ export function TablePagination({
             variant="outline"
             size="sm"
             onClick={handleNextPage}
-            disabled={!canGoNext}
+            disabled={!hasNextPage}
             aria-label={t("common.next")}
           >
             <ChevronRight className="h-4 w-4" />
@@ -169,7 +199,7 @@ export function TablePagination({
             variant="outline"
             size="sm"
             onClick={handleLastPage}
-            disabled={!canGoNext}
+            disabled={!hasNextPage}
             aria-label={t("common.last")}
           >
             <ChevronsRight className="h-4 w-4" />

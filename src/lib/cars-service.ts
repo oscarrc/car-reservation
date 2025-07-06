@@ -30,9 +30,6 @@ export interface PaginationCursor {
 export interface PaginationState {
   pageIndex: number;
   pageSize: number;
-  totalCount?: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
   startCursor?: QueryDocumentSnapshot<DocumentData>;
   endCursor?: QueryDocumentSnapshot<DocumentData>;
 }
@@ -46,6 +43,13 @@ export interface CarsQueryParams {
   pageSize?: number;
   pageIndex?: number;
   cursor?: PaginationCursor;
+  searchTerm?: string;
+  status?: CarStatus;
+  orderBy?: 'model' | 'licensePlate' | 'createdAt';
+  orderDirection?: 'asc' | 'desc';
+}
+
+export interface CarsFilterParams {
   searchTerm?: string;
   status?: CarStatus;
   orderBy?: 'model' | 'licensePlate' | 'createdAt';
@@ -79,11 +83,38 @@ function buildCarsQueryConstraints(params: CarsQueryParams): QueryConstraint[] {
   return constraints;
 }
 
+// Helper function to build filter constraints for count queries
+function buildCarsFilterConstraints(params: CarsFilterParams): QueryConstraint[] {
+  const constraints: QueryConstraint[] = [];
+  
+  // Add search constraints using array-contains-any
+  if (params.searchTerm?.trim()) {
+    const searchTerms = prepareSearchTerms(params.searchTerm);
+    if (searchTerms.length > 0) {
+      constraints.push(
+        where('searchKeywords', 'array-contains-any', searchTerms)
+      );
+    }
+  }
+
+  // Add status filter
+  if (params.status) {
+    constraints.push(where('status', '==', params.status));
+  }
+
+  // Add ordering for consistent results
+  const orderField = params.orderBy || 'model';
+  const orderDir = params.orderDirection || 'asc';
+  constraints.push(orderBy(orderField, orderDir));
+
+  return constraints;
+}
+
 // Get total count with filters
-export async function getCarsCount(params: Omit<CarsQueryParams, 'pageSize' | 'pageIndex' | 'cursor'>): Promise<number> {
+export async function getCarsCount(params: CarsFilterParams): Promise<number> {
   try {
     const carsCollection = collection(db, 'cars');
-    const constraints = buildCarsQueryConstraints(params);
+    const constraints = buildCarsFilterConstraints(params);
     
     const countQuery = query(carsCollection, ...constraints);
     const countSnapshot = await getCountFromServer(countQuery);
@@ -101,7 +132,6 @@ export async function fetchCars(params: CarsQueryParams): Promise<CarsResponse> 
       pageSize = 25,
       pageIndex = 0,
       cursor,
-      ...filterParams
     } = params;
 
     const carsCollection = collection(db, 'cars');
@@ -123,7 +153,6 @@ export async function fetchCars(params: CarsQueryParams): Promise<CarsResponse> 
     const querySnapshot = await getDocs(q);
     
     const docs = querySnapshot.docs;
-    const hasNextPage = docs.length > pageSize;
     const cars: CarWithId[] = [];
 
     // Process documents (exclude the extra one used for pagination check)
@@ -134,23 +163,15 @@ export async function fetchCars(params: CarsQueryParams): Promise<CarsResponse> 
       });
     });
 
-    // Get total count for pagination info
-    const totalCount = await getCarsCount(filterParams);
-
     // Calculate pagination state
     const startCursor = docs.length > 0 ? docs[0] : undefined;
     const endCursor = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : undefined;
-    const hasPreviousPage = pageIndex > 0;
-    const totalPages = Math.ceil(totalCount / pageSize);
 
     return {
       cars,
       pagination: {
         pageIndex,
         pageSize,
-        totalCount,
-        hasNextPage: hasNextPage && pageIndex < totalPages - 1,
-        hasPreviousPage,
         startCursor,
         endCursor
       }

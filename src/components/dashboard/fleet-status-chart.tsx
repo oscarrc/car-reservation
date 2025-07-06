@@ -25,24 +25,6 @@ import {
 import { fetchFleetStatus } from "@/lib/dashboard-service";
 import { cn } from "@/lib/utils";
 
-const fleetChartConfig = {
-  count: {
-    label: "Cars",
-  },
-  available: {
-    label: "Available",
-    color: "var(--success)",
-  },
-  maintenance: {
-    label: "Maintenance",
-    color: "var(--warning)",
-  },
-  out_of_service: {
-    label: "Out of Service",
-    color: "var(--error)",
-  },
-} satisfies ChartConfig;
-
 interface FleetStatusChartProps {
   className?: string;
 }
@@ -50,6 +32,24 @@ interface FleetStatusChartProps {
 export function FleetStatusChart({ className }: FleetStatusChartProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const fleetChartConfig = {
+    count: {
+      label: "Cars",
+    },
+    available: {
+      label: t("fleet.available"),
+      color: "var(--success)",
+    },
+    maintenance: {
+      label: t("fleet.maintenance"),
+      color: "var(--warning)",
+    },
+    out_of_service: {
+      label: t("fleet.out_of_service"),
+      color: "var(--error)",
+    },
+  } satisfies ChartConfig;
 
   const {
     data: fleetData,

@@ -28,9 +28,6 @@ export interface PaginationCursor {
 export interface PaginationState {
   pageIndex: number;
   pageSize: number;
-  totalCount?: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
   startCursor?: QueryDocumentSnapshot<DocumentData>;
   endCursor?: QueryDocumentSnapshot<DocumentData>;
 }
@@ -48,6 +45,14 @@ export interface UsersQueryParams {
   pageSize?: number;
   pageIndex?: number;
   cursor?: PaginationCursor;
+  searchTerm?: string;
+  role?: string;
+  suspended?: boolean;
+  orderBy?: 'name' | 'email' | 'createdAt';
+  orderDirection?: 'asc' | 'desc';
+}
+
+export interface UsersFilterParams {
   searchTerm?: string;
   role?: string;
   suspended?: boolean;
@@ -87,11 +92,43 @@ function buildUsersQueryConstraints(params: UsersQueryParams): QueryConstraint[]
   return constraints;
 }
 
+// Helper function to build filter constraints for count queries
+function buildUsersFilterConstraints(params: UsersFilterParams): QueryConstraint[] {
+  const constraints: QueryConstraint[] = [];
+
+  // Add search constraints using array-contains-any
+  if (params.searchTerm?.trim()) {
+    const searchTerms = prepareSearchTerms(params.searchTerm);
+    if (searchTerms.length > 0) {
+      constraints.push(
+        where('searchKeywords', 'array-contains-any', searchTerms)
+      );
+    }
+  }
+
+  // Add role filter
+  if (params.role) {
+    constraints.push(where('role', '==', params.role));
+  }
+
+  // Add suspended filter
+  if (params.suspended !== undefined) {
+    constraints.push(where('suspended', '==', params.suspended));
+  }
+
+  // Add ordering for consistent results
+  const orderField = params.orderBy || 'name';
+  const orderDir = params.orderDirection || 'asc';
+  constraints.push(orderBy(orderField, orderDir));
+
+  return constraints;
+}
+
 // Get total count with filters
-export async function getUsersCount(params: Omit<UsersQueryParams, 'pageSize' | 'pageIndex' | 'cursor'>): Promise<number> {
+export async function getUsersCount(params: UsersFilterParams): Promise<number> {
   try {
     const usersCollection = collection(db, 'users');
-    const constraints = buildUsersQueryConstraints(params);
+    const constraints = buildUsersFilterConstraints(params);
     
     const countQuery = query(usersCollection, ...constraints);
     const countSnapshot = await getCountFromServer(countQuery);
@@ -109,7 +146,6 @@ export async function fetchUsers(params: UsersQueryParams): Promise<UsersRespons
       pageSize = 25,
       pageIndex = 0,
       cursor,
-      ...filterParams
     } = params;
 
     const usersCollection = collection(db, 'users');
@@ -130,7 +166,6 @@ export async function fetchUsers(params: UsersQueryParams): Promise<UsersRespons
     const querySnapshot = await getDocs(q);
     
     const docs = querySnapshot.docs;
-    const hasNextPage = docs.length > pageSize;
     const users: UserProfileWithId[] = [];
     
     // Process documents (exclude the extra one used for pagination check)
@@ -141,23 +176,15 @@ export async function fetchUsers(params: UsersQueryParams): Promise<UsersRespons
       });
     });
 
-    // Get total count for pagination info
-    const totalCount = await getUsersCount(filterParams);
-
     // Calculate pagination state
     const startCursor = docs.length > 0 ? docs[0] : undefined;
     const endCursor = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : undefined;
-    const hasPreviousPage = pageIndex > 0;
-    const totalPages = Math.ceil(totalCount / pageSize);
 
     return {
       users,
       pagination: {
         pageIndex,
         pageSize,
-        totalCount,
-        hasNextPage: hasNextPage && pageIndex < totalPages - 1,
-        hasPreviousPage,
         startCursor,
         endCursor
       }
@@ -211,7 +238,6 @@ export async function searchUsersByEmail(email: string, params: Omit<UsersQueryP
     const q = query(usersCollection, ...constraints);
     const querySnapshot = await getDocs(q);
     const docs = querySnapshot.docs;
-    const hasNextPage = docs.length > pageSize;
     
     const users: UserProfileWithId[] = [];
     docs.slice(0, pageSize).forEach((doc) => {
@@ -221,28 +247,15 @@ export async function searchUsersByEmail(email: string, params: Omit<UsersQueryP
       });
     });
 
-    // Get total count for email search
-    const countQuery = query(usersCollection, 
-      where('email', '>=', emailLower),
-      where('email', '<=', emailLower + '\uf8ff')
-    );
-    const countSnapshot = await getCountFromServer(countQuery);
-    const totalCount = countSnapshot.data().count;
-    
     // Calculate pagination state
     const startCursor = docs.length > 0 ? docs[0] : undefined;
     const endCursor = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : undefined;
-    const hasPreviousPage = pageIndex > 0;
-    const totalPages = Math.ceil(totalCount / pageSize);
 
     return {
       users,
       pagination: {
         pageIndex,
         pageSize,
-        totalCount,
-        hasNextPage: hasNextPage && pageIndex < totalPages - 1,
-        hasPreviousPage,
         startCursor,
         endCursor
       }

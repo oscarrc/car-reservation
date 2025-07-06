@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button";
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchCars, type PaginationCursor } from "@/lib/cars-service";
+import {
+  fetchCars,
+  getCarsCount,
+  type PaginationCursor,
+} from "@/lib/cars-service";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
@@ -29,7 +33,9 @@ const getStatusVariant = (status: CarStatus) => {
 export default function FleetPage() {
   const { t } = useTranslation();
   const [allCars, setAllCars] = useState<CarWithId[]>([]);
-  const [cursors, setCursors] = useState<{ [key: number]: PaginationCursor }>({});
+  const [cursors, setCursors] = useState<{ [key: number]: PaginationCursor }>(
+    {}
+  );
   const [pageIndex, setPageIndex] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
 
@@ -44,11 +50,23 @@ export default function FleetPage() {
     queryKey: ["cars", "fleet", pageIndex, pageSize],
     queryFn: async () => {
       const cursor = cursors[pageIndex];
-      return fetchCars({ 
-        pageSize, 
+      return fetchCars({
+        pageSize,
         pageIndex,
-        cursor
+        cursor,
       });
+    },
+  });
+
+  // Fetch total count (separate query that only invalidates when filters change)
+  const {
+    data: totalCount,
+    // isLoading: countLoading,
+    error: countError,
+  } = useQuery({
+    queryKey: ["cars", "count"],
+    queryFn: async () => {
+      return getCarsCount({});
     },
   });
 
@@ -60,27 +78,34 @@ export default function FleetPage() {
         setAllCars(carsResponse.cars);
       } else {
         // Subsequent pages - append cars
-        setAllCars(prev => [...prev, ...carsResponse.cars]);
+        setAllCars((prev) => [...prev, ...carsResponse.cars]);
       }
-      
-      setHasNextPage(carsResponse.pagination.hasNextPage);
-      
+
+      // Calculate hasNextPage based on current data and total count
+      if (totalCount !== undefined) {
+        const currentTotal = (pageIndex + 1) * pageSize;
+        setHasNextPage(currentTotal < totalCount);
+      } else {
+        // Fallback to checking if we got a full page
+        setHasNextPage(carsResponse.cars.length === pageSize);
+      }
+
       // Update cursor cache
       if (carsResponse.pagination.endCursor && pageIndex >= 0) {
-        setCursors(prev => ({
+        setCursors((prev) => ({
           ...prev,
           [pageIndex + 1]: {
             docSnapshot: carsResponse.pagination.endCursor!,
-            direction: 'forward'
-          }
+            direction: "forward",
+          },
         }));
       }
     }
-  }, [carsResponse, pageIndex]);
+  }, [carsResponse, pageIndex, totalCount]);
 
   const handleLoadMore = () => {
     if (hasNextPage && !initialLoading) {
-      setPageIndex(prev => prev + 1);
+      setPageIndex((prev) => prev + 1);
     }
   };
 
@@ -91,7 +116,7 @@ export default function FleetPage() {
     />
   );
 
-  if (initialError) {
+  if (initialError || countError) {
     return (
       <>
         <SectionHeader
@@ -100,10 +125,13 @@ export default function FleetPage() {
         />
         <div className="px-4 lg:px-6">
           <ErrorDisplay
-            error={initialError}
+            error={initialError || countError}
             onRetry={() => window.location.reload()}
             title={t("browse.errorLoadingCars")}
-            description={t("browse.errorLoadingCarsDescription", "Unable to load cars. Please try again.")}
+            description={t(
+              "browse.errorLoadingCarsDescription",
+              "Unable to load cars. Please try again."
+            )}
             homePath="/app"
           />
         </div>
@@ -268,7 +296,12 @@ export default function FleetPage() {
               <p className="text-xs text-muted-foreground">
                 {t("browse.viewingCars", {
                   count: allCars.length,
-                  total: hasNextPage ? `${allCars.length}+` : allCars.length,
+                  total:
+                    totalCount !== undefined
+                      ? totalCount
+                      : hasNextPage
+                      ? `${allCars.length}+`
+                      : allCars.length,
                 })}
               </p>
             </div>

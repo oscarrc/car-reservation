@@ -8,6 +8,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
+import { ErrorDisplay } from "@/components/ui/error-display";
 import { ReservationDetailsCard } from "@/components/reservations/reservation-details-card";
 import { ReservationDetailsSkeleton } from "@/components/reservations/reservation-details-skeleton";
 import { CarInfoCard } from "@/components/cars/car-info-card";
@@ -30,14 +31,24 @@ export default function AppReservationPage() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   // Fetch reservation details
-  const { data: reservation, isLoading: reservationLoading, error: reservationError } = useQuery({
+  const { 
+    data: reservation, 
+    isLoading: reservationLoading, 
+    error: reservationError,
+    refetch: refetchReservation
+  } = useQuery({
     queryKey: ["reservation", reservationId],
     queryFn: () => fetchReservationById(reservationId!),
     enabled: !!reservationId,
   });
 
   // Fetch car details
-  const { data: car, isLoading: carLoading } = useQuery({
+  const { 
+    data: car, 
+    isLoading: carLoading,
+    error: carError,
+    refetch: refetchCar
+  } = useQuery({
     queryKey: ["car", reservation?.carRef?.id],
     queryFn: () => fetchCarById(reservation!.carRef.id),
     enabled: !!reservation?.carRef?.id,
@@ -116,6 +127,14 @@ export default function AppReservationPage() {
     cancelMutation.mutate();
   };
 
+  // Handle retry for errors
+  const handleRetry = () => {
+    refetchReservation();
+    if (reservation?.carRef?.id) {
+      refetchCar();
+    }
+  };
+
   // Show loading state first
   if (reservationLoading) {
     return (
@@ -133,7 +152,7 @@ export default function AppReservationPage() {
   }
 
   // Handle error state after loading is complete
-  if (reservationError || !reservation) {
+  if (reservationError || carError || !reservation) {
     return (
       <>
         <SectionHeader
@@ -141,13 +160,13 @@ export default function AppReservationPage() {
           subtitle={t("reservations.reservationDetailsDesc")}
         />
         <div className="px-4 lg:px-6">
-          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-            <h2 className="text-xl font-semibold">{t("reservations.reservationNotFound")}</h2>
-            <p className="text-muted-foreground">{t("reservations.reservationNotFoundDesc")}</p>
-            <Button onClick={() => navigate("/app/reservations")}>
-              {t("common.backToReservations")}
-            </Button>
-          </div>
+          <ErrorDisplay
+            error={reservationError || carError || new Error("Reservation not found")}
+            onRetry={handleRetry}
+            title={t("reservations.reservationNotFound")}
+            description={t("reservations.reservationNotFoundDesc", "Unable to load reservation details. Please try again.")}
+            showHomeButton={false}
+          />
         </div>
       </>
     );

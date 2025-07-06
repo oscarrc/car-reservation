@@ -65,6 +65,8 @@ interface ReservationsTableProps {
   statusFilter: ReservationStatus | "all";
   startDateFilter: Date | undefined;
   endDateFilter: Date | undefined;
+  countError?: Error | null;
+  countLoading?: boolean;
 }
 
 export function ReservationsTable({
@@ -84,6 +86,8 @@ export function ReservationsTable({
   statusFilter,
   startDateFilter,
   endDateFilter,
+  countError,
+  countLoading,
 }: ReservationsTableProps) {
   const { t } = useTranslation();
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -93,8 +97,6 @@ export function ReservationsTable({
   const pageIndex = pagination?.pageIndex || 0;
   const pageSize = pagination?.pageSize || 25;
   const totalRows = pagination?.totalCount || data?.length || 0;
-  const hasNextPage = pagination?.hasNextPage || false;
-  const hasPreviousPage = pagination?.hasPreviousPage || false;
 
   // Pagination handlers
   const handlePageChange = (newPageIndex: number) => {
@@ -297,7 +299,9 @@ export function ReservationsTable({
                     <div className="relative">
                       <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-primary rounded-full animate-spin"></div>
                     </div>
-                    <span className="text-sm text-muted-foreground">{t("loading.loadingReservations")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("loading.loadingReservations")}
+                    </span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -335,16 +339,16 @@ export function ReservationsTable({
         <TablePagination
           pageIndex={pageIndex}
           pageSize={pageSize}
-          totalRows={totalRows}
+          totalRows={countError ? 0 : totalRows}
           selectedCount={table.getFilteredSelectedRowModel().rows.length}
-          hasNextPage={hasNextPage}
-          hasPreviousPage={hasPreviousPage}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
           onFirstPage={onFirstPage}
           onPreviousPage={onPreviousPage}
           onNextPage={onNextPage}
           onLastPage={onLastPage}
+          countError={countError}
+          countLoading={countLoading}
         />
       </div>
     </div>

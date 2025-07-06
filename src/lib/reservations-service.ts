@@ -29,9 +29,6 @@ export interface PaginationCursor {
 export interface PaginationState {
   pageIndex: number;
   pageSize: number;
-  totalCount?: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
   startCursor?: QueryDocumentSnapshot<DocumentData>;
   endCursor?: QueryDocumentSnapshot<DocumentData>;
 }
@@ -45,6 +42,16 @@ export interface ReservationsQueryParams {
   pageSize?: number;
   pageIndex?: number;
   cursor?: PaginationCursor;
+  statusFilter?: ReservationStatus | 'all';
+  startDate?: Date;
+  endDate?: Date;
+  userId?: string;
+  carId?: string;
+  orderBy?: 'startDateTime' | 'endDateTime' | 'createdAt';
+  orderDirection?: 'asc' | 'desc';
+}
+
+export interface ReservationsFilterParams {
   statusFilter?: ReservationStatus | 'all';
   startDate?: Date;
   endDate?: Date;
@@ -100,11 +107,57 @@ function buildReservationsQueryConstraints(params: ReservationsQueryParams): Que
   return constraints;
 }
 
+// Helper function to build filter constraints for count queries
+function buildReservationsFilterConstraints(params: ReservationsFilterParams): QueryConstraint[] {
+  const constraints: QueryConstraint[] = [];
+
+  // Add user filter if specified (for user-specific reservations)
+  if (params.userId) {
+    constraints.push(where('userRef', '==', doc(db, 'users', params.userId)));
+  }
+
+  // Add car filter if specified (for car-specific reservations)
+  if (params.carId) {
+    constraints.push(where('carRef', '==', doc(db, 'cars', params.carId)));
+  }
+
+  // Add status filter if specified
+  if (params.statusFilter && params.statusFilter !== 'all') {
+    constraints.push(where('status', '==', params.statusFilter));
+  }
+
+  // Add date range filter if specified
+  if (params.startDate && params.endDate) {
+    // Filter by date range: startDateTime >= startDate AND endDateTime <= endDate
+    constraints.push(
+      where('startDateTime', '>=', Timestamp.fromDate(params.startDate)),
+      where('endDateTime', '<=', Timestamp.fromDate(params.endDate))
+    );
+  } else if (params.startDate) {
+    // Filter by start date only: startDateTime >= startDate
+    constraints.push(
+      where('startDateTime', '>=', Timestamp.fromDate(params.startDate))
+    );
+  } else if (params.endDate) {
+    // Filter by end date only: endDateTime <= endDate
+    constraints.push(
+      where('endDateTime', '<=', Timestamp.fromDate(params.endDate))
+    );
+  }
+
+  // Add ordering for consistent results
+  const orderField = params.orderBy || 'startDateTime';
+  const orderDir = params.orderDirection || 'desc';
+  constraints.push(orderBy(orderField, orderDir));
+
+  return constraints;
+}
+
 // Get total count with filters
-export async function getReservationsCount(params: Omit<ReservationsQueryParams, 'pageSize' | 'pageIndex' | 'cursor'>): Promise<number> {
+export async function getReservationsCount(params: ReservationsFilterParams): Promise<number> {
   try {
     const reservationsCollection = collection(db, 'reservations');
-    const constraints = buildReservationsQueryConstraints(params);
+    const constraints = buildReservationsFilterConstraints(params);
     
     const countQuery = query(reservationsCollection, ...constraints);
     const countSnapshot = await getCountFromServer(countQuery);
@@ -122,7 +175,6 @@ export async function fetchReservations(params: ReservationsQueryParams): Promis
       pageSize = 25,
       pageIndex = 0,
       cursor,
-      ...filterParams
     } = params;
 
     const reservationsCollection = collection(db, 'reservations');
@@ -143,7 +195,6 @@ export async function fetchReservations(params: ReservationsQueryParams): Promis
     const querySnapshot = await getDocs(q);
     
     const docs = querySnapshot.docs;
-    const hasNextPage = docs.length > pageSize;
     const reservations: ReservationWithId[] = [];
     
     // Process documents (exclude the extra one used for pagination check)
@@ -159,23 +210,15 @@ export async function fetchReservations(params: ReservationsQueryParams): Promis
       } as ReservationWithId);
     });
 
-    // Get total count for pagination info
-    const totalCount = await getReservationsCount(filterParams);
-
     // Calculate pagination state
     const startCursor = docs.length > 0 ? docs[0] : undefined;
     const endCursor = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : undefined;
-    const hasPreviousPage = pageIndex > 0;
-    const totalPages = Math.ceil(totalCount / pageSize);
 
     return {
       reservations,
       pagination: {
         pageIndex,
         pageSize,
-        totalCount,
-        hasNextPage: hasNextPage && pageIndex < totalPages - 1,
-        hasPreviousPage,
         startCursor,
         endCursor
       }

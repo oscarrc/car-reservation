@@ -52,7 +52,8 @@
     "pickDate": "เลือกวันที่",
     "unknown": "ไม่ทราบ",
     "cancelling": "กำลังยกเลิก...",
-    "settingsError": "ข้อผิดพลาดในการตั้งค่า"
+    "settingsError": "ข้อผิดพลาดในการตั้งค่า",
+    "errorLoadingCount": "ข้อผิดพลาดในการโหลดจำนวน"
   },
   "auth": {
     "welcome": "ยินดีต้อนรับกลับ",
@@ -264,7 +265,7 @@
     "deleteConfirmation": "คุณแน่ใจหรือไม่ว่าต้องการลบ {{model}} ({{licensePlate}})? การดำเนินการนี้ไม่สามารถยกเลิกได้",
     "available": "พร้อมใช้",
     "maintenance": "ซ่อมบำรุง",
-    "outOfService": "ไม่พร้อมใช้",
+    "out_of_service": "ไม่พร้อมใช้",
     "licensePlate": "ป้ายทะเบียน",
     "model": "รุ่น",
     "color": "สี",

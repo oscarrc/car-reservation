@@ -17,9 +17,11 @@ import {
 } from "@/components/reservations/user-reservations-columns";
 import {
   fetchUserReservations,
+  getReservationsCount,
   requestCancellation,
   countActiveUserReservations,
   type ReservationsQueryParams,
+  type ReservationsFilterParams,
   type PaginationCursor,
 } from "@/lib/reservations-service";
 import { fetchCarsByIds } from "@/lib/cars-service";
@@ -57,11 +59,20 @@ export default function UserReservationsPage() {
     cursor: cursors[pageIndex],
   };
 
+  // Filter params for count query (without pagination params)
+  const filterParams: ReservationsFilterParams = {
+    statusFilter,
+    startDate: startDateFilter,
+    endDate: endDateFilter,
+    userId: currentUser?.uid,
+  };
+
   // Fetch user reservations
   const {
     data: reservationsResponse,
     isLoading: reservationsLoading,
     error: reservationsError,
+    refetch,
   } = useQuery({
     queryKey: [
       "userReservations",
@@ -79,14 +90,34 @@ export default function UserReservationsPage() {
     enabled: !!currentUser?.uid,
   });
 
+  // Fetch total count (separate query that only invalidates when filters change)
+  const {
+    data: totalCount,
+    isLoading: countLoading,
+    error: countError,
+  } = useQuery({
+    queryKey: ["userReservations", "count", currentUser?.uid, pageSize, filterParams],
+    queryFn: () => {
+      if (!currentUser?.uid) throw new Error("User not authenticated");
+      return getReservationsCount(filterParams);
+    },
+    enabled: !!currentUser?.uid,
+  });
+
   const reservations = reservationsResponse?.reservations || [];
-  const pagination = reservationsResponse?.pagination ? {
-    pageIndex: reservationsResponse.pagination.pageIndex,
-    pageSize: reservationsResponse.pagination.pageSize,
-    totalCount: reservationsResponse.pagination.totalCount || 0,
-    hasNextPage: reservationsResponse.pagination.hasNextPage,
-    hasPreviousPage: reservationsResponse.pagination.hasPreviousPage,
-  } : undefined;
+  
+  // Calculate pagination state locally
+  const totalRows = totalCount || 0;
+  const hasNextPage = pageIndex < Math.ceil(totalRows / pageSize) - 1;
+  const hasPreviousPage = pageIndex > 0;
+  
+  const pagination = {
+    pageIndex: reservationsResponse?.pagination.pageIndex || 0,
+    pageSize: reservationsResponse?.pagination.pageSize || 25,
+    totalCount: totalRows,
+    hasNextPage,
+    hasPreviousPage,
+  };
 
   // Extract unique car IDs from DocumentReferences
   const carIds = [
@@ -264,10 +295,10 @@ export default function UserReservationsPage() {
         <div className="px-4 lg:px-6">
           <ErrorDisplay
             error={hasError}
-            onRetry={() => window.location.reload()}
+            onRetry={() => refetch()}
             title={t("reservations.errorLoadingReservations")}
             description={t("reservations.errorLoadingReservationsDescription", "Unable to load reservations. Please try again.")}
-            homePath="/app"
+            showHomeButton={false}
           />
         </div>
       </>
@@ -318,6 +349,8 @@ export default function UserReservationsPage() {
           statusFilter={statusFilter}
           startDateFilter={startDateFilter}
           endDateFilter={endDateFilter}
+          countError={countError}
+          countLoading={countLoading}
         />
       </div>
 
