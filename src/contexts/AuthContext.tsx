@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function register(email: string, password: string) {
     // First check if email is allowed
-    const { isEmailAllowed } = await import("@/lib/allowed-emails-service");
+    const { isEmailAllowed, updateEmailStatusToRegistered } = await import("@/lib/allowed-emails-service");
     const allowed = await isEmailAllowed(email);
 
     if (!allowed) {
@@ -116,6 +116,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     await setDoc(doc(db, "users", userCredential.user.uid), userProfile);
+
+    // Update email status to registered
+    await updateEmailStatusToRegistered(email);
 
     // Send email verification
     await sendEmailVerification(userCredential.user);

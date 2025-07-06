@@ -4,6 +4,7 @@ import {
   getDocs,
   addDoc,
   deleteDoc,
+  updateDoc,
   query,
   where,
   orderBy,
@@ -46,16 +47,23 @@ export interface AllowedEmailsQueryParams {
   cursor?: PaginationCursor;
   orderBy?: 'email' | 'timestamp';
   orderDirection?: 'asc' | 'desc';
+  status?: 'pending' | 'registered';
 }
 
 export interface AllowedEmailsFilterParams {
   orderBy?: 'email' | 'timestamp';
   orderDirection?: 'asc' | 'desc';
+  status?: 'pending' | 'registered';
 }
 
 // Helper function to build query constraints
 function buildAllowedEmailsQueryConstraints(params: AllowedEmailsQueryParams): QueryConstraint[] {
   const constraints: QueryConstraint[] = [];
+
+  // Add status filter
+  if (params.status) {
+    constraints.push(where('status', '==', params.status));
+  }
 
   // Add ordering
   const orderField = params.orderBy || 'timestamp';
@@ -68,6 +76,11 @@ function buildAllowedEmailsQueryConstraints(params: AllowedEmailsQueryParams): Q
 // Helper function to build filter constraints for count queries
 function buildAllowedEmailsFilterConstraints(params: AllowedEmailsFilterParams): QueryConstraint[] {
   const constraints: QueryConstraint[] = [];
+
+  // Add status filter
+  if (params.status) {
+    constraints.push(where('status', '==', params.status));
+  }
 
   // Add ordering for consistent results
   const orderField = params.orderBy || 'timestamp';
@@ -101,6 +114,7 @@ export async function addAllowedEmail(email: string, adminId: string): Promise<v
     const allowedEmail: Omit<AllowedEmail, 'timestamp'> = {
       email: email.toLowerCase().trim(),
       adminId,
+      status: 'pending',
     };
 
     await addDoc(collection(db, 'allowedEmails'), {
@@ -122,6 +136,30 @@ export async function removeAllowedEmail(emailId: string): Promise<void> {
   } catch (error) {
     console.error('Error removing allowed email:', error);
     throw new Error('Failed to remove allowed email');
+  }
+}
+
+/**
+ * Update email status to registered after successful registration
+ */
+export async function updateEmailStatusToRegistered(email: string): Promise<void> {
+  try {
+    const q = query(
+      collection(db, 'allowedEmails'),
+      where('email', '==', email.toLowerCase().trim())
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const docToUpdate = querySnapshot.docs[0];
+      await updateDoc(docToUpdate.ref, {
+        status: 'registered'
+      });
+    }
+  } catch (error) {
+    console.error('Error updating email status to registered:', error);
+    // Don't throw error here as this is cleanup and shouldn't block registration
   }
 }
 
@@ -164,6 +202,7 @@ export async function getAllowedEmails(params: AllowedEmailsQueryParams = {}): P
         email: data.email,
         adminId: data.adminId,
         timestamp: data.timestamp.toDate(),
+        status: data.status || 'pending', // Default to pending for backward compatibility
       });
     });
 
@@ -193,7 +232,8 @@ export async function isEmailAllowed(email: string): Promise<boolean> {
   try {
     const q = query(
       collection(db, 'allowedEmails'),
-      where('email', '==', email.toLowerCase().trim())
+      where('email', '==', email.toLowerCase().trim()),
+      where('status', '==', 'pending')
     );
     
     const querySnapshot = await getDocs(q);

@@ -35,6 +35,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AllowedEmailsTableProps {
   onAddEmail?: () => void;
@@ -52,6 +60,17 @@ const createAllowedEmailsColumns = ({
     React.SetStateAction<Record<string, boolean>>
   >;
 }): ColumnDef<AllowedEmailWithId>[] => {
+  const getStatusVariant = (status: "pending" | "registered") => {
+    switch (status) {
+      case "pending":
+        return "warning";
+      case "registered":
+        return "success";
+      default:
+        return "outline";
+    }
+  };
+
   return [
     {
       id: "select",
@@ -81,6 +100,18 @@ const createAllowedEmailsColumns = ({
       cell: ({ row }) => {
         const email = row.getValue("email") as string;
         return <div className="font-medium">{email}</div>;
+      },
+    },
+    {
+      accessorKey: "status",
+      header: t("allowedEmails.status"),
+      cell: ({ row }) => {
+        const status = row.getValue("status") as "pending" | "registered";
+        return (
+          <Badge variant={getStatusVariant(status)}>
+            {t(`allowedEmails.${status}`)}
+          </Badge>
+        );
       },
     },
     {
@@ -127,9 +158,14 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
   const [cursors, setCursors] = React.useState<{
     [key: number]: PaginationCursor;
   }>({});
+  const [statusFilter, setStatusFilter] = React.useState<
+    "all" | "pending" | "registered"
+  >("all");
 
   // Filter params for count query (without pagination params)
-  const filterParams: AllowedEmailsFilterParams = {};
+  const filterParams: AllowedEmailsFilterParams = {
+    status: statusFilter === "all" ? undefined : statusFilter,
+  };
 
   // Fetch allowed emails with React Query
   const {
@@ -138,13 +174,14 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["allowedEmails", pageIndex, pageSize],
+    queryKey: ["allowedEmails", pageIndex, pageSize, statusFilter],
     queryFn: async () => {
       const cursor = cursors[pageIndex];
       const queryParams = {
         pageSize,
         pageIndex,
         cursor,
+        status: statusFilter === "all" ? undefined : statusFilter,
       };
 
       return getAllowedEmails(queryParams);
@@ -195,9 +232,15 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
     }
   };
 
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value as "all" | "pending" | "registered");
+    setPageIndex(0);
+    setCursors({});
+  };
+
   const data = emailsResponse?.emails || [];
   const totalRows = totalCount || 0;
-  
+
   // Update cursor cache when new data is fetched
   React.useEffect(() => {
     if (emailsResponse?.pagination?.endCursor && pageIndex >= 0) {
@@ -251,7 +294,27 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
   return (
     <div className="w-full space-y-4">
       {/* Filters and actions */}
-      <div className="flex justify-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        {/* Status filter */}
+        <div className="flex items-center gap-2">
+          <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder={t("allowedEmails.filterByStatus")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                {t("allowedEmails.allStatuses")}
+              </SelectItem>
+              <SelectItem value="pending">
+                {t("allowedEmails.pending")}
+              </SelectItem>
+              <SelectItem value="registered">
+                {t("allowedEmails.registered")}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="flex items-center gap-2">
           <ColumnSelector
             tableId="allowed-emails-table"
@@ -260,6 +323,7 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
               const columnMap: Record<string, string> = {
                 select: t("common.select"),
                 email: t("allowedEmails.email"),
+                status: t("allowedEmails.status"),
                 addedDate: t("allowedEmails.addedDate"),
                 actions: t("common.actions"),
               };

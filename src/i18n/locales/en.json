@@ -236,7 +236,12 @@
     "bulkAddAlreadyRegisteredDesc": "{{count}} email(s) already have registered user accounts.",
     "bulkAddNoNewEmails": "No new emails added",
     "bulkAddFailed": "Failed to add some emails",
-    "removeEmailConfirmation": "Are you sure you want to remove {{email}} from the allowed list?"
+    "removeEmailConfirmation": "Are you sure you want to remove {{email}} from the allowed list?",
+    "status": "Status",
+    "filterByStatus": "Filter by status",
+    "allStatuses": "All statuses",
+    "pending": "Pending",
+    "registered": "Registered"
   },
   "notFound": {
     "title": "Page Not Found",

@@ -18,4 +18,5 @@ export interface AllowedEmail {
   email: string;
   adminId: string;
   timestamp: Date;
+  status: 'pending' | 'registered';
 } 
