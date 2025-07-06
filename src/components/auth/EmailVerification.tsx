@@ -1,18 +1,23 @@
 import { CheckCircle, Mail, RefreshCw, XCircle } from "lucide-react";
-import { applyActionCode, checkActionCode } from "firebase/auth";
-import { useCallback, useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import type { FirebaseError } from "firebase/app";
+import { applyActionCode } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 export const EmailVerification = () => {
-  const { currentUser, userProfile, sendVerificationEmail, refreshUser } =
-    useAuth();
-  const navigate = useNavigate();
+  const {
+    currentUser,
+    userProfile,
+    sendVerificationEmail,
+    refreshUser,
+    isEmailVerified,
+  } = useAuth();
   const [searchParams] = useSearchParams();
   const [verificationStatus, setVerificationStatus] = useState<
     "pending" | "success" | "error" | "loading"
@@ -21,77 +26,103 @@ export const EmailVerification = () => {
   const [isResending, setIsResending] = useState(false);
   const { t } = useTranslation();
 
-  const handleEmailVerification = useCallback(
+  const hasProcessed = useRef(false);
+  const processedCode = useRef<string | null>(null);
+
+  const handleVerification = useCallback(
     async (oobCode: string) => {
-      if (oobCode) {
-        setVerificationStatus("loading");
-        try {
-          // Check if the action code is valid
-          await checkActionCode(auth, oobCode);
+      if (processedCode.current === oobCode || hasProcessed.current) {
+        return;
+      }
 
-          // Apply the action code (verify email)
-          await applyActionCode(auth, oobCode);
+      hasProcessed.current = true;
+      processedCode.current = oobCode;
+      setVerificationStatus("loading");
 
-          // Refresh the user to get updated emailVerified status
-          await refreshUser();
+      try {
+        await applyActionCode(auth, oobCode);
+        await refreshUser();
+        setVerificationStatus("success");
+        toast.success("Email verified successfully!");
+      } catch (error) {
+        setVerificationStatus("error");
 
-          setVerificationStatus("success");
-        } catch (error) {
-          console.error("Email verification error:", error);
-          setVerificationStatus("error");
-          setErrorMessage(t("auth.emailVerificationFailed"));
+        let errorMsg = "Email verification failed.";
+        if ((error as FirebaseError).code === "auth/expired-action-code") {
+          errorMsg = "Verification link has expired. Please request a new one.";
+        } else if (
+          (error as FirebaseError).code === "auth/invalid-action-code"
+        ) {
+          errorMsg = "Invalid verification link. Please request a new one.";
         }
+
+        setErrorMessage(errorMsg);
       }
     },
-    [refreshUser, t]
+    [refreshUser]
   );
 
-  const handleResendVerification = async () => {
+  useEffect(() => {
+    const oobCode = searchParams.get("oobCode");
+
+    if (oobCode) {
+      handleVerification(oobCode);
+    }
+  }, [searchParams, handleVerification]);
+
+  useEffect(() => {
+    if (
+      (currentUser?.emailVerified || isEmailVerified) &&
+      verificationStatus !== "success"
+    ) {
+      setVerificationStatus("success");
+    }
+  }, [currentUser?.emailVerified, isEmailVerified, verificationStatus]);
+
+  const handleResend = async () => {
     setIsResending(true);
+    setErrorMessage("");
+
     try {
+      await refreshUser();
+
+      if (currentUser?.emailVerified) {
+        setVerificationStatus("success");
+        toast.success("Email is already verified!");
+        return;
+      }
+
       await sendVerificationEmail();
       setVerificationStatus("pending");
-    } catch (error) {
-      console.error("Error resending verification email:", error);
-      setErrorMessage(t("auth.emailVerificationFailed"));
+      toast.success("New verification email sent!");
+
+      hasProcessed.current = false;
+      processedCode.current = null;
+    } catch {
+      setErrorMessage("Failed to send verification email");
     } finally {
       setIsResending(false);
     }
   };
 
-  const handleRefreshStatus = async () => {
+  const handleRefresh = async () => {
     try {
       await refreshUser();
+
       if (currentUser?.emailVerified) {
         setVerificationStatus("success");
         toast.success("Email verified successfully!");
-        navigate("/app");
+      } else {
+        toast.info("Email not yet verified. Please check your email.");
       }
     } catch (error) {
       console.error("Error refreshing user status:", error);
     }
   };
 
-  useEffect(() => {
-    const oobCode = searchParams.get("oobCode");
-    if (!oobCode) {
-      setVerificationStatus("error");
-      setErrorMessage(t("auth.emailVerificationInvalidCode"));
-      return;
-    }
-    handleEmailVerification(oobCode);
-  }, [searchParams, handleEmailVerification, t]);
+  const isVerified = currentUser?.emailVerified || isEmailVerified;
 
-  if (verificationStatus === "loading") {
-    return (
-      <div className="text-center space-y-4">
-        <div className="animate-spin mx-auto w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-        <p className="text-muted-foreground">{t("common.loading")}</p>
-      </div>
-    );
-  }
-
-  if (verificationStatus === "success") {
+  if (isVerified) {
     return (
       <div className="text-center space-y-4">
         <CheckCircle className="mx-auto w-12 h-12 text-green-500" />
@@ -116,6 +147,15 @@ export const EmailVerification = () => {
     );
   }
 
+  if (verificationStatus === "loading") {
+    return (
+      <div className="text-center space-y-4">
+        <div className="animate-spin mx-auto w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        <p className="text-muted-foreground">{t("common.loading")}</p>
+      </div>
+    );
+  }
+
   if (verificationStatus === "error") {
     return (
       <div className="text-center space-y-4">
@@ -129,7 +169,7 @@ export const EmailVerification = () => {
           </p>
         </div>
         <Button
-          onClick={handleResendVerification}
+          onClick={handleResend}
           disabled={isResending}
           className="w-full"
         >
@@ -156,17 +196,13 @@ export const EmailVerification = () => {
       </div>
 
       <div className="space-y-3">
-        <Button
-          onClick={handleRefreshStatus}
-          variant="outline"
-          className="w-full"
-        >
+        <Button onClick={handleRefresh} variant="outline" className="w-full">
           <RefreshCw className="w-4 h-4 mr-2" />
           {t("auth.checkVerificationStatus")}
         </Button>
 
         <Button
-          onClick={handleResendVerification}
+          onClick={handleResend}
           disabled={isResending}
           className="w-full"
         >
