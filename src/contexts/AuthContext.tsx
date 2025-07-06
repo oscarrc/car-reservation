@@ -11,13 +11,16 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import i18n, { LANGUAGE_STORAGE_KEY } from "@/i18n";
+import {
+  isEmailAllowed,
+  updateEmailStatusToRegistered,
+} from "@/lib/allowed-emails-service";
 
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import type { User } from "firebase/auth";
+import { completeEmailUpdate } from "@/lib/profile-service";
 import { saveLanguageToStorage } from "@/i18n";
 import { toast } from "sonner";
-import { isEmailAllowed, updateEmailStatusToRegistered } from "@/lib/allowed-emails-service";
-import { completeEmailUpdate } from "@/lib/profile-service";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -166,7 +169,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       await reload(currentUser);
-      // Update the current user state
       setCurrentUser({ ...currentUser });
     } catch (error) {
       console.error("Error refreshing user:", error);
@@ -180,6 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const profile = await fetchUserProfile(currentUser.uid);
       if (profile && !profile.suspended) {
         setUserProfile(profile);
+        setIsProfileComplete(!!(profile.name && profile.phone));
         setAuthUser({
           uid: currentUser.uid,
           email: profile.email || currentUser.email || "",

@@ -116,14 +116,17 @@ export default defineConfig({
             './src/pages/App/Fleet.tsx',
             './src/pages/App/Reservations/index.tsx',
             './src/pages/App/Reservations/Reservation.tsx',
-            './src/pages/App/Onboarding.tsx'
           ],
           'auth-pages': [
             './src/pages/Auth/Login.tsx',
             './src/pages/Auth/Register.tsx',
             './src/pages/Auth/Forgot.tsx',
-            './src/pages/Auth/Reset.tsx'
-          ]
+            './src/pages/Auth/Action.tsx'
+          ],
+          'profile-pages': [
+            './src/pages/Profile.tsx',
+            './src/pages/Onboarding.tsx'
+          ],
         }
       }
     }

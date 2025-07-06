@@ -38,7 +38,7 @@ type OnboardingFormData = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
-  const { currentUser, userProfile } = useAuth();
+  const { currentUser, userProfile, refreshProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
 
@@ -51,7 +51,11 @@ export default function OnboardingPage() {
   });
 
   const onSubmit = async (data: OnboardingFormData) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      console.error("No current user found");
+      toast.error("Authentication error. Please try logging in again.");
+      return;
+    }
 
     setIsLoading(true);
 
@@ -70,20 +74,18 @@ export default function OnboardingPage() {
         searchKeywords,
       });
 
-      toast.success("Profile completed successfully!");
+      await refreshProfile();
 
-      // Small delay to ensure user sees the success toast
-      setTimeout(() => {
-        // Redirect based on user role
-        if (userProfile?.role === "admin") {
-          navigate("/admin");
-        } else {
-          navigate("/app");
-        }
-      }, 1500);
+      toast.success("Profile completed successfully!");
+      navigate("/app", { replace: true });
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error("Failed to update profile. Please try again.");
+
+      toast.error(
+        `Failed to update profile: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setIsLoading(false);
     }

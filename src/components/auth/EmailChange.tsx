@@ -1,40 +1,32 @@
-import { CarFront, CheckCircle, Shield, XCircle } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { CheckCircle, Shield, XCircle } from "lucide-react";
 import { applyActionCode, checkActionCode } from "firebase/auth";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const Email = () => {
-  const { currentUser, userProfile, refreshUser, refreshProfile } = useAuth();
+export const EmailChange = () => {
+  const { refreshUser, refreshProfile } = useAuth();
   const [searchParams] = useSearchParams();
-  const [emailResetStatus, setEmailResetStatus] = useState<
+  const [emailChangeStatus, setEmailChangeStatus] = useState<
     "pending" | "success" | "error" | "loading" | "processing"
   >("pending");
   const [errorMessage, setErrorMessage] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isChanging, setIsChanging] = useState(false);
+  const [isReverting, setIsReverting] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [previousEmail, setPreviousEmail] = useState("");
   const { t } = useTranslation();
 
   useEffect(() => {
-    const handleEmailReset = async () => {
+    const handleEmailChange = async () => {
       const oobCode = searchParams.get("oobCode");
-      const mode = searchParams.get("mode");
 
-      if (oobCode && mode === "action") {
-        setEmailResetStatus("processing");
+      if (oobCode) {
+        setEmailChangeStatus("processing");
         try {
           // Check if the action code is valid
           const actionCodeInfo = await checkActionCode(auth, oobCode);
@@ -47,38 +39,38 @@ const Email = () => {
             setPreviousEmail(actionCodeInfo.data.previousEmail);
           }
 
-          setEmailResetStatus("pending");
+          setEmailChangeStatus("pending");
         } catch (error) {
-          console.error("Email reset error:", error);
-          setEmailResetStatus("error");
-          setErrorMessage(t("auth.emailResetInvalidCode"));
+          console.error("Email change error:", error);
+          setEmailChangeStatus("error");
+          setErrorMessage(t("auth.emailChangeInvalidCode"));
         }
       }
     };
 
-    handleEmailReset();
+    handleEmailChange();
   }, [searchParams, t]);
 
   const handleConfirmEmailChange = async () => {
     const oobCode = searchParams.get("oobCode");
     if (!oobCode) return;
 
-    setIsProcessing(true);
+    setIsChanging(true);
     try {
       // Apply the action code to confirm the email change
       await applyActionCode(auth, oobCode);
-      
+
       // Refresh user data to get the new email
       await refreshUser();
       await refreshProfile();
-      
-      setEmailResetStatus("success");
+
+      setEmailChangeStatus("success");
     } catch (error) {
       console.error("Error confirming email change:", error);
-      setEmailResetStatus("error");
-      setErrorMessage(t("auth.emailResetErrorSubtitle"));
+      setEmailChangeStatus("error");
+      setErrorMessage(t("auth.emailChangeErrorSubtitle"));
     } finally {
-      setIsProcessing(false);
+      setIsChanging(false);
     }
   };
 
@@ -86,27 +78,27 @@ const Email = () => {
     const oobCode = searchParams.get("oobCode");
     if (!oobCode) return;
 
-    setIsProcessing(true);
+    setIsReverting(true);
     try {
       // Apply the action code to revert the email change
       await applyActionCode(auth, oobCode);
-      
+
       // Refresh user data to get the reverted email
       await refreshUser();
       await refreshProfile();
-      
-      setEmailResetStatus("success");
+
+      setEmailChangeStatus("success");
     } catch (error) {
       console.error("Error reverting email change:", error);
-      setEmailResetStatus("error");
-      setErrorMessage(t("auth.emailResetErrorSubtitle"));
+      setEmailChangeStatus("error");
+      setErrorMessage(t("auth.emailChangeErrorSubtitle"));
     } finally {
-      setIsProcessing(false);
+      setIsReverting(false);
     }
   };
 
   const renderContent = () => {
-    switch (emailResetStatus) {
+    switch (emailChangeStatus) {
       case "loading":
         return (
           <div className="text-center space-y-4">
@@ -120,7 +112,7 @@ const Email = () => {
           <div className="text-center space-y-4">
             <div className="animate-spin mx-auto w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
             <p className="text-muted-foreground">
-              {t("auth.emailResetProcessing")}
+              {t("auth.emailChangeProcessing")}
             </p>
           </div>
         );
@@ -131,10 +123,10 @@ const Email = () => {
             <CheckCircle className="mx-auto w-12 h-12 text-green-500" />
             <div>
               <h3 className="text-lg font-semibold text-green-700">
-                {t("auth.emailResetSuccess")}
+                {t("auth.emailChangeSuccess")}
               </h3>
               <p className="text-sm text-muted-foreground mt-2">
-                {t("auth.emailResetSuccessSubtitle")}
+                {t("auth.emailChangeSuccessSubtitle")}
               </p>
             </div>
             <Button
@@ -152,10 +144,10 @@ const Email = () => {
             <XCircle className="mx-auto w-12 h-12 text-red-500" />
             <div>
               <h3 className="text-lg font-semibold text-red-700">
-                {t("auth.emailResetError")}
+                {t("auth.emailChangeError")}
               </h3>
               <p className="text-sm text-muted-foreground mt-2">
-                {errorMessage || t("auth.emailResetErrorSubtitle")}
+                {errorMessage || t("auth.emailChangeErrorSubtitle")}
               </p>
             </div>
             <Button
@@ -173,30 +165,30 @@ const Email = () => {
             <div className="flex items-center justify-center space-x-2">
               <Shield className="w-8 h-8 text-amber-500" />
               <h3 className="text-lg font-semibold text-amber-700">
-                {t("auth.emailResetSecurityNotice")}
+                {t("auth.emailChangeSecurityNotice")}
               </h3>
             </div>
 
             <div className="space-y-3">
               <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-md text-sm">
                 <p className="font-medium mb-1">
-                  {t("auth.emailResetPendingSubtitle")}
+                  {t("auth.emailChangePendingSubtitle")}
                 </p>
                 <p className="font-semibold text-lg">{newEmail}</p>
                 {previousEmail && (
                   <p className="text-xs mt-1">
-                    {t("auth.emailResetPrevious")} {previousEmail}
+                    {t("auth.emailChangePrevious")} {previousEmail}
                   </p>
                 )}
               </div>
 
               <p className="text-sm text-muted-foreground">
-                {t("auth.emailResetInstructions")}
+                {t("auth.emailChangeInstructions")}
               </p>
 
               <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-md text-sm">
                 <p className="font-medium">
-                  {t("auth.emailResetSecurityDesc")}
+                  {t("auth.emailChangeSecurityDesc")}
                 </p>
               </div>
             </div>
@@ -204,85 +196,36 @@ const Email = () => {
             <div className="space-y-3">
               <Button
                 onClick={handleRevertEmailChange}
-                disabled={isProcessing}
+                disabled={isReverting || isChanging}
                 variant="destructive"
                 className="w-full"
               >
-                {isProcessing
-                  ? t("auth.emailResetReverting")
-                  : t("auth.emailResetRevert")}
+                {isReverting
+                  ? t("auth.emailChangeReverting")
+                  : t("auth.emailChangeRevert")}
               </Button>
 
               <Button
                 onClick={handleConfirmEmailChange}
-                disabled={isProcessing}
+                disabled={isChanging || isReverting}
                 className="w-full"
               >
-                {isProcessing
-                  ? t("auth.emailResetConfirming")
-                  : t("auth.emailResetConfirm")}
+                {isChanging
+                  ? t("auth.emailChangeConfirming")
+                  : t("auth.emailChangeConfirm")}
               </Button>
             </div>
 
             <div className="text-xs text-muted-foreground space-y-1">
-              <p className="font-medium">{t("auth.emailResetWhatToDo")}</p>
-              <p>{t("auth.emailResetWhatToDoConfirm")}</p>
-              <p>{t("auth.emailResetWhatToDoRevert")}</p>
-              <p>{t("auth.emailResetWhatToDoContact")}</p>
+              <p className="font-medium">{t("auth.emailChangeWhatToDo")}</p>
+              <p>{t("auth.emailChangeWhatToDoConfirm")}</p>
+              <p>{t("auth.emailChangeWhatToDoRevert")}</p>
+              <p>{t("auth.emailChangeWhatToDoContact")}</p>
             </div>
           </div>
         );
     }
   };
 
-  // If user is already logged in, redirect to app
-  if (currentUser) {
-    if (userProfile?.role === "admin") {
-      return <Navigate to="/admin" />;
-    }
-    return <Navigate to="/app" />;
-  }
-
-  return (
-    <main className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-      <section className="flex w-full max-w-sm flex-col gap-6">
-        <Link
-          to="/auth"
-          className="flex items-center gap-2 self-center font-medium"
-        >
-          <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-            <CarFront className="size-4" />
-          </div>
-          {t("brand.name")}
-        </Link>
-
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl">{t("auth.emailReset")}</CardTitle>
-            <CardDescription>
-              {emailResetStatus === "success"
-                ? t("auth.emailResetSuccessSubtitle")
-                : t("auth.emailResetSubtitle")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>{renderContent()}</CardContent>
-        </Card>
-
-        <div className="text-center">
-          <Link
-            to="/auth"
-            className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
-          >
-            {t("auth.backToLogin")}
-          </Link>
-        </div>
-
-        <div className="flex justify-center">
-          <LanguageSwitcher authOnly={true} />
-        </div>
-      </section>
-    </main>
-  );
+  return renderContent();
 };
-
-export default Email;

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config.ts";
 
+import Action from "./pages/Auth/Action.tsx";
 import AdminPage from "./pages/Admin/index.tsx";
 import AdminReservationPage from "./pages/Admin/Reservations/Reservation.tsx";
 import AllowedEmailsPage from "./pages/Admin/Users/AllowedEmails.tsx";
@@ -12,19 +13,17 @@ import AppPage from "./pages/App/index.tsx";
 import AppReservationPage from "./pages/App/Reservations/Reservation.tsx";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
 import CarPage from "./pages/Admin/Fleet/Car.tsx";
-import Email from "./pages/Auth/Email.tsx";
 import FleetPage from "./pages/Admin/Fleet/index.tsx";
 import Forgot from "./pages/Auth/Forgot.tsx";
 import Login from "./pages/Auth/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import OnboardingLayout from "./layouts/Onboarding.tsx";
-import OnboardingPage from "./pages/App/Onboarding.tsx";
+import OnboardingPage from "./pages/Onboarding.tsx";
 import { PWAProvider } from "./contexts/PWAContext.tsx";
 import ProfilePage from "./pages/Profile.tsx";
 import Protected from "./layouts/Protected.tsx";
 import Register from "./pages/Auth/Register.tsx";
 import ReservationsPage from "./pages/Admin/Reservations/index.tsx";
-import Reset from "./pages/Auth/Reset.tsx";
 import SettingsPage from "./pages/Admin/Settings.tsx";
 import SidebarLayout from "./layouts/Sidebar.tsx";
 import { StrictMode } from "react";
@@ -33,7 +32,6 @@ import UserFleetPage from "./pages/App/Fleet.tsx";
 import UserPage from "./pages/Admin/Users/User.tsx";
 import UserReservationsPage from "./pages/App/Reservations/index.tsx";
 import UsersPage from "./pages/Admin/Users/index.tsx";
-import Verify from "./pages/Auth/Verify.tsx";
 import { createRoot } from "react-dom/client";
 
 // Create a client
@@ -67,16 +65,8 @@ const router = createBrowserRouter([
         element: <Forgot />,
       },
       {
-        path: "reset",
-        element: <Reset />,
-      },
-      {
-        path: "verify",
-        element: <Verify />,
-      },
-      {
-        path: "email",
-        element: <Email />,
+        path: "action",
+        element: <Action />,
       },
     ],
   },
