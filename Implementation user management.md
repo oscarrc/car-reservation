@@ -53,10 +53,11 @@
 
 ## **Phase 4: Registration Flow Updates**
 
-### **Step 4.1: Update Registration Form**
+### **Step 4.1: Create Registration Form**
 
 - Add email validation against allowed emails
 - Show error if email not in allowed list
+- Send email verification when user registers
 - Update registration success flow
 
 ### **Step 4.2: Update Auth Context**

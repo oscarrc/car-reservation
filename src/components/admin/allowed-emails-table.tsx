@@ -1,0 +1,302 @@
+"use client";
+
+import * as React from "react";
+import { Trash2, Plus, Check } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  getAllowedEmails,
+  removeAllowedEmail,
+  type AllowedEmailWithId,
+} from "@/lib/allowed-emails-service";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+} from "@tanstack/react-table";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ColumnSelector } from "@/components/ui/column-selector";
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
+import { ErrorDisplay } from "@/components/ui/error-display";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
+
+interface AllowedEmailsTableProps {
+  onAddEmail?: () => void;
+  onRemoveEmail: (email: AllowedEmailWithId) => void;
+}
+
+const createAllowedEmailsColumns = ({
+  onRemoveEmail,
+  t,
+  rowSelection,
+  setRowSelection,
+}: {
+  onRemoveEmail: (email: AllowedEmailWithId) => void;
+  t: (key: string) => string;
+  rowSelection: Record<string, boolean>;
+  setRowSelection: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+}): ColumnDef<AllowedEmailWithId>[] => {
+  return [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "email",
+      header: t("allowedEmails.email"),
+      cell: ({ row }) => {
+        const email = row.getValue("email") as string;
+        return <div className="font-medium">{email}</div>;
+      },
+    },
+    {
+      accessorKey: "timestamp",
+      header: t("allowedEmails.addedDate"),
+      cell: ({ row }) => {
+        const timestamp = row.getValue("timestamp") as Date;
+        return <div>{format(timestamp, "PPP")}</div>;
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const email = row.original;
+
+        return (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemoveEmail(email)}
+            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">{t("allowedEmails.removeEmail")}</span>
+          </Button>
+        );
+      },
+    },
+  ];
+};
+
+export function AllowedEmailsTable({
+  onAddEmail,
+  onRemoveEmail,
+}: AllowedEmailsTableProps) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [emailToDelete, setEmailToDelete] = React.useState<AllowedEmailWithId | null>(null);
+
+  // Fetch allowed emails
+  const {
+    data: emailsResponse,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["allowedEmails"],
+    queryFn: getAllowedEmails,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const removeEmailMutation = useMutation({
+    mutationFn: async (emailId: string) => {
+      return await removeAllowedEmail(emailId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["allowedEmails"] });
+      toast.success(t("allowedEmails.emailRemoved"));
+      setDeleteDialogOpen(false);
+      setEmailToDelete(null);
+    },
+    onError: (error) => {
+      console.error("Error removing email:", error);
+      toast.error(t("allowedEmails.failedToRemoveEmail"));
+      setDeleteDialogOpen(false);
+      setEmailToDelete(null);
+    },
+  });
+
+  const handleDeleteEmail = (email: AllowedEmailWithId) => {
+    setEmailToDelete(email);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (emailToDelete) {
+      removeEmailMutation.mutate(emailToDelete.id);
+    }
+  };
+
+  const data = emailsResponse?.emails || [];
+
+  // Create columns
+  const columns = createAllowedEmailsColumns({
+    onRemoveEmail: handleDeleteEmail,
+    t,
+    rowSelection,
+    setRowSelection,
+  });
+
+  const table = useReactTable({
+    data: data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    onRowSelectionChange: setRowSelection,
+    state: {
+      rowSelection,
+    },
+  });
+
+  if (error) {
+    return (
+      <ErrorDisplay
+        error={error}
+        onRetry={() => refetch()}
+        title={t("allowedEmails.errorLoadingEmails")}
+        description={t("allowedEmails.errorLoadingEmailsDescription")}
+        showHomeButton={false}
+      />
+    );
+  }
+
+  return (
+    <div className="w-full space-y-4">
+      {/* Filters and actions */}
+      <div className="flex justify-end">
+        <div className="flex items-center gap-2">
+          <ColumnSelector
+            tableId="allowed-emails-table"
+            columns={table.getAllColumns()}
+            getColumnDisplayName={(columnId) => {
+              const columnMap: Record<string, string> = {
+                select: t("common.select"),
+                email: t("allowedEmails.email"),
+                addedDate: t("allowedEmails.addedDate"),
+                actions: t("common.actions"),
+              };
+              return columnMap[columnId] || columnId;
+            }}
+          />
+          {onAddEmail && (
+            <Button onClick={onAddEmail}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t("allowedEmails.addEmail")}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <div className="relative">
+                      <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-primary rounded-full animate-spin"></div>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {t("loading.loadingEmails")}
+                    </span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : data.length > 0 ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  {t("allowedEmails.noEmailsFound")}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title={t("allowedEmails.removeEmail")}
+        description={
+          emailToDelete
+            ? t("allowedEmails.removeEmailConfirmation", { email: emailToDelete.email })
+            : ""
+        }
+        isLoading={removeEmailMutation.isPending}
+      />
+    </div>
+  );
+} 

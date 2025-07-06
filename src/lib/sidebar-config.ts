@@ -1,4 +1,4 @@
-import { Calendar, CarFront, Home, Settings, Users } from "lucide-react"
+import { Calendar, CarFront, Home, Settings, Users, Mail } from "lucide-react"
 
 import type { LucideIcon } from "lucide-react"
 
@@ -50,6 +50,11 @@ export const adminSidebarConfig: SidebarConfig = {
       title: "navigation.users",
       url: "/admin/users",
       icon: Users
+    },
+    {
+      title: "navigation.allowedEmails",
+      url: "/admin/users/allowed-emails",
+      icon: Mail
     },
     {
       title: "navigation.settings",

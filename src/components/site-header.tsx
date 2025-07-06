@@ -6,9 +6,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { Link, useLocation } from "react-router-dom";
+
+import { EmailVerificationBadge } from "@/components/ui/email-verification-badge";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useTranslation } from "react-i18next";
@@ -18,16 +19,13 @@ interface SiteHeaderProps {
   homePageUrl?: string;
 }
 
-export function SiteHeader({
-  companyName,
-  homePageUrl,
-}: SiteHeaderProps) {
+export function SiteHeader({ companyName, homePageUrl }: SiteHeaderProps) {
   const location = useLocation();
   const { t } = useTranslation();
 
   // Generate breadcrumbs based on current path
   const generateBreadcrumbs = () => {
-    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const pathSegments = location.pathname.split("/").filter(Boolean);
     const breadcrumbs = [];
 
     // Always start with company name
@@ -35,13 +33,13 @@ export function SiteHeader({
       breadcrumbs.push({
         label: companyName,
         path: homePageUrl || "/",
-        isCurrentPage: false
+        isCurrentPage: false,
       });
     }
 
     // Build breadcrumbs from path segments (skip base routes like admin/app)
     let currentPath = "";
-    
+
     for (let i = 0; i < pathSegments.length; i++) {
       const segment = pathSegments[i];
       currentPath += `/${segment}`;
@@ -89,7 +87,7 @@ export function SiteHeader({
         breadcrumbs.push({
           label,
           path: currentPath,
-          isCurrentPage: isLastSegment
+          isCurrentPage: isLastSegment,
         });
       }
     }
@@ -109,13 +107,20 @@ export function SiteHeader({
             <BreadcrumbList>
               {breadcrumbs.map((breadcrumb, index) => (
                 <div key={breadcrumb.path} className="flex items-center">
-                  {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
-                  <BreadcrumbItem className={index === 0 ? "hidden md:block" : ""}>
+                  {index > 0 && (
+                    <BreadcrumbSeparator className="hidden md:block" />
+                  )}
+                  <BreadcrumbItem
+                    className={index === 0 ? "hidden md:block" : ""}
+                  >
                     {breadcrumb.isCurrentPage ? (
                       <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
                     ) : (
                       <BreadcrumbLink asChild>
-                        <Link to={breadcrumb.path} className="text-sm font-medium">
+                        <Link
+                          to={breadcrumb.path}
+                          className="text-sm font-medium"
+                        >
                           {breadcrumb.label}
                         </Link>
                       </BreadcrumbLink>
@@ -127,7 +132,10 @@ export function SiteHeader({
           </Breadcrumb>
         )}
       </div>
-      <LanguageSwitcher />
+      <div className="flex items-center gap-4">
+        <EmailVerificationBadge />
+        <LanguageSwitcher />
+      </div>
     </header>
   );
 }

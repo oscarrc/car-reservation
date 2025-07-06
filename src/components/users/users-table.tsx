@@ -42,7 +42,6 @@ interface UsersTableProps {
   searchTerm?: string;
   onSearchChange?: (searchTerm: string) => void;
   onEditUser: (user: UserProfileWithId) => void;
-  onDeleteUser?: (user: UserProfileWithId) => void;
   onSuspendUser?: (user: UserProfileWithId) => void;
   onUnsuspendUser?: (user: UserProfileWithId) => void;
 }
@@ -51,7 +50,6 @@ export function UsersTable({
   searchTerm = "",
   onSearchChange,
   onEditUser,
-  onDeleteUser,
   onSuspendUser,
   onUnsuspendUser,
 }: UsersTableProps) {
@@ -146,7 +144,6 @@ export function UsersTable({
   // Create columns with callbacks
   const columns = createUserColumns({
     onEditUser,
-    onDeleteUser,
     onSuspendUser,
     onUnsuspendUser,
     t,

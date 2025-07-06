@@ -369,4 +369,35 @@ export async function toggleUserSuspension(userId: string, currentStatus: boolea
     console.error('Error toggling user suspension:', error);
     throw error;
   }
+}
+
+// Check for existing users by email addresses
+export async function getUsersByEmails(emails: string[]): Promise<string[]> {
+  try {
+    if (emails.length === 0) return [];
+    
+    const usersCollection = collection(db, 'users');
+    const existingEmails: string[] = [];
+    
+    // Check each email individually since Firestore doesn't support 'in' queries with more than 10 values
+    // and we want to be safe with the limit
+    const batchSize = 10;
+    for (let i = 0; i < emails.length; i += batchSize) {
+      const batch = emails.slice(i, i + batchSize);
+      const emailQuery = query(usersCollection, where('email', 'in', batch));
+      const querySnapshot = await getDocs(emailQuery);
+      
+      querySnapshot.docs.forEach((doc) => {
+        const userData = doc.data() as UserProfile;
+        if (userData.email) {
+          existingEmails.push(userData.email.toLowerCase());
+        }
+      });
+    }
+    
+    return existingEmails;
+  } catch (error) {
+    console.error('Error checking existing users by emails:', error);
+    throw error;
+  }
 } 

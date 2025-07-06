@@ -7,6 +7,7 @@ import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config.ts";
 
 import AdminPage from "./pages/Admin/index.tsx";
 import AdminReservationPage from "./pages/Admin/Reservations/Reservation.tsx";
+import AllowedEmailsPage from "./pages/Admin/Users/AllowedEmails.tsx";
 import AppPage from "./pages/App/index.tsx";
 import AppReservationPage from "./pages/App/Reservations/Reservation.tsx";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
@@ -15,8 +16,11 @@ import FleetPage from "./pages/Admin/Fleet/index.tsx";
 import Forgot from "./pages/Auth/Forgot.tsx";
 import Login from "./pages/Auth/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import OnboardingLayout from "./layouts/Onboarding.tsx";
+import OnboardingPage from "./pages/App/Onboarding.tsx";
 import ProfilePage from "./pages/Profile.tsx";
 import Protected from "./layouts/Protected.tsx";
+import Register from "./pages/Auth/Register.tsx";
 import ReservationsPage from "./pages/Admin/Reservations/index.tsx";
 import Reset from "./pages/Auth/Reset.tsx";
 import SettingsPage from "./pages/Admin/Settings.tsx";
@@ -49,6 +53,10 @@ const router = createBrowserRouter([
     element: <Login />,
   },
   {
+    path: "/register",
+    element: <Register />,
+  },
+  {
     path: "/forgot",
     element: <Forgot />,
   },
@@ -75,6 +83,10 @@ const router = createBrowserRouter([
       {
         path: "users/:userId",
         element: <UserPage />,
+      },
+      {
+        path: "users/allowed-emails",
+        element: <AllowedEmailsPage />,
       },
       {
         path: "fleet",
@@ -135,6 +147,20 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <ProfilePage />,
+      },
+    ],
+  },
+  {
+    path: "onboarding",
+    element: (
+      <Protected>
+        <OnboardingLayout />
+      </Protected>
+    ),
+    children: [
+      {
+        index: true,
+        element: <OnboardingPage />,
       },
     ],
   },

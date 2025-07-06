@@ -1,16 +1,19 @@
 import type { AuthUser, UserProfile } from "@/types/user";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
 import {
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
+  reload,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import i18n, { LANGUAGE_STORAGE_KEY } from "@/i18n";
 
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import type { User } from "firebase/auth";
-import i18n from "@/i18n";
 import { saveLanguageToStorage } from "@/i18n";
 import { toast } from "sonner";
 
@@ -19,9 +22,14 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   authUser: AuthUser | null;
   login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
   hasRole: (role: "admin" | "teacher") => boolean;
+  isEmailVerified: boolean;
+  isProfileComplete: boolean;
+  sendVerificationEmail: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -36,6 +44,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isProfileComplete, setIsProfileComplete] = useState(false);
 
   async function fetchUserProfile(uid: string): Promise<UserProfile | null> {
     try {
@@ -77,6 +87,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function register(email: string, password: string) {
+    // First check if email is allowed
+    const { isEmailAllowed } = await import("@/lib/allowed-emails-service");
+    const allowed = await isEmailAllowed(email);
+
+    if (!allowed) {
+      throw new Error("Email not allowed");
+    }
+
+    // Create user account
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    // Create user profile in Firestore
+    const userProfile: UserProfile = {
+      email: email,
+      name: "",
+      phone: "",
+      role: "teacher",
+      suspended: false,
+      language:
+        (localStorage.getItem(LANGUAGE_STORAGE_KEY)?.trim() as "en" | "th") ||
+        "en",
+    };
+
+    await setDoc(doc(db, "users", userCredential.user.uid), userProfile);
+
+    // Send email verification
+    await sendEmailVerification(userCredential.user);
+
+    toast.success(i18n.t("auth.registrationSuccess"));
+  }
+
   function logout() {
     return signOut(auth);
   }
@@ -95,18 +141,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return false;
   }
 
+  async function sendVerificationEmail() {
+    if (!currentUser) {
+      throw new Error("No user logged in");
+    }
+
+    try {
+      await sendEmailVerification(currentUser);
+      toast.success("Verification email sent successfully!");
+    } catch (error) {
+      console.error("Error sending verification email:", error);
+      toast.error("Failed to send verification email. Please try again.");
+      throw error;
+    }
+  }
+
+  async function refreshUser() {
+    if (!currentUser) return;
+
+    try {
+      await reload(currentUser);
+      // Update the current user state
+      setCurrentUser({ ...currentUser });
+    } catch (error) {
+      console.error("Error refreshing user:", error);
+    }
+  }
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
       setCurrentUser(user);
 
       if (user) {
+        // Set email verification status
+        setIsEmailVerified(user.emailVerified);
+
         // Fetch user profile from Firestore
         const profile = await fetchUserProfile(user.uid);
 
         if (!profile) {
           setUserProfile(null);
           setAuthUser(null);
+          setIsEmailVerified(false);
+          setIsProfileComplete(false);
           setLoading(false);
           await signOut(auth);
           toast.error(i18n.t("auth.profileNotFound"));
@@ -116,6 +194,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (profile.suspended) {
           setUserProfile(null);
           setAuthUser(null);
+          setIsEmailVerified(false);
+          setIsProfileComplete(false);
           setLoading(false);
           await signOut(auth);
           toast.error(i18n.t("auth.accountSuspended"));
@@ -123,6 +203,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         setUserProfile(profile);
+
+        // Check if profile is complete (name and phone exist)
+        setIsProfileComplete(!!(profile.name && profile.phone));
 
         setAuthUser({
           uid: user.uid,
@@ -138,6 +221,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setUserProfile(null);
         setAuthUser(null);
+        setIsEmailVerified(false);
+        setIsProfileComplete(false);
       }
 
       setLoading(false);
@@ -151,9 +236,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     userProfile,
     authUser,
     login,
+    register,
     logout,
     loading,
     hasRole,
+    isEmailVerified,
+    isProfileComplete,
+    sendVerificationEmail,
+    refreshUser,
   };
 
   return (

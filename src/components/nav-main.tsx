@@ -30,13 +30,14 @@ export function NavMain({
       <SidebarMenu>
         {items.map((item) => {
           const translatedTitle = t(item.title)
+          
           return (
-          <SidebarMenuItem key={item.title}>
+            <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild isActive={item.isActive} tooltip={translatedTitle}>
-              <Link to={item.url}>
+                <Link to={item.url}>
                   <item.icon />
-                    <span>{translatedTitle}</span>
-              </Link>
+                  <span>{translatedTitle}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )

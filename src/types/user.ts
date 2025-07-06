@@ -12,4 +12,10 @@ export interface AuthUser {
   uid: string;
   email: string;
   profile?: UserProfile;
+}
+
+export interface AllowedEmail {
+  email: string;
+  adminId: string;
+  timestamp: Date;
 } 

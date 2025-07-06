@@ -5,7 +5,6 @@ import {
   Edit,
   Eye,
   MoreHorizontal,
-  Trash2,
   UserCheck,
   UserX,
 } from "lucide-react";
@@ -28,7 +27,6 @@ import type { UserProfileWithId } from "@/lib/users-service";
 
 interface UserColumnsProps {
   onEditUser: (user: UserProfileWithId) => void;
-  onDeleteUser?: (user: UserProfileWithId) => void;
   onSuspendUser?: (user: UserProfileWithId) => void;
   onUnsuspendUser?: (user: UserProfileWithId) => void;
   t: (key: string, options?: Record<string, string>) => string;
@@ -37,7 +35,6 @@ interface UserColumnsProps {
 
 export const createUserColumns = ({
   onEditUser,
-  onDeleteUser,
   onSuspendUser,
   onUnsuspendUser,
   t,
@@ -194,18 +191,7 @@ export const createUserColumns = ({
                 </>
               )}
 
-              {/* Delete action - only if not current user */}
-              {!isCurrentUser && onDeleteUser && (
-                <>
-                  <DropdownMenuItem
-                    onClick={() => onDeleteUser(user)}
-                    className="cursor-pointer text-red-600"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    {t("users.deleteUser")}
-                  </DropdownMenuItem>
-                </>
-              )}
+
             </DropdownMenuContent>
           </DropdownMenu>
         );

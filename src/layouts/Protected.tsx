@@ -1,5 +1,6 @@
+import { Navigate, useLocation } from "react-router-dom";
+
 import { LoadingScreen } from "@/components/ui/loading-screen";
-import { Navigate } from "react-router-dom";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -15,8 +16,9 @@ export default function Protected({
   requiredRole,
   fallbackPath = "/login",
 }: ProtectedProps) {
-  const { currentUser, userProfile, loading } = useAuth();
+  const { currentUser, userProfile, loading, isProfileComplete } = useAuth();
   const { t } = useTranslation();
+  const location = useLocation();
 
   // Show loading while checking auth state
   if (loading) {
@@ -40,6 +42,16 @@ export default function Protected({
         </div>
       </div>
     );
+  }
+
+  // Check if profile is complete (name and phone exist)
+  // Only check for app routes, not admin routes
+  if (
+    !isProfileComplete &&
+    location.pathname.startsWith("/app") &&
+    location.pathname !== "/onboarding"
+  ) {
+    return <Navigate to="/onboarding" />;
   }
 
   // If role is required, check if user has the required role

@@ -25,6 +25,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
+import { EmailVerificationAlert } from "@/components/ui/email-verification-alert";
 import { Input } from "@/components/ui/input";
 import { SectionHeader } from "@/components/ui/section-header";
 import { toast } from "sonner";
@@ -191,6 +192,7 @@ export default function ProfilePage() {
       />
 
       <div className="px-4 lg:px-6">
+        <EmailVerificationAlert />
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Profile Information */}
           <Card>

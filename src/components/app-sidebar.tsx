@@ -43,7 +43,7 @@ export function AppSidebar({
 
   const data = config || defaultData;
 
-  // Convert config items to navMain format (simple items without sub-items)
+  // Pass the config items to navMain
   const navMainItems = data.items.map((item) => ({
     title: item.title,
     url: item.url,
