@@ -101,7 +101,6 @@
     "logoutSuccess": "คุณได้ออกจากระบบเรียบร้อยแล้ว",
     "profileNotFound": "ไม่พบโปรไฟล์ผู้ใช้ กรุณาติดต่อผู้ดูแลระบบ",
     "accountSuspended": "บัญชีของคุณถูกระงับ กรุณาติดต่อผู้ดูแลระบบ",
-    "firstTime": "ครั้งแรกที่มาที่นี่หรือ เปิดใช้งานบัญชีของคุณ",
     "brandName": "Car Reservation System",
     "codeMismatch": "รหัสผ่านไม่ตรงกัน",
     "codeNotFound": "ไม่ได้รีเซ็ตรหัส",
@@ -119,18 +118,19 @@
     "passwordPlaceholder": "ป้อนรหัสผ่านของคุณ",
     "passwordRequired": "ต้องใช้รหัสผ่าน",
     "passwordResetSuccessDesc": "ตอนนี้คุณสามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ของคุณ",
-    "resetEmailSent": "ส่งอีเมลรีเซ็ตรหัสผ่าน! \nตรวจสอบกล่องจดหมายของคุณ",
+    "resetEmailSent": "ส่งอีเมลรีเซ็ตรหัสผ่าน! ตรวจสอบกล่องจดหมายของคุณ",
     "resetEmailSentDesc": "เราได้ส่งลิงค์รีเซ็ตรหัสผ่านไปยัง",
     "resetFailed": "ไม่สามารถรีเซ็ตรหัสผ่านได้",
     "resetFailedDesc": "โปรดลองอีกครั้งหรือขอลิงค์รีเซ็ตใหม่",
-    "resetLinkExpired": "ลิงค์รีเซ็ตรหัสผ่านนี้หมดอายุแล้ว \nโปรดขอใหม่",
-    "resetLinkInvalid": "ลิงค์รีเซ็ตรหัสผ่านนี้ไม่ถูกต้อง \nโปรดขอใหม่",
+    "resetLinkExpired": "ลิงค์รีเซ็ตรหัสผ่านนี้หมดอายุแล้ว โปรดขอใหม่",
+    "resetLinkInvalid": "ลิงค์รีเซ็ตรหัสผ่านนี้ไม่ถูกต้อง โปรดขอใหม่",
     "resetPasswordDesc": "ป้อนรหัสผ่านใหม่ของคุณด้านล่าง",
     "resetPasswordTitle": "รีเซ็ตรหัสผ่านของคุณ",
     "resettingPassword": "รีเซ็ต ...",
     "returnHome": "กลับไปที่เว็บไซต์",
     "sendingResetLink": "ส่ง ...",
-    "signingIn": "ลงชื่อเข้าใช้ ..."
+    "signingIn": "ลงชื่อเข้าใช้ ...",
+    "firstTime": "ครั้งแรกที่นี่ลงทะเบียนบัญชีของคุณ"
   },
   "navigation": {
     "dashboard": "แดชบอร์ด",
@@ -189,7 +189,7 @@
     "contactSupport": "ติดต่อฝ่ายสนับสนุน",
     "supportEmails": "อีเมลสนับสนุน",
     "viewAllReservations": "ดูการจองทั้งหมด",
-    "adminSubtitle": "คุณเข้าสู่ระบบในฐานะผู้ดูแลระบบ \nนี่คือภาพรวมของระบบการจองรถยนต์ของคุณ",
+    "adminSubtitle": "คุณเข้าสู่ระบบในฐานะผู้ดูแลระบบ นี่คือภาพรวมของระบบการจองรถยนต์ของคุณ",
     "appSubtitle": "พร้อมจองการจองรถคันต่อไปแล้วหรือยัง?",
     "appWelcome": "ยินดีต้อนรับ {{ชื่อ}}!"
   },
@@ -579,7 +579,7 @@
     "businessHoursDesc": "กำหนดเวลาทำการสำหรับการจองรถยนต์",
     "supportEmails": "ที่อยู่อีเมลฝ่ายสนับสนุน",
     "supportEmailsDesc": "ที่อยู่อีเมลสำหรับฝ่ายสนับสนุนลูกค้า (หนึ่งบรรทัดต่อหนึ่งอีเมล)",
-    "supportEmailsPlaceholder": "support@company.com\nhelp@company.com"
+    "supportEmailsPlaceholder": "support@company.comhelp@company.com"
   },
   "table": {
     "columns": "คอลัมน์",

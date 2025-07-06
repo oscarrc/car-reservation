@@ -104,7 +104,7 @@ export function LoginForm({
                 </Button>
                 <p className="text-sm text-muted-foreground text-center">
                   <Link
-                    to="/activate"
+                    to="/register"
                     className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
                   >
                     {t("auth.firstTime")}

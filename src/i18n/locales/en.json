@@ -128,7 +128,7 @@
     "logoutSuccess": "You have been logged out successfully",
     "profileNotFound": "User profile not found. Please contact an administrator.",
     "accountSuspended": "Your account has been suspended. Please contact an administrator.",
-    "firstTime": "First time here? Activate your account",
+    "firstTime": "First time here? Register your account",
     "loginSuccess": "Welcome back!",
     "sendResetEmail": "Send Reset Email"
   },
