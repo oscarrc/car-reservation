@@ -1,6 +1,6 @@
 import { CheckCircle, Mail, RefreshCw, XCircle } from "lucide-react";
 import { applyActionCode, checkActionCode } from "firebase/auth";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -21,10 +21,8 @@ export const EmailVerification = () => {
   const [isResending, setIsResending] = useState(false);
   const { t } = useTranslation();
 
-  useEffect(() => {
-    const handleEmailVerification = async () => {
-      const oobCode = searchParams.get("oobCode");
-
+  const handleEmailVerification = useCallback(
+    async (oobCode: string) => {
       if (oobCode) {
         setVerificationStatus("loading");
         try {
@@ -44,10 +42,9 @@ export const EmailVerification = () => {
           setErrorMessage(t("auth.emailVerificationFailed"));
         }
       }
-    };
-
-    handleEmailVerification();
-  }, [searchParams, refreshUser, t]);
+    },
+    [refreshUser, t]
+  );
 
   const handleResendVerification = async () => {
     setIsResending(true);
@@ -74,6 +71,16 @@ export const EmailVerification = () => {
       console.error("Error refreshing user status:", error);
     }
   };
+
+  useEffect(() => {
+    const oobCode = searchParams.get("oobCode");
+    if (!oobCode) {
+      setVerificationStatus("error");
+      setErrorMessage(t("auth.emailVerificationInvalidCode"));
+      return;
+    }
+    handleEmailVerification(oobCode);
+  }, [searchParams, handleEmailVerification, t]);
 
   if (verificationStatus === "loading") {
     return (
