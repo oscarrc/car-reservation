@@ -90,6 +90,11 @@ const Email = () => {
     try {
       // Apply the action code to revert the email change
       await applyActionCode(auth, oobCode);
+      
+      // Refresh user data to get the reverted email
+      await refreshUser();
+      await refreshProfile();
+      
       setEmailResetStatus("success");
     } catch (error) {
       console.error("Error reverting email change:", error);

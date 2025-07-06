@@ -1,8 +1,18 @@
 {
   "name": "car-reservation",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "A car reservation system built with React, TypeScript, and Firebase.",
+  "author": "Oscar R.C.",
+  "license": "Copyright © 2025 Oscar R.C.",
+  "keywords": [
+    "react",
+    "typescript",
+    "firebase",
+    "car reservation",
+    "pwa"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
