@@ -1,13 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { addAllowedEmail, getAllowedEmails } from "@/lib/allowed-emails-service";
-import { getUsersByEmails } from "@/lib/users-service";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import {
   Dialog,
   DialogContent,
@@ -24,24 +16,41 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Mail } from "lucide-react";
+import {
+  addAllowedEmail,
+  getAllowedEmails,
+} from "@/lib/allowed-emails-service";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { getUsersByEmails } from "@/lib/users-service";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const addEmailSchema = z.object({
-  emails: z.string().min(1, "Please enter at least one email address").refine((value) => {
-    const emailList = value.split('\n').map(email => email.trim()).filter(email => email.length > 0);
-    if (emailList.length === 0) return false;
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const invalidEmails = emailList.filter(email => !emailRegex.test(email));
-    
-    return invalidEmails.length === 0;
-  }, "All email addresses must be valid"),
+  emails: z
+    .string()
+    .min(1, "Please enter at least one email address")
+    .refine((value) => {
+      const emailList = value
+        .split("\n")
+        .map((email) => email.trim())
+        .filter((email) => email.length > 0);
+      if (emailList.length === 0) return false;
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const invalidEmails = emailList.filter(
+        (email) => !emailRegex.test(email)
+      );
+
+      return invalidEmails.length === 0;
+    }, "All email addresses must be valid"),
 });
 
 type AddEmailFormData = z.infer<typeof addEmailSchema>;
@@ -66,31 +75,33 @@ export function AddEmailDialog({ open, onOpenChange }: AddEmailDialogProps) {
   const addEmailMutation = useMutation({
     mutationFn: async (data: AddEmailFormData) => {
       if (!currentUser) throw new Error("No current user");
-      
+
       // Parse emails from textarea (one per line)
       const emailList = data.emails
-        .split('\n')
-        .map(email => email.trim())
-        .filter(email => email.length > 0);
-      
+        .split("\n")
+        .map((email) => email.trim())
+        .filter((email) => email.length > 0);
+
       // Emails are already validated by the schema, so we can use them directly
       const validEmails = emailList;
-      
+
       // Get existing allowed emails to check for duplicates
       const existingAllowedEmailsResponse = await getAllowedEmails();
-      const existingAllowedEmails = existingAllowedEmailsResponse.emails.map(e => e.email.toLowerCase());
-      
+      const existingAllowedEmails = existingAllowedEmailsResponse.emails.map(
+        (e) => e.email.toLowerCase()
+      );
+
       // Get existing user accounts to check for registered users
       const existingUserEmails = await getUsersByEmails(validEmails);
-      
+
       // Categorize emails
       const newEmails: string[] = [];
       const existingAllowedEmailList: string[] = [];
       const existingUserEmailList: string[] = [];
-      
+
       for (const email of validEmails) {
         const emailLower = email.toLowerCase();
-        
+
         if (existingAllowedEmails.includes(emailLower)) {
           existingAllowedEmailList.push(email);
         } else if (existingUserEmails.includes(emailLower)) {
@@ -99,41 +110,51 @@ export function AddEmailDialog({ open, onOpenChange }: AddEmailDialogProps) {
           newEmails.push(email);
         }
       }
-      
+
       // Add only new emails (not in allowed list and not registered users)
       for (const email of newEmails) {
         await addAllowedEmail(email, currentUser.uid);
       }
-      
+
       return {
         added: newEmails,
         existingAllowed: existingAllowedEmailList,
         existingUsers: existingUserEmailList,
-        total: validEmails.length
+        total: validEmails.length,
       };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["allowedEmails"] });
       onOpenChange(false);
       form.reset();
-      
+
       // Build description with only relevant information
       const descriptions: string[] = [];
-      
+
       if (result.added.length > 0) {
-        descriptions.push(t("allowedEmails.bulkAddSuccessDesc", { count: result.added.length }));
+        descriptions.push(
+          t("allowedEmails.bulkAddSuccessDesc", { count: result.added.length })
+        );
       }
-      
+
       if (result.existingAllowed.length > 0) {
-        descriptions.push(t("allowedEmails.bulkAddAlreadyInListDesc", { count: result.existingAllowed.length }));
+        descriptions.push(
+          t("allowedEmails.bulkAddAlreadyInListDesc", {
+            count: result.existingAllowed.length,
+          })
+        );
       }
-      
+
       if (result.existingUsers.length > 0) {
-        descriptions.push(t("allowedEmails.bulkAddAlreadyRegisteredDesc", { count: result.existingUsers.length }));
+        descriptions.push(
+          t("allowedEmails.bulkAddAlreadyRegisteredDesc", {
+            count: result.existingUsers.length,
+          })
+        );
       }
-      
+
       const description = descriptions.join(" ");
-      
+
       if (result.added.length > 0) {
         // Some or all emails were added successfully
         toast.success(t("allowedEmails.bulkAddSuccess"), {
@@ -149,8 +170,7 @@ export function AddEmailDialog({ open, onOpenChange }: AddEmailDialogProps) {
     onError: (error) => {
       console.error("Error adding emails:", error);
       toast.error(t("allowedEmails.bulkAddFailed"), {
-        description:
-          "Please check your email addresses and try again.",
+        description: "Please check your email addresses and try again.",
       });
     },
   });
@@ -201,10 +221,7 @@ export function AddEmailDialog({ open, onOpenChange }: AddEmailDialogProps) {
               >
                 {t("common.cancel")}
               </Button>
-              <Button
-                type="submit"
-                disabled={addEmailMutation.isPending}
-              >
+              <Button type="submit" disabled={addEmailMutation.isPending}>
                 {addEmailMutation.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
@@ -216,4 +233,4 @@ export function AddEmailDialog({ open, onOpenChange }: AddEmailDialogProps) {
       </DialogContent>
     </Dialog>
   );
-} 
+}

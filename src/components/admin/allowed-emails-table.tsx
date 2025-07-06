@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Trash2, Plus, Check } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -40,13 +40,13 @@ interface AllowedEmailsTableProps {
 const createAllowedEmailsColumns = ({
   onRemoveEmail,
   t,
-  rowSelection,
-  setRowSelection,
 }: {
   onRemoveEmail: (email: AllowedEmailWithId) => void;
   t: (key: string) => string;
   rowSelection: Record<string, boolean>;
-  setRowSelection: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setRowSelection: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
 }): ColumnDef<AllowedEmailWithId>[] => {
   return [
     {
@@ -109,15 +109,15 @@ const createAllowedEmailsColumns = ({
   ];
 };
 
-export function AllowedEmailsTable({
-  onAddEmail,
-  onRemoveEmail,
-}: AllowedEmailsTableProps) {
+export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({});
+  const [rowSelection, setRowSelection] = React.useState<
+    Record<string, boolean>
+  >({});
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [emailToDelete, setEmailToDelete] = React.useState<AllowedEmailWithId | null>(null);
+  const [emailToDelete, setEmailToDelete] =
+    React.useState<AllowedEmailWithId | null>(null);
 
   // Fetch allowed emails
   const {
@@ -292,11 +292,13 @@ export function AllowedEmailsTable({
         title={t("allowedEmails.removeEmail")}
         description={
           emailToDelete
-            ? t("allowedEmails.removeEmailConfirmation", { email: emailToDelete.email })
+            ? t("allowedEmails.removeEmailConfirmation", {
+                email: emailToDelete.email,
+              })
             : ""
         }
         isLoading={removeEmailMutation.isPending}
       />
     </div>
   );
-} 
+}

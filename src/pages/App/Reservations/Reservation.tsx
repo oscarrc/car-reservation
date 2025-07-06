@@ -1,25 +1,24 @@
 "use client";
 
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { XCircle } from "lucide-react";
-import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { Button } from "@/components/ui/button";
-import { SectionHeader } from "@/components/ui/section-header";
+import { CancellationConfirmationDialog } from "@/components/ui/cancellation-confirmation-dialog";
+import { CarInfoCard } from "@/components/cars/car-info-card";
+import { CarInfoSkeleton } from "@/components/cars/car-info-skeleton";
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { ReservationDetailsCard } from "@/components/reservations/reservation-details-card";
 import { ReservationDetailsSkeleton } from "@/components/reservations/reservation-details-skeleton";
-import { CarInfoCard } from "@/components/cars/car-info-card";
-import { CarInfoSkeleton } from "@/components/cars/car-info-skeleton";
-import { CancellationConfirmationDialog } from "@/components/ui/cancellation-confirmation-dialog";
-import { fetchReservationById } from "@/lib/reservations-service";
+import { SectionHeader } from "@/components/ui/section-header";
+import { XCircle } from "lucide-react";
 import { fetchCarById } from "@/lib/cars-service";
+import { fetchReservationById } from "@/lib/reservations-service";
 import { requestCancellation } from "@/lib/reservations-service";
-import { useSettings } from "@/contexts/SettingsContext";
-import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function AppReservationPage() {
   const { reservationId } = useParams<{ reservationId: string }>();
@@ -31,11 +30,11 @@ export default function AppReservationPage() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   // Fetch reservation details
-  const { 
-    data: reservation, 
-    isLoading: reservationLoading, 
+  const {
+    data: reservation,
+    isLoading: reservationLoading,
     error: reservationError,
-    refetch: refetchReservation
+    refetch: refetchReservation,
   } = useQuery({
     queryKey: ["reservation", reservationId],
     queryFn: () => fetchReservationById(reservationId!),
@@ -43,11 +42,11 @@ export default function AppReservationPage() {
   });
 
   // Fetch car details
-  const { 
-    data: car, 
+  const {
+    data: car,
     isLoading: carLoading,
     error: carError,
-    refetch: refetchCar
+    refetch: refetchCar,
   } = useQuery({
     queryKey: ["car", reservation?.carRef?.id],
     queryFn: () => fetchCarById(reservation!.carRef.id),
@@ -64,7 +63,7 @@ export default function AppReservationPage() {
     },
     onSuccess: (result) => {
       const selectedCar = car;
-      
+
       if (result.status === "cancelled") {
         toast.success(t("reservations.reservationCancelled"), {
           description: t("reservations.reservationCancelledDesc", {
@@ -80,9 +79,13 @@ export default function AppReservationPage() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["userReservations"] });
-      queryClient.invalidateQueries({ queryKey: ["reservation", reservationId] });
+      queryClient.invalidateQueries({
+        queryKey: ["reservation", reservationId],
+      });
       queryClient.invalidateQueries({ queryKey: ["activeReservationsCount"] });
-      queryClient.invalidateQueries({ queryKey: ["availableCarsForDateRange"] });
+      queryClient.invalidateQueries({
+        queryKey: ["availableCarsForDateRange"],
+      });
       navigate("/app/reservations");
     },
     onError: (error) => {
@@ -94,7 +97,8 @@ export default function AppReservationPage() {
   });
 
   // Check if user can cancel this reservation
-  const canCancel = reservation && 
+  const canCancel =
+    reservation &&
     ["pending", "confirmed"].includes(reservation.status) &&
     reservation.userRef.id === currentUser?.uid;
 
@@ -161,10 +165,15 @@ export default function AppReservationPage() {
         />
         <div className="px-4 lg:px-6">
           <ErrorDisplay
-            error={reservationError || carError || new Error("Reservation not found")}
+            error={
+              reservationError || carError || new Error("Reservation not found")
+            }
             onRetry={handleRetry}
             title={t("reservations.reservationNotFound")}
-            description={t("reservations.reservationNotFoundDesc", "Unable to load reservation details. Please try again.")}
+            description={t(
+              "reservations.reservationNotFoundDesc",
+              "Unable to load reservation details. Please try again."
+            )}
             showHomeButton={false}
           />
         </div>
@@ -202,7 +211,7 @@ export default function AppReservationPage() {
         onConfirm={handleCancelConfirm}
         title={t("reservations.cancelReservation")}
         description={
-          settings?.autoCancelation 
+          settings?.autoCancelation
             ? t("reservations.cancelReservationConfirmAuto")
             : t("reservations.cancelReservationConfirmManual")
         }

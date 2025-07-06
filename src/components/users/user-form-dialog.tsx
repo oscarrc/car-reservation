@@ -1,8 +1,5 @@
 "use client";
 
-import type {
-  UpdateUserData,
-} from "@/lib/user-management-service";
 import {
   Dialog,
   DialogContent,
@@ -27,19 +24,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateUser } from "@/lib/user-management-service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
+import type { UpdateUserData } from "@/lib/user-management-service";
 import type { UserProfileWithId } from "@/lib/users-service";
 import { toast } from "sonner";
+import { updateUser } from "@/lib/user-management-service";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslation } from "react-i18next";
 
 const editUserSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -57,8 +55,6 @@ interface UserFormDialogProps {
   user?: UserProfileWithId | null;
   mode: "edit";
 }
-
-
 
 function EditUserForm({
   user,
@@ -90,7 +86,9 @@ function EditUserForm({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", user.id] });
-      queryClient.invalidateQueries({ queryKey: ["userReservations", user.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["userReservations", user.id],
+      });
       onOpenChange(false);
       toast.success(t("users.userUpdatedSuccessfully"), {
         description: `${form.getValues(
@@ -179,8 +177,8 @@ function EditUserForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("users.status")} *</FormLabel>
-                <Select 
-                  onValueChange={(value) => field.onChange(value === "true")} 
+                <Select
+                  onValueChange={(value) => field.onChange(value === "true")}
                   value={field.value ? "true" : "false"}
                 >
                   <FormControl>
@@ -247,7 +245,6 @@ export function UserFormDialog({
   open,
   onOpenChange,
   user,
-  mode,
 }: UserFormDialogProps) {
   const { t } = useTranslation();
 
@@ -259,9 +256,7 @@ export function UserFormDialog({
           <DialogDescription>{t("users.editUserDesc")}</DialogDescription>
         </DialogHeader>
 
-        {user ? (
-          <EditUserForm user={user} onOpenChange={onOpenChange} />
-        ) : null}
+        {user ? <EditUserForm user={user} onOpenChange={onOpenChange} /> : null}
       </DialogContent>
     </Dialog>
   );
