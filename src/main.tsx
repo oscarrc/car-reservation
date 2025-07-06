@@ -12,6 +12,7 @@ import AppPage from "./pages/App/index.tsx";
 import AppReservationPage from "./pages/App/Reservations/Reservation.tsx";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
 import CarPage from "./pages/Admin/Fleet/Car.tsx";
+import Email from "./pages/Auth/Email.tsx";
 import FleetPage from "./pages/Admin/Fleet/index.tsx";
 import Forgot from "./pages/Auth/Forgot.tsx";
 import Login from "./pages/Auth/Login.tsx";
@@ -72,6 +73,10 @@ const router = createBrowserRouter([
       {
         path: "verify",
         element: <Verify />,
+      },
+      {
+        path: "email",
+        element: <Email />,
       },
     ],
   },

@@ -8,6 +8,7 @@ import AppPage from "./pages/App";
 import AppReservationPage from "./pages/App/Reservations/Reservation";
 import { AuthProvider } from "./contexts/AuthContext";
 import CarPage from "./pages/Admin/Fleet/Car";
+import EmailPage from "./pages/Auth/Email";
 import FleetPage from "./pages/Admin/Fleet";
 import ForgotPage from "./pages/Auth/Forgot";
 import LoginPage from "./pages/Auth/Login";
@@ -41,6 +42,7 @@ const App = () => {
               <Route path="forgot" element={<ForgotPage />} />
               <Route path="reset" element={<ResetPage />} />
               <Route path="verify" element={<VerifyPage />} />
+              <Route path="email" element={<EmailPage />} />
             </Route>
             <Route
               path="/admin"

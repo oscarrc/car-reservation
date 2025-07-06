@@ -1,11 +1,4 @@
-import { Link, Navigate, useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { applyActionCode, checkActionCode } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { useAuth } from "@/contexts/AuthContext";
-import { useTranslation } from "react-i18next";
-import { CarFront, CheckCircle, XCircle, Mail, RefreshCw } from "lucide-react";
-
+import { CarFront, CheckCircle, Mail, RefreshCw, XCircle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,50 +6,47 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { applyActionCode, checkActionCode } from "firebase/auth";
+import { useEffect, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { auth } from "@/lib/firebase";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const Verify = () => {
-  const { currentUser, userProfile, sendVerificationEmail, refreshUser } = useAuth();
+  const { currentUser, userProfile, sendVerificationEmail, refreshUser } =
+    useAuth();
   const [searchParams] = useSearchParams();
-  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'success' | 'error' | 'loading'>('pending');
+  const [verificationStatus, setVerificationStatus] = useState<
+    "pending" | "success" | "error" | "loading"
+  >("pending");
   const [errorMessage, setErrorMessage] = useState("");
   const [isResending, setIsResending] = useState(false);
   const { t } = useTranslation();
 
-  // If user is already logged in and verified, redirect to app
-  if (currentUser && currentUser.emailVerified) {
-    if (userProfile?.role === "admin") {
-      return <Navigate to="/admin" />;
-    }
-    return <Navigate to="/app" />;
-  }
-
-  // If no user is logged in, redirect to login
-  if (!currentUser) {
-    return <Navigate to="/auth" />;
-  }
-
   useEffect(() => {
     const handleEmailVerification = async () => {
-      const oobCode = searchParams.get('oobCode');
-      
+      const oobCode = searchParams.get("oobCode");
+
       if (oobCode) {
-        setVerificationStatus('loading');
+        setVerificationStatus("loading");
         try {
           // Check if the action code is valid
           await checkActionCode(auth, oobCode);
-          
+
           // Apply the action code (verify email)
           await applyActionCode(auth, oobCode);
-          
+
           // Refresh the user to get updated emailVerified status
           await refreshUser();
-          
-          setVerificationStatus('success');
+
+          setVerificationStatus("success");
         } catch (error) {
-          console.error('Email verification error:', error);
-          setVerificationStatus('error');
+          console.error("Email verification error:", error);
+          setVerificationStatus("error");
           setErrorMessage(t("auth.emailVerificationFailed"));
         }
       }
@@ -69,9 +59,9 @@ const Verify = () => {
     setIsResending(true);
     try {
       await sendVerificationEmail();
-      setVerificationStatus('pending');
+      setVerificationStatus("pending");
     } catch (error) {
-      console.error('Error resending verification email:', error);
+      console.error("Error resending verification email:", error);
       setErrorMessage(t("auth.emailVerificationFailed"));
     } finally {
       setIsResending(false);
@@ -82,16 +72,16 @@ const Verify = () => {
     try {
       await refreshUser();
       if (currentUser?.emailVerified) {
-        setVerificationStatus('success');
+        setVerificationStatus("success");
       }
     } catch (error) {
-      console.error('Error refreshing user status:', error);
+      console.error("Error refreshing user status:", error);
     }
   };
 
   const renderContent = () => {
     switch (verificationStatus) {
-      case 'loading':
+      case "loading":
         return (
           <div className="text-center space-y-4">
             <div className="animate-spin mx-auto w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
@@ -99,7 +89,7 @@ const Verify = () => {
           </div>
         );
 
-      case 'success':
+      case "success":
         return (
           <div className="text-center space-y-4">
             <CheckCircle className="mx-auto w-12 h-12 text-green-500" />
@@ -111,8 +101,11 @@ const Verify = () => {
                 {t("auth.emailVerificationSuccessSubtitle")}
               </p>
             </div>
-            <Button 
-              onClick={() => window.location.href = userProfile?.role === "admin" ? "/admin" : "/app"}
+            <Button
+              onClick={() =>
+                (window.location.href =
+                  userProfile?.role === "admin" ? "/admin" : "/app")
+              }
               className="w-full"
             >
               {t("auth.continueToDashboard")}
@@ -120,7 +113,7 @@ const Verify = () => {
           </div>
         );
 
-      case 'error':
+      case "error":
         return (
           <div className="text-center space-y-4">
             <XCircle className="mx-auto w-12 h-12 text-red-500" />
@@ -132,7 +125,7 @@ const Verify = () => {
                 {errorMessage || t("auth.emailVerificationErrorSubtitle")}
               </p>
             </div>
-            <Button 
+            <Button
               onClick={handleResendVerification}
               disabled={isResending}
               className="w-full"
@@ -151,15 +144,16 @@ const Verify = () => {
                 {t("auth.emailVerificationPending")}
               </h3>
               <p className="text-sm text-muted-foreground mt-2">
-                {t("auth.emailVerificationPendingSubtitle")} <strong>{currentUser.email}</strong>
+                {t("auth.emailVerificationPendingSubtitle")}{" "}
+                <strong>{currentUser?.email}</strong>
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 {t("auth.emailVerificationInstructions")}
               </p>
             </div>
-            
+
             <div className="space-y-3">
-              <Button 
+              <Button
                 onClick={handleRefreshStatus}
                 variant="outline"
                 className="w-full"
@@ -167,13 +161,15 @@ const Verify = () => {
                 <RefreshCw className="w-4 h-4 mr-2" />
                 {t("auth.checkVerificationStatus")}
               </Button>
-              
-              <Button 
+
+              <Button
                 onClick={handleResendVerification}
                 disabled={isResending}
                 className="w-full"
               >
-                {isResending ? t("common.loading") : t("auth.resendVerification")}
+                {isResending
+                  ? t("common.loading")
+                  : t("auth.resendVerification")}
               </Button>
             </div>
 
@@ -187,6 +183,19 @@ const Verify = () => {
         );
     }
   };
+
+  // If user is already logged in and verified, redirect to app
+  if (currentUser && currentUser.emailVerified) {
+    if (userProfile?.role === "admin") {
+      return <Navigate to="/admin" />;
+    }
+    return <Navigate to="/app" />;
+  }
+
+  // If no user is logged in, redirect to login
+  if (!currentUser) {
+    return <Navigate to="/auth" />;
+  }
 
   return (
     <main className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
@@ -203,17 +212,16 @@ const Verify = () => {
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">{t("auth.emailVerification")}</CardTitle>
+            <CardTitle className="text-xl">
+              {t("auth.emailVerification")}
+            </CardTitle>
             <CardDescription>
-              {verificationStatus === 'success' 
+              {verificationStatus === "success"
                 ? t("auth.emailVerificationSuccessSubtitle")
-                : t("auth.emailVerificationSubtitle")
-              }
+                : t("auth.emailVerificationSubtitle")}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {renderContent()}
-          </CardContent>
+          <CardContent>{renderContent()}</CardContent>
         </Card>
 
         <div className="text-center">
