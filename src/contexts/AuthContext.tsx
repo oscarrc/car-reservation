@@ -16,6 +16,7 @@ import { LoadingScreen } from "@/components/ui/loading-screen";
 import type { User } from "firebase/auth";
 import { saveLanguageToStorage } from "@/i18n";
 import { toast } from "sonner";
+import { isEmailAllowed, updateEmailStatusToRegistered } from "@/lib/allowed-emails-service";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -89,7 +90,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function register(email: string, password: string) {
     // First check if email is allowed
-    const { isEmailAllowed, updateEmailStatusToRegistered } = await import("@/lib/allowed-emails-service");
     const allowed = await isEmailAllowed(email);
 
     if (!allowed) {
