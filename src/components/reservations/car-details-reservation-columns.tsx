@@ -1,12 +1,11 @@
 "use client";
 
+import { Edit, Eye } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Edit, Eye, MoreHorizontal } from "lucide-react";
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -125,33 +124,52 @@ export function createCarDetailsReservationColumns({
     },
     {
       id: "actions",
-      header: () => t("common.actions"),
       cell: ({ row }) => {
         const reservation = row.original;
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">{t("common.actions")}</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link to={`/admin/reservations/${reservation.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  {t("reservations.viewDetails")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onEdit?.(reservation)}
-                disabled={!onEdit}
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                {t("reservations.editDetails")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="h-8 w-8 p-0"
+                >
+                  <Link to={`/admin/reservations/${reservation.id}`}>
+                    <Eye className="h-4 w-4" />
+                    <span className="sr-only">
+                      {t("reservations.viewDetails")}
+                    </span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("reservations.viewDetails")}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {onEdit && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEdit(reservation)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit className="h-4 w-4" />
+                    <span className="sr-only">
+                      {t("reservations.editDetails")}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t("reservations.editDetails")}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         );
       },
       enableSorting: false,

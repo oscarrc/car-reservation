@@ -1,22 +1,19 @@
 "use client";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit, Eye, Trash2 } from "lucide-react";
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { format, getLocalizedFormats } from "@/lib/date-locale";
-import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import type { CarWithId } from "@/types/car";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Link } from "react-router-dom";
 import { StatusSelect } from "@/components/ui/status-select";
 import type { UserProfileWithId } from "@/lib/users-service";
 
@@ -31,6 +28,7 @@ export interface ReservationWithCarAndUser extends ReservationWithId {
 export function createAdminColumns({
   onStatusChange,
   onEdit,
+  onDelete,
   isUpdatingStatus,
   t,
 }: {
@@ -39,6 +37,7 @@ export function createAdminColumns({
     status: ReservationStatus
   ) => void;
   onEdit?: (reservation: ReservationWithCarAndUser) => void;
+  onDelete?: (reservation: ReservationWithCarAndUser) => void;
   isUpdatingStatus?: boolean;
   t: (key: string) => string;
 }): ColumnDef<ReservationWithCarAndUser>[] {
@@ -168,39 +167,73 @@ export function createAdminColumns({
     },
     {
       id: "actions",
-      header: () => t("common.actions"),
       cell: ({ row }) => {
         const reservation = row.original;
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">{t("common.actions")}</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link to={`/admin/reservations/${reservation.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  {t("reservations.viewDetails")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onEdit?.(reservation)}
-                disabled={!onEdit}
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                {t("reservations.editDetails")}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive focus:text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                {t("reservations.deleteReservation")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="h-8 w-8 p-0"
+                >
+                  <Link to={`/admin/reservations/${reservation.id}`}>
+                    <Eye className="h-4 w-4" />
+                    <span className="sr-only">
+                      {t("reservations.viewDetails")}
+                    </span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("reservations.viewDetails")}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {onEdit && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEdit(reservation)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit className="h-4 w-4" />
+                    <span className="sr-only">
+                      {t("reservations.editDetails")}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t("reservations.editDetails")}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {onDelete && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDelete(reservation)}
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">
+                      {t("reservations.deleteReservation")}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t("reservations.deleteReservation")}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         );
       },
       enableSorting: false,

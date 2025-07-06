@@ -12,8 +12,11 @@ import {
 } from "@/components/ui/table";
 import {
   getAllowedEmails,
+  getAllowedEmailsCount,
   removeAllowedEmail,
   type AllowedEmailWithId,
+  type PaginationCursor,
+  type AllowedEmailsFilterParams,
 } from "@/lib/allowed-emails-service";
 import {
   flexRender,
@@ -27,6 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ColumnSelector } from "@/components/ui/column-selector";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { ErrorDisplay } from "@/components/ui/error-display";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -118,16 +122,46 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [emailToDelete, setEmailToDelete] =
     React.useState<AllowedEmailWithId | null>(null);
+  const [pageIndex, setPageIndex] = React.useState(0);
+  const [pageSize, setPageSize] = React.useState(25);
+  const [cursors, setCursors] = React.useState<{
+    [key: number]: PaginationCursor;
+  }>({});
 
-  // Fetch allowed emails
+  // Filter params for count query (without pagination params)
+  const filterParams: AllowedEmailsFilterParams = {};
+
+  // Fetch allowed emails with React Query
   const {
     data: emailsResponse,
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["allowedEmails"],
-    queryFn: getAllowedEmails,
+    queryKey: ["allowedEmails", pageIndex, pageSize],
+    queryFn: async () => {
+      const cursor = cursors[pageIndex];
+      const queryParams = {
+        pageSize,
+        pageIndex,
+        cursor,
+      };
+
+      return getAllowedEmails(queryParams);
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Fetch total count (separate query that only invalidates when filters change)
+  const {
+    data: totalCount,
+    isLoading: countLoading,
+    error: countError,
+  } = useQuery({
+    queryKey: ["allowedEmails", "count", filterParams],
+    queryFn: async () => {
+      return getAllowedEmailsCount(filterParams);
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -137,6 +171,7 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["allowedEmails"] });
+      queryClient.invalidateQueries({ queryKey: ["allowedEmails", "count"] });
       toast.success(t("allowedEmails.emailRemoved"));
       setDeleteDialogOpen(false);
       setEmailToDelete(null);
@@ -161,6 +196,20 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
   };
 
   const data = emailsResponse?.emails || [];
+  const totalRows = totalCount || 0;
+  
+  // Update cursor cache when new data is fetched
+  React.useEffect(() => {
+    if (emailsResponse?.pagination?.endCursor && pageIndex >= 0) {
+      setCursors((prev) => ({
+        ...prev,
+        [pageIndex + 1]: {
+          docSnapshot: emailsResponse.pagination.endCursor!,
+          direction: "forward",
+        },
+      }));
+    }
+  }, [emailsResponse?.pagination?.endCursor, pageIndex]);
 
   // Create columns
   const columns = createAllowedEmailsColumns({
@@ -178,7 +227,14 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
     state: {
       rowSelection,
     },
+    manualPagination: true,
+    pageCount: Math.ceil(totalRows / pageSize),
   });
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setPageIndex(0);
+  };
 
   if (error) {
     return (
@@ -283,6 +339,35 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      <TablePagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        totalRows={countError ? 0 : totalRows}
+        selectedCount={table.getFilteredSelectedRowModel().rows.length}
+        onPageChange={setPageIndex}
+        onPageSizeChange={handlePageSizeChange}
+        onFirstPage={() => {
+          setPageIndex(0);
+          setCursors({});
+        }}
+        onPreviousPage={() => {
+          const newPageIndex = Math.max(0, pageIndex - 1);
+          setPageIndex(newPageIndex);
+        }}
+        onNextPage={() => {
+          setPageIndex(pageIndex + 1);
+        }}
+        onLastPage={() => {
+          if (totalCount) {
+            const lastPageIndex = Math.ceil(totalCount / pageSize) - 1;
+            setPageIndex(lastPageIndex);
+          }
+        }}
+        countError={countError}
+        countLoading={countLoading}
+      />
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog

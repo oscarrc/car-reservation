@@ -1,21 +1,11 @@
 "use client";
 
+import { ArrowUpDown, Edit, Eye, UserCheck, UserX } from "lucide-react";
 import {
-  ArrowUpDown,
-  Edit,
-  Eye,
-  MoreHorizontal,
-  UserCheck,
-  UserX,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import type { AuthUser } from "@/types/user";
 import { Badge } from "@/components/ui/badge";
@@ -142,58 +132,90 @@ export const createUserColumns = ({
         const isCurrentUser = authUser?.uid === user.id;
 
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                <span className="sr-only">{t("table.openMenu")}</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link to={`/admin/users/${user.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  {t("users.userDetails")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onEditUser(user)}
-                className="cursor-pointer"
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                {t("users.editUser")}
-              </DropdownMenuItem>
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="h-8 w-8 p-0"
+                >
+                  <Link to={`/admin/users/${user.id}`}>
+                    <Eye className="h-4 w-4" />
+                    <span className="sr-only">{t("users.userDetails")}</span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("users.userDetails")}</p>
+              </TooltipContent>
+            </Tooltip>
 
-              {/* Suspend/Unsuspend actions - only if not current user */}
-              {!isCurrentUser && (
-                <>
-                  <DropdownMenuSeparator />
-                  {user.suspended
-                    ? onUnsuspendUser && (
-                        <DropdownMenuItem
-                          onClick={() => onUnsuspendUser(user)}
-                          className="cursor-pointer"
-                        >
-                          <UserCheck className="mr-2 h-4 w-4" />
-                          {t("users.unsuspendUser")}
-                        </DropdownMenuItem>
-                      )
-                    : onSuspendUser && (
-                        <DropdownMenuItem
-                          onClick={() => onSuspendUser(user)}
-                          className="cursor-pointer text-orange-600"
-                        >
-                          <UserX className="mr-2 h-4 w-4" />
-                          {t("users.suspendUser")}
-                        </DropdownMenuItem>
-                      )}
-                </>
-              )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEditUser(user)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Edit className="h-4 w-4" />
+                  <span className="sr-only">{t("users.editUser")}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("users.editUser")}</p>
+              </TooltipContent>
+            </Tooltip>
 
-
-            </DropdownMenuContent>
-          </DropdownMenu>
+            {/* Suspend/Unsuspend actions - only if not current user */}
+            {!isCurrentUser && (
+              <>
+                {user.suspended
+                  ? onUnsuspendUser && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onUnsuspendUser(user)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <UserCheck className="h-4 w-4" />
+                            <span className="sr-only">
+                              {t("users.unsuspendUser")}
+                            </span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t("users.unsuspendUser")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  : onSuspendUser && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onSuspendUser(user)}
+                            className="h-8 w-8 p-0 text-orange-600 hover:text-orange-700"
+                          >
+                            <UserX className="h-4 w-4" />
+                            <span className="sr-only">
+                              {t("users.suspendUser")}
+                            </span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t("users.suspendUser")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+              </>
+            )}
+          </div>
         );
       },
     },

@@ -1,14 +1,12 @@
 "use client";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Eye, MoreHorizontal, XCircle } from "lucide-react";
+import { Eye, XCircle } from "lucide-react";
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { format, getLocalizedFormats } from "@/lib/date-locale";
 
 import { Badge } from "@/components/ui/badge";
@@ -161,40 +159,54 @@ export function createUserColumns({
     },
     {
       id: "actions",
-      header: () => t("common.actions"),
       cell: ({ row }) => {
         const reservation = row.original;
         const canCancel = ["pending", "confirmed"].includes(reservation.status);
 
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">{t("common.actions")}</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link to={`/app/reservations/${reservation.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  {t("reservations.viewDetails")}
-                </Link>
-              </DropdownMenuItem>
-              {onCancel && canCancel && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="h-8 w-8 p-0"
+                >
+                  <Link to={`/app/reservations/${reservation.id}`}>
+                    <Eye className="h-4 w-4" />
+                    <span className="sr-only">
+                      {t("reservations.viewDetails")}
+                    </span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("reservations.viewDetails")}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {onCancel && canCancel && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => onCancel(reservation)}
-                    className="text-destructive focus:text-destructive"
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                   >
-                    <XCircle className="mr-2 h-4 w-4" />
-                    {t("reservations.cancelReservation")}
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                    <XCircle className="h-4 w-4" />
+                    <span className="sr-only">
+                      {t("reservations.cancelReservation")}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t("reservations.cancelReservation")}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         );
       },
       enableSorting: false,

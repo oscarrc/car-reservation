@@ -7,8 +7,13 @@ import {
   query,
   where,
   orderBy,
+  limit,
+  startAfter,
+  endBefore,
+  getCountFromServer,
   type QueryDocumentSnapshot,
   type DocumentData,
+  type QueryConstraint,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { AllowedEmail } from '@/types/user';
@@ -17,14 +22,75 @@ export interface AllowedEmailWithId extends AllowedEmail {
   id: string;
 }
 
+// Common pagination interfaces (matching other services)
+export interface PaginationCursor {
+  docSnapshot: QueryDocumentSnapshot<DocumentData>;
+  direction: 'forward' | 'backward';
+}
+
+export interface PaginationState {
+  pageIndex: number;
+  pageSize: number;
+  startCursor?: QueryDocumentSnapshot<DocumentData>;
+  endCursor?: QueryDocumentSnapshot<DocumentData>;
+}
+
 export interface AllowedEmailsResponse {
   emails: AllowedEmailWithId[];
-  pagination: {
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-    endCursor?: QueryDocumentSnapshot<DocumentData>;
-    startCursor?: QueryDocumentSnapshot<DocumentData>;
-  };
+  pagination: PaginationState;
+}
+
+export interface AllowedEmailsQueryParams {
+  pageSize?: number;
+  pageIndex?: number;
+  cursor?: PaginationCursor;
+  orderBy?: 'email' | 'timestamp';
+  orderDirection?: 'asc' | 'desc';
+}
+
+export interface AllowedEmailsFilterParams {
+  orderBy?: 'email' | 'timestamp';
+  orderDirection?: 'asc' | 'desc';
+}
+
+// Helper function to build query constraints
+function buildAllowedEmailsQueryConstraints(params: AllowedEmailsQueryParams): QueryConstraint[] {
+  const constraints: QueryConstraint[] = [];
+
+  // Add ordering
+  const orderField = params.orderBy || 'timestamp';
+  const orderDir = params.orderDirection || 'desc';
+  constraints.push(orderBy(orderField, orderDir));
+
+  return constraints;
+}
+
+// Helper function to build filter constraints for count queries
+function buildAllowedEmailsFilterConstraints(params: AllowedEmailsFilterParams): QueryConstraint[] {
+  const constraints: QueryConstraint[] = [];
+
+  // Add ordering for consistent results
+  const orderField = params.orderBy || 'timestamp';
+  const orderDir = params.orderDirection || 'desc';
+  constraints.push(orderBy(orderField, orderDir));
+
+  return constraints;
+}
+
+// Get total count
+export async function getAllowedEmailsCount(params: AllowedEmailsFilterParams = {}): Promise<number> {
+  try {
+    const allowedEmailsCollection = collection(db, 'allowedEmails');
+    const constraints = buildAllowedEmailsFilterConstraints(params);
+    
+    const countQuery = query(allowedEmailsCollection, ...constraints);
+    const countSnapshot = await getCountFromServer(countQuery);
+    
+    return countSnapshot.data().count;
+  } catch (error) {
+    console.error('Error getting allowed emails count:', error);
+    throw error;
+  }
 }
 
 /**
@@ -60,19 +126,38 @@ export async function removeAllowedEmail(emailId: string): Promise<void> {
 }
 
 /**
- * Get all allowed emails
+ * Get all allowed emails with pagination
  */
-export async function getAllowedEmails(): Promise<AllowedEmailsResponse> {
+export async function getAllowedEmails(params: AllowedEmailsQueryParams = {}): Promise<AllowedEmailsResponse> {
   try {
-    const q = query(
-      collection(db, 'allowedEmails'),
-      orderBy('timestamp', 'desc')
-    );
+    const {
+      pageSize = 25,
+      pageIndex = 0,
+      cursor,
+    } = params;
+
+    const allowedEmailsCollection = collection(db, 'allowedEmails');
+    const constraints = buildAllowedEmailsQueryConstraints(params);
     
+    // Add cursor pagination
+    if (cursor) {
+      if (cursor.direction === 'forward') {
+        constraints.push(startAfter(cursor.docSnapshot));
+      } else {
+        constraints.push(endBefore(cursor.docSnapshot));
+      }
+    }
+    
+    constraints.push(limit(pageSize + 1)); // Get one extra to check if there are more
+
+    const q = query(allowedEmailsCollection, ...constraints);
     const querySnapshot = await getDocs(q);
+    
+    const docs = querySnapshot.docs;
     const emails: AllowedEmailWithId[] = [];
     
-    querySnapshot.forEach((doc) => {
+    // Process documents (exclude the extra one used for pagination check)
+    docs.slice(0, pageSize).forEach((doc) => {
       const data = doc.data();
       emails.push({
         id: doc.id,
@@ -82,12 +167,18 @@ export async function getAllowedEmails(): Promise<AllowedEmailsResponse> {
       });
     });
 
+    // Calculate pagination state
+    const startCursor = docs.length > 0 ? docs[0] : undefined;
+    const endCursor = docs.length > 0 ? docs[Math.min(pageSize - 1, docs.length - 1)] : undefined;
+
     return {
       emails,
       pagination: {
-        hasNextPage: false,
-        hasPreviousPage: false,
-      },
+        pageIndex,
+        pageSize,
+        startCursor,
+        endCursor
+      }
     };
   } catch (error) {
     console.error('Error fetching allowed emails:', error);

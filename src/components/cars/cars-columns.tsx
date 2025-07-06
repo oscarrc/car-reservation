@@ -1,15 +1,7 @@
 "use client";
 
 import type { CarStatus, CarWithId } from "@/types/car";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit, Eye, Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -17,6 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -170,40 +167,62 @@ export function createCarColumns({
         const car = row.original;
 
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                <span className="sr-only">{t("table.openMenu")}</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link to={`/admin/fleet/${car.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  {t("fleet.carDetails")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onEditCar(car)}
-                className="cursor-pointer"
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                {t("fleet.editCar")}
-              </DropdownMenuItem>
-              {onDeleteCar && <DropdownMenuSeparator />}
-              {onDeleteCar && (
-                <DropdownMenuItem
-                  onClick={() => onDeleteCar(car)}
-                  className="cursor-pointer text-red-600"
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="h-8 w-8 p-0"
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {t("fleet.deleteCar")}
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <Link to={`/admin/fleet/${car.id}`}>
+                    <Eye className="h-4 w-4" />
+                    <span className="sr-only">{t("fleet.carDetails")}</span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("fleet.carDetails")}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEditCar(car)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Edit className="h-4 w-4" />
+                  <span className="sr-only">{t("fleet.editCar")}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("fleet.editCar")}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {onDeleteCar && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDeleteCar(car)}
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">{t("fleet.deleteCar")}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t("fleet.deleteCar")}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         );
       },
     },
