@@ -13,6 +13,7 @@ import {
 import { CarFront } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
+import { InstallApp } from "@/components/install-app";
 import type { SidebarConfig } from "@/lib/sidebar-config";
 import { useTranslation } from "react-i18next";
 
@@ -79,6 +80,7 @@ export function AppSidebar({
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
+        <InstallApp />
       </SidebarFooter>
     </Sidebar>
   );

@@ -18,6 +18,7 @@ import Login from "./pages/Auth/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import OnboardingLayout from "./layouts/Onboarding.tsx";
 import OnboardingPage from "./pages/App/Onboarding.tsx";
+import { PWAProvider } from "./contexts/PWAContext.tsx";
 import ProfilePage from "./pages/Profile.tsx";
 import Protected from "./layouts/Protected.tsx";
 import Register from "./pages/Auth/Register.tsx";
@@ -173,10 +174,12 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RouterProvider router={router} />
-        <Toaster />
-      </AuthProvider>
+      <PWAProvider>
+        <AuthProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </AuthProvider>
+      </PWAProvider>
     </QueryClientProvider>
   </StrictMode>
 );

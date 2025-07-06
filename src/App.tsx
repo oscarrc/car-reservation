@@ -7,6 +7,7 @@ import AllowedEmailsPage from "./pages/Admin/Users/AllowedEmails";
 import AppPage from "./pages/App";
 import AppReservationPage from "./pages/App/Reservations/Reservation";
 import { AuthProvider } from "./contexts/AuthContext";
+import { PWAProvider } from "./contexts/PWAContext";
 import CarPage from "./pages/Admin/Fleet/Car";
 import FleetPage from "./pages/Admin/Fleet";
 import ForgotPage from "./pages/Auth/Forgot";
@@ -28,8 +29,9 @@ import UsersPage from "./pages/Admin/Users";
 
 const App = () => {
   return (
-    <AuthProvider>
-      <Router>
+    <PWAProvider>
+      <AuthProvider>
+        <Router>
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -100,8 +102,9 @@ const App = () => {
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-      </Router>
-    </AuthProvider>
+        </Router>
+      </AuthProvider>
+    </PWAProvider>
   );
 };
 
