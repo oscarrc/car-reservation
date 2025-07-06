@@ -12,7 +12,7 @@ const NotFound = () => {
   // Determine redirect path based on user role
   const getRedirectPath = () => {
     if (!currentUser || !userProfile) {
-      return "/login";
+      return "/auth";
     }
 
     if (userProfile.role === "admin") {

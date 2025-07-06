@@ -133,7 +133,7 @@ export function RegisterForm({
                 </Button>
                 <p className="text-sm text-muted-foreground text-center">
                   <Link
-                    to="/login"
+                    to="/auth"
                     className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
                   >
                     {t("auth.backToLogin")}

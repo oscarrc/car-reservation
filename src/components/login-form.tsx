@@ -81,7 +81,7 @@ export function LoginForm({
                   <div className="flex items-center">
                     <Label htmlFor="password">{t("auth.password")}</Label>
                     <Link
-                      to="/forgot"
+                      to="/auth/forgot"
                       className="ml-auto text-sm underline-offset-4 hover:underline"
                     >
                       {t("auth.forgotPassword")}
@@ -104,7 +104,7 @@ export function LoginForm({
                 </Button>
                 <p className="text-sm text-muted-foreground text-center">
                   <Link
-                    to="/register"
+                    to="/auth/register"
                     className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
                   >
                     {t("auth.firstTime")}

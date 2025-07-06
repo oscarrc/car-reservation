@@ -111,7 +111,7 @@ const Reset = () => {
       <main className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
         <section className="flex w-full max-w-sm flex-col gap-6">
           <Link
-            to="/login"
+            to="/auth"
             className="flex items-center gap-2 self-center font-medium"
           >
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
@@ -141,7 +141,7 @@ const Reset = () => {
     <main className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <section className="flex w-full max-w-sm flex-col gap-6">
         <Link
-          to="/login"
+          to="/auth"
           className="flex items-center gap-2 self-center font-medium"
         >
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
@@ -168,7 +168,7 @@ const Reset = () => {
                   {error}
                 </div>
                 <Link
-                  to="/forgot"
+                  to="/auth/forgot"
                   className="inline-block text-sm text-primary hover:underline"
                 >
                   {t("auth.requestNewLink")}
@@ -226,7 +226,7 @@ const Reset = () => {
                   )}
                   <div className="text-center">
                     <Link
-                      to="/login"
+                      to="/auth"
                       className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
                     >
                       {message

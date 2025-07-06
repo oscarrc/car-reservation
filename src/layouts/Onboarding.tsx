@@ -13,7 +13,7 @@ function OnboardingLayout() {
   useEffect(() => {
     // If user is not authenticated, redirect to login
     if (!currentUser) {
-      navigate("/auth/login");
+      navigate("/auth");
       return;
     }
   }, [currentUser, navigate]);

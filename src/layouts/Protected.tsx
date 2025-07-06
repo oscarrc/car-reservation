@@ -14,7 +14,7 @@ interface ProtectedProps {
 export default function Protected({
   children,
   requiredRole,
-  fallbackPath = "/login",
+  fallbackPath = "/auth",
 }: ProtectedProps) {
   const { currentUser, userProfile, loading, isProfileComplete } = useAuth();
   const { t } = useTranslation();
@@ -27,7 +27,7 @@ export default function Protected({
 
   // If not authenticated, redirect to login
   if (!currentUser) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/auth" />;
   }
 
   // If authenticated but no profile found, show error

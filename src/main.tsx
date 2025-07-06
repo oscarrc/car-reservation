@@ -32,6 +32,7 @@ import UserFleetPage from "./pages/App/Fleet.tsx";
 import UserPage from "./pages/Admin/Users/User.tsx";
 import UserReservationsPage from "./pages/App/Reservations/index.tsx";
 import UsersPage from "./pages/Admin/Users/index.tsx";
+import Verify from "./pages/Auth/Verify.tsx";
 import { createRoot } from "react-dom/client";
 
 // Create a client
@@ -50,20 +51,29 @@ const router = createBrowserRouter([
     element: <Login />,
   },
   {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/register",
-    element: <Register />,
-  },
-  {
-    path: "/forgot",
-    element: <Forgot />,
-  },
-  {
-    path: "/reset",
-    element: <Reset />,
+    path: "/auth",
+    children: [
+      {
+        index: true,
+        element: <Login />,
+      },
+      {
+        path: "register",
+        element: <Register />,
+      },
+      {
+        path: "forgot",
+        element: <Forgot />,
+      },
+      {
+        path: "reset",
+        element: <Reset />,
+      },
+      {
+        path: "verify",
+        element: <Verify />,
+      },
+    ],
   },
   {
     path: "/admin",
