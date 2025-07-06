@@ -38,6 +38,13 @@ import { TablePagination } from "@/components/ui/table-pagination";
 import { createCarColumns } from "./cars-columns";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CarsTableProps {
   searchTerm?: string;
@@ -65,6 +72,9 @@ export function CarsTable({
   const [cursors, setCursors] = React.useState<{
     [key: number]: PaginationCursor;
   }>({});
+  const [statusFilter, setStatusFilter] = React.useState<"all" | CarStatus>(
+    "all"
+  );
 
   // Debounce search term
   const [debouncedSearchTerm, setDebouncedSearchTerm] =
@@ -115,6 +125,7 @@ export function CarsTable({
   // Filter params for count query (without pagination params)
   const filterParams: CarsFilterParams = {
     searchTerm: debouncedSearchTerm.trim() || undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
   };
 
   // Fetch cars with React Query
@@ -124,7 +135,7 @@ export function CarsTable({
     error,
     refetch,
   } = useQuery({
-    queryKey: ["cars", debouncedSearchTerm, pageIndex, pageSize],
+    queryKey: ["cars", debouncedSearchTerm, pageIndex, pageSize, statusFilter],
     queryFn: async () => {
       const cursor = cursors[pageIndex];
       const queryParams = {
@@ -132,6 +143,7 @@ export function CarsTable({
         pageIndex,
         searchTerm: debouncedSearchTerm.trim() || undefined,
         cursor,
+        status: statusFilter === "all" ? undefined : statusFilter,
       };
 
       if (debouncedSearchTerm.trim()) {
@@ -157,7 +169,7 @@ export function CarsTable({
 
   const data = carsResponse?.cars || [];
   const totalRows = totalCount || 0;
-  
+
   // Update cursor cache when new data is fetched
   React.useEffect(() => {
     if (carsResponse?.pagination?.endCursor && pageIndex >= 0) {
@@ -208,6 +220,12 @@ export function CarsTable({
     setPageIndex(0);
   };
 
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value as "all" | CarStatus);
+    setPageIndex(0);
+    setCursors({});
+  };
+
   // Function to get translated column name
   const getColumnDisplayName = (columnId: string) => {
     const columnMap: Record<string, string> = {
@@ -239,16 +257,35 @@ export function CarsTable({
 
   return (
     <div className="w-full space-y-4">
-      {/* Search and filters - Responsive */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="relative flex-1 w-full sm:max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder={t("fleet.searchPlaceholder")}
-            value={localSearchTerm}
-            onChange={(event) => handleSearchChange(event.target.value)}
-            className="pl-10 w-full"
-          />
+      {/* Filters Section - Responsive */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
+        {/* Filter Controls */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-2 w-full lg:w-auto">
+          <div className="relative w-full sm:w-auto sm:min-w-[300px]">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder={t("fleet.searchPlaceholder")}
+              value={localSearchTerm}
+              onChange={(event) => handleSearchChange(event.target.value)}
+              className="pl-10 w-full"
+            />
+          </div>
+          {/* Status filter */}
+          <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+            <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectValue placeholder={t("fleet.filterByStatus")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("fleet.allStatuses")}</SelectItem>
+              <SelectItem value="available">{t("fleet.available")}</SelectItem>
+              <SelectItem value="maintenance">
+                {t("fleet.maintenance")}
+              </SelectItem>
+              <SelectItem value="out_of_service">
+                {t("fleet.out_of_service")}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Column visibility - Using new component */}

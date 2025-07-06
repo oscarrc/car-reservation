@@ -37,6 +37,13 @@ import { createUserColumns } from "./users-columns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface UsersTableProps {
   searchTerm?: string;
@@ -66,6 +73,12 @@ export function UsersTable({
   const [cursors, setCursors] = React.useState<{
     [key: number]: PaginationCursor;
   }>({});
+  const [roleFilter, setRoleFilter] = React.useState<
+    "all" | "admin" | "teacher"
+  >("all");
+  const [statusFilter, setStatusFilter] = React.useState<
+    "all" | "active" | "suspended"
+  >("all");
 
   // Debounce search term
   const [debouncedSearchTerm, setDebouncedSearchTerm] =
@@ -85,6 +98,9 @@ export function UsersTable({
   // Filter params for count query (without pagination params)
   const filterParams: UsersFilterParams = {
     searchTerm: debouncedSearchTerm.trim() || undefined,
+    role: roleFilter === "all" ? undefined : roleFilter,
+    suspended:
+      statusFilter === "all" ? undefined : statusFilter === "suspended",
   };
 
   // Fetch users with React Query
@@ -94,7 +110,14 @@ export function UsersTable({
     error,
     refetch,
   } = useQuery({
-    queryKey: ["users", debouncedSearchTerm, pageIndex, pageSize],
+    queryKey: [
+      "users",
+      debouncedSearchTerm,
+      pageIndex,
+      pageSize,
+      roleFilter,
+      statusFilter,
+    ],
     queryFn: async () => {
       const cursor = cursors[pageIndex];
       const queryParams = {
@@ -102,6 +125,9 @@ export function UsersTable({
         pageIndex,
         searchTerm: debouncedSearchTerm.trim() || undefined,
         cursor,
+        role: roleFilter === "all" ? undefined : roleFilter,
+        suspended:
+          statusFilter === "all" ? undefined : statusFilter === "suspended",
       };
 
       if (debouncedSearchTerm.trim()) {
@@ -127,7 +153,7 @@ export function UsersTable({
 
   const data = usersResponse?.users || [];
   const totalRows = totalCount || 0;
-  
+
   // Update cursor cache when new data is fetched
   React.useEffect(() => {
     if (usersResponse?.pagination?.endCursor && pageIndex >= 0) {
@@ -178,6 +204,18 @@ export function UsersTable({
     setPageIndex(0);
   };
 
+  const handleRoleFilterChange = (value: string) => {
+    setRoleFilter(value as "all" | "admin" | "teacher");
+    setPageIndex(0);
+    setCursors({});
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value as "all" | "active" | "suspended");
+    setPageIndex(0);
+    setCursors({});
+  };
+
   // Function to get translated column name
   const getColumnDisplayName = (columnId: string) => {
     const columnMap: Record<string, string> = {
@@ -209,16 +247,42 @@ export function UsersTable({
 
   return (
     <div className="w-full space-y-4">
-      {/* Search and filters - Responsive */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="relative flex-1 w-full sm:max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder={t("users.searchPlaceholder")}
-            value={localSearchTerm}
-            onChange={(event) => handleSearchChange(event.target.value)}
-            className="pl-10 w-full"
-          />
+      {/* Filters Section - Responsive */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
+        {/* Filter Controls */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-2 w-full lg:w-auto">
+          <div className="relative w-full sm:w-auto sm:min-w-[300px]">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder={t("users.searchPlaceholder")}
+              value={localSearchTerm}
+              onChange={(event) => handleSearchChange(event.target.value)}
+              className="pl-10 w-full"
+            />
+          </div>
+          {/* Role filter */}
+          <Select value={roleFilter} onValueChange={handleRoleFilterChange}>
+            <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectValue placeholder={t("users.filterByRole")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("users.allRoles")}</SelectItem>
+              <SelectItem value="admin">{t("users.admin")}</SelectItem>
+              <SelectItem value="teacher">{t("users.teacher")}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Status filter */}
+          <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+            <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectValue placeholder={t("users.filterByStatus")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("users.allStatuses")}</SelectItem>
+              <SelectItem value="active">{t("users.active")}</SelectItem>
+              <SelectItem value="suspended">{t("users.suspended")}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Column visibility - Using new component */}

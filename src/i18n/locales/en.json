@@ -418,7 +418,9 @@
       "forestgreen": "Forest Green",
       "seagreen": "Sea Green",
       "springgreen": "Spring Green"
-    }
+    },
+    "filterByStatus": "Filter by status",
+    "allStatuses": "All statuses"
   },
   "browse": {
     "title": "Browse Fleet",
@@ -597,7 +599,13 @@
     "editUserDesc": "Update the user information below.",
     "emailCannotBeChanged": "Email cannot be changed after account creation",
     "note": "Note",
-    "createUserNote": "Creating a new user will temporarily log you out. You will need to sign in again after user creation."
+    "createUserNote": "Creating a new user will temporarily log you out. You will need to sign in again after user creation.",
+    "filterByRole": "Filter by role",
+    "filterByStatus": "Filter by status",
+    "allRoles": "All roles",
+    "allStatuses": "All statuses",
+    "admin": "Admin",
+    "teacher": "Teacher"
   },
   "settings": {
     "title": "Application Settings",
