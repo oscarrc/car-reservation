@@ -17,6 +17,7 @@ import type { User } from "firebase/auth";
 import { saveLanguageToStorage } from "@/i18n";
 import { toast } from "sonner";
 import { isEmailAllowed, updateEmailStatusToRegistered } from "@/lib/allowed-emails-service";
+import { completeEmailUpdate } from "@/lib/profile-service";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -31,6 +32,7 @@ interface AuthContextType {
   isProfileComplete: boolean;
   sendVerificationEmail: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -171,6 +173,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function refreshProfile() {
+    if (!currentUser) return;
+
+    try {
+      const profile = await fetchUserProfile(currentUser.uid);
+      if (profile && !profile.suspended) {
+        setUserProfile(profile);
+        setAuthUser({
+          uid: currentUser.uid,
+          email: profile.email || currentUser.email || "",
+          profile: profile,
+        });
+      }
+    } catch (error) {
+      console.error("Error refreshing profile:", error);
+    }
+  }
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
@@ -205,21 +225,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        setUserProfile(profile);
+        // Check if email was updated and sync with Firestore
+        let currentProfile = profile;
+        if (profile.email !== user.email && user.email) {
+          try {
+            await completeEmailUpdate(user.uid, user.email);
+            // Refetch profile with updated email
+            const updatedProfile = await fetchUserProfile(user.uid);
+            if (updatedProfile) {
+              currentProfile = updatedProfile;
+            }
+          } catch (error) {
+            console.error("Error syncing email update:", error);
+          }
+        }
+
+        setUserProfile(currentProfile);
 
         // Check if profile is complete (name and phone exist)
-        setIsProfileComplete(!!(profile.name && profile.phone));
+        setIsProfileComplete(!!(currentProfile.name && currentProfile.phone));
 
         setAuthUser({
           uid: user.uid,
-          email: profile.email || user.email || "",
-          profile: profile,
+          email: currentProfile.email || user.email || "",
+          profile: currentProfile,
         });
 
         // Sync user's language preference to localStorage and i18n
-        if (profile.language) {
-          saveLanguageToStorage(profile.language);
-          await i18n.changeLanguage(profile.language);
+        if (currentProfile.language) {
+          saveLanguageToStorage(currentProfile.language);
+          await i18n.changeLanguage(currentProfile.language);
         }
       } else {
         setUserProfile(null);
@@ -247,6 +282,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isProfileComplete,
     sendVerificationEmail,
     refreshUser,
+    refreshProfile,
   };
 
   return (

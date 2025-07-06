@@ -17,7 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 
 const Email = () => {
-  const { currentUser, userProfile } = useAuth();
+  const { currentUser, userProfile, refreshUser, refreshProfile } = useAuth();
   const [searchParams] = useSearchParams();
   const [emailResetStatus, setEmailResetStatus] = useState<
     "pending" | "success" | "error" | "loading" | "processing"
@@ -67,6 +67,11 @@ const Email = () => {
     try {
       // Apply the action code to confirm the email change
       await applyActionCode(auth, oobCode);
+      
+      // Refresh user data to get the new email
+      await refreshUser();
+      await refreshProfile();
+      
       setEmailResetStatus("success");
     } catch (error) {
       console.error("Error confirming email change:", error);

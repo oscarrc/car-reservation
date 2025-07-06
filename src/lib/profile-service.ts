@@ -1,9 +1,9 @@
 import { 
-  updateEmail as firebaseUpdateEmail, 
   updatePassword as firebaseUpdatePassword,
   updateProfile as firebaseUpdateProfile,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  verifyBeforeUpdateEmail,
   type User
 } from 'firebase/auth';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
@@ -65,7 +65,7 @@ export async function updateUserProfile(uid: string, profileData: UpdateProfileD
 }
 
 /**
- * Update user email address (requires re-authentication)
+ * Update user email address (requires re-authentication and verification)
  */
 export async function updateUserEmail(user: User, updateData: UpdateEmailData): Promise<void> {
   try {
@@ -76,35 +76,13 @@ export async function updateUserEmail(user: User, updateData: UpdateEmailData): 
     );
     await reauthenticateWithCredential(user, credential);
 
-    // Update email in Firebase Auth
-    await firebaseUpdateEmail(user, updateData.newEmail);
+    // Use Firebase's secure email update flow
+    // This sends verification emails to both old and new email addresses
+    await verifyBeforeUpdateEmail(user, updateData.newEmail);
 
-    // Update email in Firestore profile
-    if (user.uid) {
-      const userDocRef = doc(db, 'users', user.uid);
-      
-      // Get current user data to merge with updates
-      const currentUserDoc = await getDoc(userDocRef);
-      if (currentUserDoc.exists()) {
-        const currentUserData = currentUserDoc.data() as UserProfile;
-        const mergedUserData = { 
-          ...currentUserData, 
-          email: updateData.newEmail 
-        };
-        
-        // Generate new search keywords
-        const searchKeywords = generateUserSearchKeywords(mergedUserData);
-        
-        await updateDoc(userDocRef, {
-          email: updateData.newEmail,
-          searchKeywords
-        });
-      } else {
-        await updateDoc(userDocRef, {
-          email: updateData.newEmail
-        });
-      }
-    }
+    // Note: Firestore update will happen automatically when the user
+    // verifies the new email through the verification process
+    
   } catch (error) {
     console.error('Error updating email:', error);
     if ((error as FirebaseError).code === 'auth/wrong-password') {
@@ -113,8 +91,45 @@ export async function updateUserEmail(user: User, updateData: UpdateEmailData): 
       throw new Error('This email is already in use by another account');
     } else if ((error as FirebaseError).code === 'auth/invalid-email') {
       throw new Error('Invalid email address');
+    } else if ((error as FirebaseError).code === 'auth/operation-not-allowed') {
+      throw new Error('Email change is currently disabled. Please contact support.');
     }
     throw new Error('Failed to update email address');
+  }
+}
+
+/**
+ * Complete email update in Firestore after verification
+ * This should be called after the user verifies their new email
+ */
+export async function completeEmailUpdate(uid: string, newEmail: string): Promise<void> {
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    
+    // Get current user data to merge with updates
+    const currentUserDoc = await getDoc(userDocRef);
+    if (currentUserDoc.exists()) {
+      const currentUserData = currentUserDoc.data() as UserProfile;
+      const mergedUserData = { 
+        ...currentUserData, 
+        email: newEmail 
+      };
+      
+      // Generate new search keywords
+      const searchKeywords = generateUserSearchKeywords(mergedUserData);
+      
+      await updateDoc(userDocRef, {
+        email: newEmail,
+        searchKeywords
+      });
+    } else {
+      await updateDoc(userDocRef, {
+        email: newEmail
+      });
+    }
+  } catch (error) {
+    console.error('Error completing email update:', error);
+    throw new Error('Failed to complete email update');
   }
 }
 
