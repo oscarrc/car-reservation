@@ -116,6 +116,39 @@ export default function FleetPage() {
     />
   );
 
+  // Show loading state first
+  if (initialLoading) {
+    return (
+      <>
+        <SectionHeader
+          title={t("browse.title")}
+          subtitle={t("browse.subtitle")}
+        />
+        <div className="px-4 lg:px-6">
+          {/* Loading skeleton */}
+          <div className="grid gap-6">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Card key={index} className="w-full">
+                <CardHeader>
+                  <Skeleton className="h-6 w-48" />
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+                  <Skeleton className="h-4 w-full mt-4" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  }
+
   if (initialError || countError) {
     return (
       <>
@@ -147,27 +180,7 @@ export default function FleetPage() {
       />
 
       <div className="px-4 lg:px-6">
-        {initialLoading ? (
-          // Loading skeleton
-          <div className="grid gap-6">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <Card key={index} className="w-full">
-                <CardHeader>
-                  <Skeleton className="h-6 w-48" />
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-4 w-28" />
-                  </div>
-                  <Skeleton className="h-4 w-full mt-4" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : allCars.length === 0 ? (
+        {allCars.length === 0 ? (
           <div className="text-center py-12">
             <CarFront className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-lg font-medium text-muted-foreground">

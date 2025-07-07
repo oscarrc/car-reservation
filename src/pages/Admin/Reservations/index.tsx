@@ -227,6 +227,37 @@ export default function AdminReservationsPage() {
   const isLoading = reservationsLoading;
   const hasError = reservationsError;
 
+  // Show loading state first
+  if (isLoading) {
+    return (
+      <>
+        <SectionHeader
+          title={t("reservations.management")}
+          subtitle={t("reservations.subtitle")}
+        />
+        <div className="px-4 lg:px-6">
+          <ReservationsTable
+            columns={columns}
+            data={[]}
+            loading={true}
+            pagination={undefined}
+            onStatusFilterChange={handleStatusFilterChange}
+            onStartDateFilterChange={handleStartDateFilterChange}
+            onEndDateFilterChange={handleEndDateFilterChange}
+            onPageChange={setPageIndex}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPageIndex(0);
+            }}
+            statusFilter={statusFilter}
+            startDateFilter={startDateFilter}
+            endDateFilter={endDateFilter}
+          />
+        </div>
+      </>
+    );
+  }
+
   if (hasError) {
     return (
       <>

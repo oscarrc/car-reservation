@@ -339,6 +339,40 @@ export default function UserReservationsPage() {
   const isLoading = reservationsLoading;
   const hasError = reservationsError;
 
+  // Show loading state first
+  if (isLoading) {
+    return (
+      <>
+        <SectionHeader
+          title={t("reservations.myReservations")}
+          subtitle={t("reservations.userSubtitle")}
+          action={handleNewReservation}
+          actionText={t("reservations.newReservation")}
+          actionIcon={Plus}
+        />
+        <div className="px-4 lg:px-6">
+          <ReservationsTable
+            columns={columns}
+            data={[]}
+            loading={true}
+            pagination={undefined}
+            onStatusFilterChange={handleStatusFilterChange}
+            onStartDateFilterChange={handleStartDateFilterChange}
+            onEndDateFilterChange={handleEndDateFilterChange}
+            onPageChange={setPageIndex}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPageIndex(0);
+            }}
+            statusFilter={statusFilter}
+            startDateFilter={startDateFilter}
+            endDateFilter={endDateFilter}
+          />
+        </div>
+      </>
+    );
+  }
+
   if (!currentUser) {
     return (
       <>
