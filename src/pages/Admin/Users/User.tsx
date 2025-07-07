@@ -21,6 +21,7 @@ import {
   fetchReservationsWithData,
   getReservationsCount,
   updateReservationStatus,
+  bulkUpdateReservationStatus,
   type ReservationsQueryParams,
   type ReservationsFilterParams,
 } from "@/lib/reservations-service";
@@ -46,6 +47,9 @@ export default function UserPage() {
   );
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
+
+  // Bulk actions state
+  const [isBulkActionsLoading, setIsBulkActionsLoading] = useState(false);
 
   // Fetch user details
   const {
@@ -152,6 +156,42 @@ export default function UserPage() {
     },
   });
 
+  // Bulk status update mutation
+  const bulkStatusMutation = useMutation({
+    mutationFn: async ({ reservationIds, status }: { reservationIds: string[]; status: ReservationStatus }) => {
+      setIsBulkActionsLoading(true);
+      return await bulkUpdateReservationStatus(reservationIds, status);
+    },
+    onSuccess: (result, { status }) => {
+      invalidateReservationQueries(queryClient, {
+        invalidateReservationsList: true,
+        invalidateReservationsCount: true,
+        invalidateDashboard: true,
+        specificUserId: userId,
+      });
+
+      if (result.successCount > 0) {
+        toast.success(t("reservations.bulkStatusUpdateSuccess", { 
+          count: result.successCount,
+          status: t(`reservations.${status}`)
+        }));
+      }
+      if (result.errorCount > 0) {
+        toast.error(t("reservations.bulkStatusUpdatePartialError", { 
+          successCount: result.successCount, 
+          errorCount: result.errorCount 
+        }));
+      }
+
+      setIsBulkActionsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Error in bulk status update:", error);
+      toast.error(t("reservations.bulkStatusUpdateError"));
+      setIsBulkActionsLoading(false);
+    },
+  });
+
   const handleStatusChange = (
     reservation: ReservationWithCarAndUser,
     status: ReservationStatus
@@ -162,6 +202,16 @@ export default function UserPage() {
   const handleEditReservation = (reservation: ReservationWithCarAndUser) => {
     setEditingReservation(reservation);
     setEditReservationOpen(true);
+  };
+
+  // Bulk action handler
+  const handleBulkStatusChange = (reservationIds: string[], status: ReservationStatus) => {
+    if (reservationIds.length === 0) {
+      toast.error(t("reservations.noReservationsSelected"));
+      return;
+    }
+
+    bulkStatusMutation.mutate({ reservationIds, status });
   };
 
   const getStatusVariant = (suspended: boolean) => {
@@ -322,6 +372,10 @@ export default function UserPage() {
             endDateFilter={endDateFilter}
             countError={countError}
             countLoading={countLoading}
+            bulkActions={{
+              onStatusChange: handleBulkStatusChange,
+              isLoading: isBulkActionsLoading,
+            }}
           />
         </div>
       </div>

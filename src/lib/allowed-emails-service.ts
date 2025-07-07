@@ -15,6 +15,7 @@ import {
   type QueryDocumentSnapshot,
   type DocumentData,
   type QueryConstraint,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { AllowedEmail } from '@/types/user';
@@ -267,5 +268,48 @@ export async function deleteEmailAfterRegistration(email: string): Promise<void>
   } catch (error) {
     console.error('Error removing email after registration:', error);
     // Don't throw error here as this is cleanup and shouldn't block registration
+  }
+} 
+
+// Bulk operations for allowed emails
+export async function bulkDeleteAllowedEmails(
+  emailIds: string[]
+): Promise<{ successCount: number; errorCount: number; errors: string[] }> {
+  try {
+    const batchSize = 500; // Firestore batch limit
+    const batches = [];
+    const errors: string[] = [];
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Process emails in batches
+    for (let i = 0; i < emailIds.length; i += batchSize) {
+      const batch = writeBatch(db);
+      const batchIds = emailIds.slice(i, i + batchSize);
+      
+      batchIds.forEach((emailId) => {
+        const emailDoc = doc(db, 'allowedEmails', emailId);
+        batch.delete(emailDoc);
+      });
+      
+      batches.push({ batch, batchIds });
+    }
+
+    // Execute all batches
+    for (const { batch, batchIds } of batches) {
+      try {
+        await batch.commit();
+        successCount += batchIds.length;
+      } catch (error) {
+        errorCount += batchIds.length;
+        errors.push(`Failed to delete batch: ${(error as Error).message}`);
+        console.error('Error in batch deletion:', error);
+      }
+    }
+
+    return { successCount, errorCount, errors };
+  } catch (error) {
+    console.error('Error in bulk deletion:', error);
+    throw error;
   }
 } 

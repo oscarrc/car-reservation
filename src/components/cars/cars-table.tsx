@@ -18,6 +18,8 @@ import {
   getCarsCount,
   searchCars,
   updateCarStatus,
+  bulkUpdateCarStatus,
+  bulkDeleteCars,
   type PaginationCursor,
   type CarsFilterParams,
 } from "@/lib/cars-service";
@@ -38,6 +40,8 @@ import { ColumnSelector } from "@/components/ui/column-selector";
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { Input } from "@/components/ui/input";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { BulkActions, createCarBulkActions } from "@/components/ui/bulk-actions";
+import { BulkConfirmationDialog } from "@/components/ui/bulk-confirmation-dialog";
 import { createCarColumns } from "./cars-columns";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -77,6 +81,18 @@ export function CarsTable({
   const [statusFilter, setStatusFilter] = React.useState<"all" | CarStatus>(
     "all"
   );
+
+  // Bulk actions state
+  const [isBulkActionsLoading, setIsBulkActionsLoading] = React.useState(false);
+  
+  // Confirmation dialog state
+  const [confirmationDialog, setConfirmationDialog] = React.useState<{
+    open: boolean;
+    action: any;
+  }>({
+    open: false,
+    action: null,
+  });
 
   // Use optimized search hook
   const {
@@ -175,6 +191,79 @@ export function CarsTable({
   const handleStatusChange = (carId: string, newStatus: CarStatus) => {
     statusMutation.mutate({ carId, status: newStatus });
   };
+
+  // Bulk status update mutation
+  const bulkStatusMutation = useMutation({
+    mutationFn: async ({ carIds, status }: { carIds: string[]; status: CarStatus }) => {
+      setIsBulkActionsLoading(true);
+      return await bulkUpdateCarStatus(carIds, status);
+    },
+    onSuccess: (result, { status }) => {
+      invalidateCarQueries(queryClient, {
+        invalidateCarsList: true,
+        invalidateFleetStatus: true,
+        invalidateAvailableCars: true,
+        invalidateCarsCount: false,
+      });
+
+      if (result.successCount > 0) {
+        toast.success(t("fleet.bulkStatusUpdateSuccess", { 
+          count: result.successCount,
+          status: t(`fleet.${status}`)
+        }));
+      }
+      if (result.errorCount > 0) {
+        toast.error(t("fleet.bulkStatusUpdatePartialError", { 
+          successCount: result.successCount, 
+          errorCount: result.errorCount 
+        }));
+      }
+
+      // Clear selection
+      setRowSelection({});
+      setIsBulkActionsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Error in bulk status update:", error);
+      toast.error(t("fleet.bulkStatusUpdateError"));
+      setIsBulkActionsLoading(false);
+    },
+  });
+
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (carIds: string[]) => {
+      setIsBulkActionsLoading(true);
+      return await bulkDeleteCars(carIds);
+    },
+    onSuccess: (result) => {
+      invalidateCarQueries(queryClient, {
+        invalidateCarsList: true,
+        invalidateFleetStatus: true,
+        invalidateAvailableCars: true,
+        invalidateCarsCount: true,
+      });
+
+      if (result.successCount > 0) {
+        toast.success(t("fleet.bulkDeleteSuccess", { count: result.successCount }));
+      }
+      if (result.errorCount > 0) {
+        toast.error(t("fleet.bulkDeletePartialError", { 
+          successCount: result.successCount, 
+          errorCount: result.errorCount 
+        }));
+      }
+
+      // Clear selection
+      setRowSelection({});
+      setIsBulkActionsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Error in bulk delete:", error);
+      toast.error(t("fleet.bulkDeleteError"));
+      setIsBulkActionsLoading(false);
+    },
+  });
 
   // Filter params for count query (without pagination params)
   const filterParams: CarsFilterParams = {
@@ -282,6 +371,51 @@ export function CarsTable({
     setCursors({});
   };
 
+  // Bulk action handlers
+    const handleBulkDelete = () => {
+    const selectedCars = table.getFilteredSelectedRowModel().rows;
+    const carIds = selectedCars.map(row => row.original.id);
+    
+    if (carIds.length === 0) {
+      toast.error(t("fleet.noCarsSelected"));
+      return;
+    }
+    
+    bulkDeleteMutation.mutate(carIds);
+  };
+
+  // Handle bulk action clicks with confirmation
+  const handleBulkActionClick = (action: any) => {
+    if (action.requiresConfirmation) {
+      setConfirmationDialog({
+        open: true,
+        action,
+      });
+    } else {
+      action.onClick();
+    }
+  };
+
+  // Handle confirmation dialog confirm
+  const handleConfirmAction = () => {
+    if (confirmationDialog.action) {
+      confirmationDialog.action.onClick();
+      setConfirmationDialog({ open: false, action: null });
+    }
+  };
+
+  const handleBulkStatusChange = (status: CarStatus) => {
+    const selectedCars = table.getFilteredSelectedRowModel().rows;
+    const carIds = selectedCars.map(row => row.original.id);
+    
+    if (carIds.length === 0) {
+      toast.error(t("fleet.noCarsSelected"));
+      return;
+    }
+
+    bulkStatusMutation.mutate({ carIds, status });
+  };
+
   // Function to get translated column name
   const getColumnDisplayName = (columnId: string) => {
     const columnMap: Record<string, string> = {
@@ -344,13 +478,33 @@ export function CarsTable({
           </Select>
         </div>
 
-        {/* Column visibility - Using new component */}
-        <ColumnSelector
-          tableId="cars-table"
-          columns={table.getAllColumns()}
-          getColumnDisplayName={getColumnDisplayName}
-        />
+        {/* Bulk Actions and Column visibility */}
+        <div className="flex items-center gap-2">
+          <BulkActions
+            selectedCount={table.getFilteredSelectedRowModel().rows.length}
+            isLoading={isBulkActionsLoading}
+            onActionClick={handleBulkActionClick}
+            {...createCarBulkActions(t, handleBulkDelete, handleBulkStatusChange, isBulkActionsLoading)}
+          />
+          
+          <ColumnSelector
+            tableId="cars-table"
+            columns={table.getAllColumns()}
+            getColumnDisplayName={getColumnDisplayName}
+          />
+        </div>
       </div>
+
+      {/* Bulk Confirmation Dialog */}
+      <BulkConfirmationDialog
+        open={confirmationDialog.open}
+        onOpenChange={(open) => setConfirmationDialog({ open, action: confirmationDialog.action })}
+        onConfirm={handleConfirmAction}
+        title={confirmationDialog.action?.confirmationTitle || ""}
+        description={confirmationDialog.action?.confirmationDescription || ""}
+        confirmText={confirmationDialog.action?.confirmText}
+        isLoading={isBulkActionsLoading}
+      />
 
       {/* Table */}
       <div className="rounded-md border">

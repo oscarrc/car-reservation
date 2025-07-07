@@ -15,7 +15,8 @@ import {
   query,
   startAfter,
   updateDoc,
-  where
+  where,
+  writeBatch
 } from 'firebase/firestore';
 import { batchArray, batchPromises } from './batch-utils';
 import { generateCarSearchKeywords, prepareSearchTerms } from './search-utils';
@@ -385,6 +386,95 @@ export async function fetchAvailableCarsForDateRange(
     return availableCars.filter(car => !conflictingCarIds.has(car.id));
   } catch (error) {
     console.error('Error fetching available cars for date range:', error);
+    throw error;
+  }
+} 
+
+// Bulk operations for cars
+export async function bulkUpdateCarStatus(
+  carIds: string[],
+  status: CarStatus
+): Promise<{ successCount: number; errorCount: number; errors: string[] }> {
+  try {
+    const batchSize = 500; // Firestore batch limit
+    const batches = [];
+    const errors: string[] = [];
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Process cars in batches
+    for (let i = 0; i < carIds.length; i += batchSize) {
+      const batch = writeBatch(db);
+      const batchIds = carIds.slice(i, i + batchSize);
+      
+      batchIds.forEach((carId) => {
+        const carDoc = doc(db, 'cars', carId);
+        batch.update(carDoc, {
+          status,
+          updatedAt: new Date()
+        });
+      });
+      
+      batches.push({ batch, batchIds });
+    }
+
+    // Execute all batches
+    for (const { batch, batchIds } of batches) {
+      try {
+        await batch.commit();
+        successCount += batchIds.length;
+      } catch (error) {
+        errorCount += batchIds.length;
+        errors.push(`Failed to update batch: ${(error as Error).message}`);
+        console.error('Error in batch update:', error);
+      }
+    }
+
+    return { successCount, errorCount, errors };
+  } catch (error) {
+    console.error('Error in bulk status update:', error);
+    throw error;
+  }
+}
+
+export async function bulkDeleteCars(
+  carIds: string[]
+): Promise<{ successCount: number; errorCount: number; errors: string[] }> {
+  try {
+    const batchSize = 500; // Firestore batch limit
+    const batches = [];
+    const errors: string[] = [];
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Process cars in batches
+    for (let i = 0; i < carIds.length; i += batchSize) {
+      const batch = writeBatch(db);
+      const batchIds = carIds.slice(i, i + batchSize);
+      
+      batchIds.forEach((carId) => {
+        const carDoc = doc(db, 'cars', carId);
+        batch.delete(carDoc);
+      });
+      
+      batches.push({ batch, batchIds });
+    }
+
+    // Execute all batches
+    for (const { batch, batchIds } of batches) {
+      try {
+        await batch.commit();
+        successCount += batchIds.length;
+      } catch (error) {
+        errorCount += batchIds.length;
+        errors.push(`Failed to delete batch: ${(error as Error).message}`);
+        console.error('Error in batch deletion:', error);
+      }
+    }
+
+    return { successCount, errorCount, errors };
+  } catch (error) {
+    console.error('Error in bulk deletion:', error);
     throw error;
   }
 } 

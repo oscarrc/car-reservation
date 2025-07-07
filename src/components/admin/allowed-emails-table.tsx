@@ -14,6 +14,7 @@ import {
   getAllowedEmails,
   getAllowedEmailsCount,
   removeAllowedEmail,
+  bulkDeleteAllowedEmails,
   type AllowedEmailWithId,
   type PaginationCursor,
   type AllowedEmailsFilterParams,
@@ -31,6 +32,8 @@ import { ColumnSelector } from "@/components/ui/column-selector";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { BulkActions, createEmailBulkActions } from "@/components/ui/bulk-actions";
+import { BulkConfirmationDialog } from "@/components/ui/bulk-confirmation-dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -170,6 +173,18 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
     "all" | "pending" | "registered"
   >("all");
 
+  // Bulk actions state
+  const [isBulkActionsLoading, setIsBulkActionsLoading] = React.useState(false);
+  
+  // Confirmation dialog state
+  const [confirmationDialog, setConfirmationDialog] = React.useState<{
+    open: boolean;
+    action: any;
+  }>({
+    open: false,
+    action: null,
+  });
+
   // Filter params for count query (without pagination params)
   const filterParams: AllowedEmailsFilterParams = {
     status: statusFilter === "all" ? undefined : statusFilter,
@@ -229,6 +244,37 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
     },
   });
 
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (emailIds: string[]) => {
+      setIsBulkActionsLoading(true);
+      return await bulkDeleteAllowedEmails(emailIds);
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["allowedEmails"] });
+      queryClient.invalidateQueries({ queryKey: ["allowedEmails", "count"] });
+      
+      if (result.successCount > 0) {
+        toast.success(t("allowedEmails.bulkDeleteSuccess", { count: result.successCount }));
+      }
+      if (result.errorCount > 0) {
+        toast.error(t("allowedEmails.bulkDeletePartialError", { 
+          successCount: result.successCount, 
+          errorCount: result.errorCount 
+        }));
+      }
+      
+      // Clear selection
+      setRowSelection({});
+      setIsBulkActionsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Error in bulk delete:", error);
+      toast.error(t("allowedEmails.bulkDeleteError"));
+      setIsBulkActionsLoading(false);
+    },
+  });
+
   const handleDeleteEmail = (email: AllowedEmailWithId) => {
     setEmailToDelete(email);
     setDeleteDialogOpen(true);
@@ -244,6 +290,39 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
     setStatusFilter(value as "all" | "pending" | "registered");
     setPageIndex(0);
     setCursors({});
+  };
+
+  // Bulk action handlers
+    const handleBulkDelete = () => {
+    const selectedEmails = table.getFilteredSelectedRowModel().rows;
+    const emailIds = selectedEmails.map(row => row.original.id);
+    
+    if (emailIds.length === 0) {
+      toast.error(t("allowedEmails.noEmailsSelected"));
+      return;
+    }
+    
+    bulkDeleteMutation.mutate(emailIds);
+  };
+
+  // Handle bulk action clicks with confirmation
+  const handleBulkActionClick = (action: any) => {
+    if (action.requiresConfirmation) {
+      setConfirmationDialog({
+        open: true,
+        action,
+      });
+    } else {
+      action.onClick();
+    }
+  };
+
+  // Handle confirmation dialog confirm
+  const handleConfirmAction = () => {
+    if (confirmationDialog.action) {
+      confirmationDialog.action.onClick();
+      setConfirmationDialog({ open: false, action: null });
+    }
   };
 
   const data = emailsResponse?.emails || [];
@@ -324,6 +403,14 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Bulk Actions */}
+          <BulkActions
+            selectedCount={table.getFilteredSelectedRowModel().rows.length}
+            isLoading={isBulkActionsLoading}
+            onActionClick={handleBulkActionClick}
+            {...createEmailBulkActions(t, handleBulkDelete, isBulkActionsLoading)}
+          />
+          
           <ColumnSelector
             tableId="allowed-emails-table"
             columns={table.getAllColumns()}
@@ -456,6 +543,17 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
             : ""
         }
         isLoading={removeEmailMutation.isPending}
+      />
+
+      {/* Bulk Confirmation Dialog */}
+      <BulkConfirmationDialog
+        open={confirmationDialog.open}
+        onOpenChange={(open) => setConfirmationDialog({ open, action: confirmationDialog.action })}
+        onConfirm={handleConfirmAction}
+        title={confirmationDialog.action?.confirmationTitle || ""}
+        description={confirmationDialog.action?.confirmationDescription || ""}
+        confirmText={confirmationDialog.action?.confirmText}
+        isLoading={isBulkActionsLoading}
       />
     </div>
   );

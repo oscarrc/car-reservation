@@ -16,6 +16,8 @@ import {
   fetchUsers,
   getUsersCount,
   searchUsers,
+  bulkUpdateUserStatus,
+  bulkUpdateUserRole,
   type PaginationCursor,
   type UsersFilterParams,
 } from "@/lib/users-service";
@@ -32,11 +34,15 @@ import { ColumnSelector } from "@/components/ui/column-selector";
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { Input } from "@/components/ui/input";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { BulkActions, createUserBulkActions } from "@/components/ui/bulk-actions";
+import { BulkConfirmationDialog } from "@/components/ui/bulk-confirmation-dialog";
+import { invalidateUserQueries } from "@/lib/query-utils";
 import type { UserProfileWithId } from "@/lib/users-service";
 import { createUserColumns } from "./users-columns";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -62,6 +68,7 @@ export function UsersTable({
 }: UsersTableProps) {
   const { t } = useTranslation();
   const { authUser } = useAuth();
+  const queryClient = useQueryClient();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -79,6 +86,18 @@ export function UsersTable({
   const [statusFilter, setStatusFilter] = React.useState<
     "all" | "active" | "suspended"
   >("all");
+
+  // Bulk actions state
+  const [isBulkActionsLoading, setIsBulkActionsLoading] = React.useState(false);
+  
+  // Confirmation dialog state
+  const [confirmationDialog, setConfirmationDialog] = React.useState<{
+    open: boolean;
+    action: any;
+  }>({
+    open: false,
+    action: null,
+  });
 
   // Debounce search term
   const [debouncedSearchTerm, setDebouncedSearchTerm] =
@@ -154,6 +173,78 @@ export function UsersTable({
   const data = usersResponse?.users || [];
   const totalRows = totalCount || 0;
 
+  // Bulk status update mutation
+  const bulkStatusMutation = useMutation({
+    mutationFn: async ({ userIds, suspended }: { userIds: string[]; suspended: boolean }) => {
+      setIsBulkActionsLoading(true);
+      return await bulkUpdateUserStatus(userIds, suspended);
+    },
+    onSuccess: (result, { suspended }) => {
+      invalidateUserQueries(queryClient, {
+        invalidateUsersList: true,
+        invalidateUsersCount: false,
+      });
+
+      if (result.successCount > 0) {
+        toast.success(t("users.bulkStatusUpdateSuccess", { 
+          count: result.successCount,
+          status: suspended ? t("users.suspended") : t("users.active")
+        }));
+      }
+      if (result.errorCount > 0) {
+        toast.error(t("users.bulkStatusUpdatePartialError", { 
+          successCount: result.successCount, 
+          errorCount: result.errorCount 
+        }));
+      }
+
+      // Clear selection
+      setRowSelection({});
+      setIsBulkActionsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Error in bulk status update:", error);
+      toast.error(t("users.bulkStatusUpdateError"));
+      setIsBulkActionsLoading(false);
+    },
+  });
+
+  // Bulk role update mutation
+  const bulkRoleMutation = useMutation({
+    mutationFn: async ({ userIds, role }: { userIds: string[]; role: string }) => {
+      setIsBulkActionsLoading(true);
+      return await bulkUpdateUserRole(userIds, role);
+    },
+    onSuccess: (result, { role }) => {
+      invalidateUserQueries(queryClient, {
+        invalidateUsersList: true,
+        invalidateUsersCount: false,
+      });
+
+      if (result.successCount > 0) {
+        toast.success(t("users.bulkRoleUpdateSuccess", { 
+          count: result.successCount,
+          role: t(`users.${role}`)
+        }));
+      }
+      if (result.errorCount > 0) {
+        toast.error(t("users.bulkRoleUpdatePartialError", { 
+          successCount: result.successCount, 
+          errorCount: result.errorCount 
+        }));
+      }
+
+      // Clear selection
+      setRowSelection({});
+      setIsBulkActionsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Error in bulk role update:", error);
+      toast.error(t("users.bulkRoleUpdateError"));
+      setIsBulkActionsLoading(false);
+    },
+  });
+
   // Update cursor cache when new data is fetched
   React.useEffect(() => {
     if (usersResponse?.pagination?.endCursor && pageIndex >= 0) {
@@ -214,6 +305,63 @@ export function UsersTable({
     setStatusFilter(value as "all" | "active" | "suspended");
     setPageIndex(0);
     setCursors({});
+  };
+
+  // Bulk action handlers
+  const handleBulkSuspend = () => {
+    const selectedUsers = table.getFilteredSelectedRowModel().rows;
+    const userIds = selectedUsers.map(row => row.original.id);
+    
+    if (userIds.length === 0) {
+      toast.error(t("users.noUsersSelected"));
+      return;
+    }
+
+    bulkStatusMutation.mutate({ userIds, suspended: true });
+  };
+
+  const handleBulkUnsuspend = () => {
+    const selectedUsers = table.getFilteredSelectedRowModel().rows;
+    const userIds = selectedUsers.map(row => row.original.id);
+    
+    if (userIds.length === 0) {
+      toast.error(t("users.noUsersSelected"));
+      return;
+    }
+
+    bulkStatusMutation.mutate({ userIds, suspended: false });
+  };
+
+    const handleBulkRoleChange = (role: string) => {
+    const selectedUsers = table.getFilteredSelectedRowModel().rows;
+    const userIds = selectedUsers.map(row => row.original.id);
+    
+    if (userIds.length === 0) {
+      toast.error(t("users.noUsersSelected"));
+      return;
+    }
+    
+    bulkRoleMutation.mutate({ userIds, role });
+  };
+
+  // Handle bulk action clicks with confirmation
+  const handleBulkActionClick = (action: any) => {
+    if (action.requiresConfirmation) {
+      setConfirmationDialog({
+        open: true,
+        action,
+      });
+    } else {
+      action.onClick();
+    }
+  };
+
+  // Handle confirmation dialog confirm
+  const handleConfirmAction = () => {
+    if (confirmationDialog.action) {
+      confirmationDialog.action.onClick();
+      setConfirmationDialog({ open: false, action: null });
+    }
   };
 
   // Function to get translated column name
@@ -285,13 +433,39 @@ export function UsersTable({
           </Select>
         </div>
 
-        {/* Column visibility - Using new component */}
-        <ColumnSelector
-          tableId="users-table"
-          columns={table.getAllColumns()}
-          getColumnDisplayName={getColumnDisplayName}
-        />
+        {/* Bulk Actions and Column visibility */}
+        <div className="flex items-center gap-2">
+          <BulkActions
+            selectedCount={table.getFilteredSelectedRowModel().rows.length}
+            isLoading={isBulkActionsLoading}
+            onActionClick={handleBulkActionClick}
+            {...createUserBulkActions(
+              t,
+              handleBulkSuspend,
+              handleBulkUnsuspend,
+              handleBulkRoleChange,
+              isBulkActionsLoading
+            )}
+          />
+          
+          <ColumnSelector
+            tableId="users-table"
+            columns={table.getAllColumns()}
+            getColumnDisplayName={getColumnDisplayName}
+          />
+        </div>
       </div>
+
+      {/* Bulk Confirmation Dialog */}
+      <BulkConfirmationDialog
+        open={confirmationDialog.open}
+        onOpenChange={(open) => setConfirmationDialog({ open, action: confirmationDialog.action })}
+        onConfirm={handleConfirmAction}
+        title={confirmationDialog.action?.confirmationTitle || ""}
+        description={confirmationDialog.action?.confirmationDescription || ""}
+        confirmText={confirmationDialog.action?.confirmText}
+        isLoading={isBulkActionsLoading}
+      />
 
       {/* Table */}
       <div className="rounded-md border">

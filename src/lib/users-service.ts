@@ -12,7 +12,8 @@ import {
   query,
   startAfter,
   updateDoc,
-  where
+  where,
+  writeBatch
 } from 'firebase/firestore';
 
 import type { UserProfile } from '@/types/user';
@@ -401,6 +402,99 @@ export async function getUsersByEmails(emails: string[]): Promise<string[]> {
     return existingEmails;
   } catch (error) {
     console.error('Error checking existing users by emails:', error);
+    throw error;
+  }
+} 
+
+// Bulk operations for users
+export async function bulkUpdateUserStatus(
+  userIds: string[],
+  suspended: boolean
+): Promise<{ successCount: number; errorCount: number; errors: string[] }> {
+  try {
+    const batchSize = 500; // Firestore batch limit
+    const batches = [];
+    const errors: string[] = [];
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Process users in batches
+    for (let i = 0; i < userIds.length; i += batchSize) {
+      const batch = writeBatch(db);
+      const batchIds = userIds.slice(i, i + batchSize);
+      
+      batchIds.forEach((userId) => {
+        const userDoc = doc(db, 'users', userId);
+        batch.update(userDoc, {
+          suspended,
+          updatedAt: new Date()
+        });
+      });
+      
+      batches.push({ batch, batchIds });
+    }
+
+    // Execute all batches
+    for (const { batch, batchIds } of batches) {
+      try {
+        await batch.commit();
+        successCount += batchIds.length;
+      } catch (error) {
+        errorCount += batchIds.length;
+        errors.push(`Failed to update batch: ${(error as Error).message}`);
+        console.error('Error in batch update:', error);
+      }
+    }
+
+    return { successCount, errorCount, errors };
+  } catch (error) {
+    console.error('Error in bulk status update:', error);
+    throw error;
+  }
+}
+
+export async function bulkUpdateUserRole(
+  userIds: string[],
+  role: string
+): Promise<{ successCount: number; errorCount: number; errors: string[] }> {
+  try {
+    const batchSize = 500; // Firestore batch limit
+    const batches = [];
+    const errors: string[] = [];
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Process users in batches
+    for (let i = 0; i < userIds.length; i += batchSize) {
+      const batch = writeBatch(db);
+      const batchIds = userIds.slice(i, i + batchSize);
+      
+      batchIds.forEach((userId) => {
+        const userDoc = doc(db, 'users', userId);
+        batch.update(userDoc, {
+          role,
+          updatedAt: new Date()
+        });
+      });
+      
+      batches.push({ batch, batchIds });
+    }
+
+    // Execute all batches
+    for (const { batch, batchIds } of batches) {
+      try {
+        await batch.commit();
+        successCount += batchIds.length;
+      } catch (error) {
+        errorCount += batchIds.length;
+        errors.push(`Failed to update batch: ${(error as Error).message}`);
+        console.error('Error in batch update:', error);
+      }
+    }
+
+    return { successCount, errorCount, errors };
+  } catch (error) {
+    console.error('Error in bulk role update:', error);
     throw error;
   }
 } 

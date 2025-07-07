@@ -19,6 +19,7 @@ import {
   fetchReservationsWithData,
   getReservationsCount,
   requestCancellation,
+  bulkCancelReservations,
   countActiveUserReservations,
   type ReservationsQueryParams,
   type ReservationsFilterParams,
@@ -50,6 +51,9 @@ export default function UserReservationsPage() {
     {}
   );
   const queryClient = useQueryClient();
+
+  // Bulk actions state
+  const [isBulkActionsLoading, setIsBulkActionsLoading] = useState(false);
 
   const queryParams: ReservationsQueryParams = {
     pageSize,
@@ -175,6 +179,51 @@ export default function UserReservationsPage() {
     },
   });
 
+  // Bulk cancellation mutation
+  const bulkCancelMutation = useMutation({
+    mutationFn: async (reservationIds: string[]) => {
+      setIsBulkActionsLoading(true);
+      return await bulkCancelReservations(reservationIds);
+    },
+    onSuccess: (result) => {
+      invalidateReservationQueries(queryClient, {
+        invalidateReservationsList: false, // Don't invalidate main admin list
+        invalidateReservationsCount: false, // Don't invalidate global count
+        invalidateDashboard: false,
+        invalidateActiveReservationsCount: true,
+        invalidateAvailableCars: true,
+        specificUserId: currentUser?.uid,
+      });
+
+      if (result.successCount > 0) {
+        if (settings?.autoCancelation) {
+          toast.success(t("reservations.bulkCancelSuccess", { 
+            count: result.successCount
+          }));
+        } else {
+          toast.success(t("reservations.cancellationRequested"), {
+            description: t("reservations.bulkCancelSuccess", { 
+              count: result.successCount
+            }),
+          });
+        }
+      }
+      if (result.errorCount > 0) {
+        toast.error(t("reservations.bulkCancelPartialError", { 
+          successCount: result.successCount, 
+          errorCount: result.errorCount 
+        }));
+      }
+
+      setIsBulkActionsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Error in bulk cancellation:", error);
+      toast.error(t("reservations.bulkCancelError"));
+      setIsBulkActionsLoading(false);
+    },
+  });
+
   const handleCancel = (reservation: ReservationWithCarAndUser) => {
     if (!settings) return;
 
@@ -204,6 +253,37 @@ export default function UserReservationsPage() {
     if (reservationToCancel) {
       cancelMutation.mutate(reservationToCancel.id);
     }
+  };
+
+  // Bulk action handler
+  const handleBulkCancel = (reservationIds: string[]) => {
+    if (reservationIds.length === 0) {
+      toast.error(t("reservations.noReservationsSelected"));
+      return;
+    }
+
+    // Check advance cancellation time for all selected reservations
+    if (settings && settings.advanceCancellationTime > 0) {
+      const now = new Date();
+      const invalidReservations = reservationsWithCarData.filter(reservation => {
+        if (!reservationIds.includes(reservation.id)) return false;
+        
+        const startTime = new Date(reservation.startDateTime);
+        const hoursUntilStart = (startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+        return hoursUntilStart < settings.advanceCancellationTime;
+      });
+
+      if (invalidReservations.length > 0) {
+        toast.error(t("reservations.cancellationTooLate"), {
+          description: t("reservations.cancellationTooLateDesc", {
+            hours: settings.advanceCancellationTime,
+          }),
+        });
+        return;
+      }
+    }
+
+    bulkCancelMutation.mutate(reservationIds);
   };
 
   // Query for active reservations count
@@ -348,6 +428,10 @@ export default function UserReservationsPage() {
           endDateFilter={endDateFilter}
           countError={countError}
           countLoading={countLoading}
+          bulkActions={{
+            onCancel: handleBulkCancel,
+            isLoading: isBulkActionsLoading,
+          }}
         />
       </div>
 

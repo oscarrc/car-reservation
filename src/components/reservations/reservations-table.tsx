@@ -39,6 +39,8 @@ import {
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { ColumnSelector } from "@/components/ui/column-selector";
+import { BulkActions, createReservationBulkActions } from "@/components/ui/bulk-actions";
+import { BulkConfirmationDialog } from "@/components/ui/bulk-confirmation-dialog";
 import { cn } from "@/lib/utils";
 import type { ReservationWithId, ReservationStatus } from "@/types/reservation";
 
@@ -67,6 +69,12 @@ interface ReservationsTableProps {
   endDateFilter: Date | undefined;
   countError?: Error | null;
   countLoading?: boolean;
+  // Bulk actions
+  bulkActions?: {
+    onCancel?: (reservationIds: string[]) => void;
+    onStatusChange?: (reservationIds: string[], status: ReservationStatus) => void;
+    isLoading?: boolean;
+  };
 }
 
 export function ReservationsTable({
@@ -88,10 +96,20 @@ export function ReservationsTable({
   endDateFilter,
   countError,
   countLoading,
+  bulkActions,
 }: ReservationsTableProps) {
   const { t } = useTranslation();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+  
+  // Confirmation dialog state
+  const [confirmationDialog, setConfirmationDialog] = React.useState<{
+    open: boolean;
+    action: any;
+  }>({
+    open: false,
+    action: null,
+  });
 
   // Use provided pagination or fallback to defaults
   const pageIndex = pagination?.pageIndex || 0;
@@ -138,6 +156,49 @@ export function ReservationsTable({
     statusFilter !== "all" ||
     startDateFilter !== undefined ||
     endDateFilter !== undefined;
+
+  // Bulk action handlers
+  const handleBulkCancel = () => {
+    if (!bulkActions?.onCancel) return;
+    
+    const selectedReservations = table.getFilteredSelectedRowModel().rows;
+    const reservationIds = selectedReservations.map(row => row.original.id);
+    
+    if (reservationIds.length === 0) return;
+    
+    bulkActions.onCancel(reservationIds);
+  };
+
+  // Handle bulk action clicks with confirmation
+  const handleBulkActionClick = (action: any) => {
+    if (action.requiresConfirmation) {
+      setConfirmationDialog({
+        open: true,
+        action,
+      });
+    } else {
+      action.onClick();
+    }
+  };
+
+  // Handle confirmation dialog confirm
+  const handleConfirmAction = () => {
+    if (confirmationDialog.action) {
+      confirmationDialog.action.onClick();
+      setConfirmationDialog({ open: false, action: null });
+    }
+  };
+
+  const handleBulkStatusChange = (status: ReservationStatus) => {
+    if (!bulkActions?.onStatusChange) return;
+    
+    const selectedReservations = table.getFilteredSelectedRowModel().rows;
+    const reservationIds = selectedReservations.map(row => row.original.id);
+    
+    if (reservationIds.length === 0) return;
+    
+    bulkActions.onStatusChange(reservationIds, status);
+  };
 
   // Function to get translated column name
   const getColumnDisplayName = (columnId: string) => {
@@ -259,14 +320,41 @@ export function ReservationsTable({
             )}
           </div>
 
-          {/* Column Visibility - Using new component */}
-          <ColumnSelector
-            tableId="reservations-table"
-            columns={table.getAllColumns()}
-            getColumnDisplayName={getColumnDisplayName}
-          />
+          {/* Bulk Actions and Column Visibility */}
+          <div className="flex items-center gap-2">
+            {bulkActions && (
+              <BulkActions
+                selectedCount={table.getFilteredSelectedRowModel().rows.length}
+                isLoading={bulkActions.isLoading}
+                onActionClick={handleBulkActionClick}
+                {...createReservationBulkActions(
+                  t,
+                  bulkActions.onCancel ? handleBulkCancel : undefined,
+                  bulkActions.onStatusChange ? handleBulkStatusChange : undefined,
+                  bulkActions.isLoading
+                )}
+              />
+            )}
+            
+            <ColumnSelector
+              tableId="reservations-table"
+              columns={table.getAllColumns()}
+              getColumnDisplayName={getColumnDisplayName}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Bulk Confirmation Dialog */}
+      <BulkConfirmationDialog
+        open={confirmationDialog.open}
+        onOpenChange={(open) => setConfirmationDialog({ open, action: confirmationDialog.action })}
+        onConfirm={handleConfirmAction}
+        title={confirmationDialog.action?.confirmationTitle || ""}
+        description={confirmationDialog.action?.confirmationDescription || ""}
+        confirmText={confirmationDialog.action?.confirmText}
+        isLoading={bulkActions?.isLoading}
+      />
 
       <div className="rounded-md border">
         <Table>

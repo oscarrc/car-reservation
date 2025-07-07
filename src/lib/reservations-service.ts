@@ -526,3 +526,95 @@ export async function deleteReservationsByYear(year: number): Promise<{ deletedC
     throw error;
   }
 } 
+
+// Bulk operations for reservations
+export async function bulkUpdateReservationStatus(
+  reservationIds: string[],
+  status: ReservationStatus
+): Promise<{ successCount: number; errorCount: number; errors: string[] }> {
+  try {
+    const batchSize = 500; // Firestore batch limit
+    const batches = [];
+    const errors: string[] = [];
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Process reservations in batches
+    for (let i = 0; i < reservationIds.length; i += batchSize) {
+      const batch = writeBatch(db);
+      const batchIds = reservationIds.slice(i, i + batchSize);
+      
+      batchIds.forEach((reservationId) => {
+        const reservationDoc = doc(db, 'reservations', reservationId);
+        batch.update(reservationDoc, {
+          status,
+          updatedAt: Timestamp.fromDate(new Date())
+        });
+      });
+      
+      batches.push({ batch, batchIds });
+    }
+
+    // Execute all batches
+    for (const { batch, batchIds } of batches) {
+      try {
+        await batch.commit();
+        successCount += batchIds.length;
+      } catch (error) {
+        errorCount += batchIds.length;
+        errors.push(`Failed to update batch: ${(error as Error).message}`);
+        console.error('Error in batch update:', error);
+      }
+    }
+
+    return { successCount, errorCount, errors };
+  } catch (error) {
+    console.error('Error in bulk status update:', error);
+    throw error;
+  }
+}
+
+export async function bulkCancelReservations(
+  reservationIds: string[]
+): Promise<{ successCount: number; errorCount: number; errors: string[] }> {
+  try {
+    const batchSize = 500; // Firestore batch limit
+    const batches = [];
+    const errors: string[] = [];
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Process reservations in batches
+    for (let i = 0; i < reservationIds.length; i += batchSize) {
+      const batch = writeBatch(db);
+      const batchIds = reservationIds.slice(i, i + batchSize);
+      
+      batchIds.forEach((reservationId) => {
+        const reservationDoc = doc(db, 'reservations', reservationId);
+        batch.update(reservationDoc, {
+          status: 'cancelled' as ReservationStatus,
+          updatedAt: Timestamp.fromDate(new Date())
+        });
+      });
+      
+      batches.push({ batch, batchIds });
+    }
+
+    // Execute all batches
+    for (const { batch, batchIds } of batches) {
+      try {
+        await batch.commit();
+        successCount += batchIds.length;
+      } catch (error) {
+        errorCount += batchIds.length;
+        errors.push(`Failed to cancel batch: ${(error as Error).message}`);
+        console.error('Error in batch cancellation:', error);
+      }
+    }
+
+    return { successCount, errorCount, errors };
+  } catch (error) {
+    console.error('Error in bulk cancellation:', error);
+    throw error;
+  }
+} 
