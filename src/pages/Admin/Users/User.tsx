@@ -4,14 +4,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Edit } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { SectionHeader } from "@/components/ui/section-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ReservationsTable } from "@/components/reservations/reservations-table";
 import { UserFormDialog } from "@/components/users/user-form-dialog";
+import { UserFullInfoCard } from "@/components/users/user-full-info-card";
+import { UserInfoSkeleton } from "@/components/users/user-info-skeleton";
 import { ReservationFormDialog } from "@/components/reservations/reservation-form-dialog";
 import { createUserDetailsReservationColumns } from "@/components/reservations/user-details-reservation-columns";
 import type { ReservationWithCarAndUser } from "@/components/reservations/user-details-reservation-columns";
@@ -143,7 +142,7 @@ export default function UserPage() {
       // Use utility for targeted invalidation
       invalidateReservationQueries(queryClient, {
         invalidateReservationsList: true, // Update admin list
-        invalidateReservationsCount: true, // Update global count  
+        invalidateReservationsCount: true, // Update global count
         invalidateDashboard: true, // Status changes affect dashboard
         specificUserId: userId,
       });
@@ -158,7 +157,13 @@ export default function UserPage() {
 
   // Bulk status update mutation
   const bulkStatusMutation = useMutation({
-    mutationFn: async ({ reservationIds, status }: { reservationIds: string[]; status: ReservationStatus }) => {
+    mutationFn: async ({
+      reservationIds,
+      status,
+    }: {
+      reservationIds: string[];
+      status: ReservationStatus;
+    }) => {
       setIsBulkActionsLoading(true);
       return await bulkUpdateReservationStatus(reservationIds, status);
     },
@@ -171,16 +176,20 @@ export default function UserPage() {
       });
 
       if (result.successCount > 0) {
-        toast.success(t("reservations.bulkStatusUpdateSuccess", { 
-          count: result.successCount,
-          status: t(`reservations.${status}`)
-        }));
+        toast.success(
+          t("reservations.bulkStatusUpdateSuccess", {
+            count: result.successCount,
+            status: t(`reservations.${status}`),
+          })
+        );
       }
       if (result.errorCount > 0) {
-        toast.error(t("reservations.bulkStatusUpdatePartialError", { 
-          successCount: result.successCount, 
-          errorCount: result.errorCount 
-        }));
+        toast.error(
+          t("reservations.bulkStatusUpdatePartialError", {
+            successCount: result.successCount,
+            errorCount: result.errorCount,
+          })
+        );
       }
 
       setIsBulkActionsLoading(false);
@@ -205,21 +214,16 @@ export default function UserPage() {
   };
 
   // Bulk action handler
-  const handleBulkStatusChange = (reservationIds: string[], status: ReservationStatus) => {
+  const handleBulkStatusChange = (
+    reservationIds: string[],
+    status: ReservationStatus
+  ) => {
     if (reservationIds.length === 0) {
       toast.error(t("reservations.noReservationsSelected"));
       return;
     }
 
     bulkStatusMutation.mutate({ reservationIds, status });
-  };
-
-  const getStatusVariant = (suspended: boolean) => {
-    return suspended ? "destructive" : "success";
-  };
-
-  const getRoleVariant = (role: string) => {
-    return role === "admin" ? "default" : "secondary";
   };
 
   const columns = createUserDetailsReservationColumns({
@@ -231,6 +235,45 @@ export default function UserPage() {
 
   const isLoading = userLoading || reservationsLoading;
   const hasError = userError || reservationsError;
+
+  // Show loading state first
+  if (userLoading) {
+    return (
+      <>
+        <SectionHeader
+          title={t("users.userDetails")}
+          subtitle={t("users.userDetailsSubtitle")}
+        />
+        <div className="px-4 lg:px-6 space-y-6">
+          <UserInfoSkeleton />
+
+          {/* Reservations Table with Loading State */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">
+              {t("users.userReservations")}
+            </h3>
+            <ReservationsTable
+              columns={columns}
+              data={[]}
+              loading={true}
+              pagination={undefined}
+              onStatusFilterChange={setStatusFilter}
+              onStartDateFilterChange={setStartDateFilter}
+              onEndDateFilterChange={setEndDateFilter}
+              onPageChange={setPageIndex}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPageIndex(0);
+              }}
+              statusFilter={statusFilter}
+              startDateFilter={startDateFilter}
+              endDateFilter={endDateFilter}
+            />
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (hasError) {
     return (
@@ -247,22 +290,6 @@ export default function UserPage() {
             description={t("users.errorLoadingUserDetailsDescription")}
             homePath="/admin/users"
           />
-        </div>
-      </>
-    );
-  }
-
-  if (userLoading) {
-    return (
-      <>
-        <SectionHeader
-          title={t("users.userDetails")}
-          subtitle={t("users.userDetailsSubtitle")}
-        />
-        <div className="px-4 lg:px-6">
-          <div className="text-center">
-            <p>{t("loading.loadingUsers")}</p>
-          </div>
         </div>
       </>
     );
@@ -289,65 +316,14 @@ export default function UserPage() {
       <SectionHeader
         title={t("users.userDetails")}
         subtitle={t("users.userDetailsSubtitle")}
+        action={() => setEditUserOpen(true)}
+        actionText={t("user.editUser")}
+        actionIcon={Edit}
       />
 
       <div className="px-4 lg:px-6 space-y-6">
         {/* User Info Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t("users.userInformation")}
-            </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setEditUserOpen(true)}
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              {t("common.edit")}
-            </Button>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("users.name")}
-                </p>
-                <p className="text-sm">{user.name}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("users.email")}
-                </p>
-                <p className="text-sm">{user.email}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("users.phone")}
-                </p>
-                <p className="text-sm">
-                  {user.phone || t("common.notProvided")}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("users.role")}
-                </p>
-                <Badge variant={getRoleVariant(user.role)}>
-                  {t(`users.roles.${user.role}`)}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("users.status")}
-                </p>
-                <Badge variant={getStatusVariant(user.suspended)}>
-                  {user.suspended ? t("users.suspended") : t("users.active")}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <UserFullInfoCard user={user} />
 
         {/* Reservations Table */}
         <div>

@@ -875,5 +875,8 @@
     "emailsDontMatch": "Email addresses don't match",
     "passwordMinLength": "Password must be at least 6 characters",
     "passwordsDontMatch": "Passwords don't match"
+  },
+  "user": {
+    "editUser": "Edit user"
   }
 }

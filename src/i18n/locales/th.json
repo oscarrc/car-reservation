@@ -342,7 +342,6 @@
     "bulkDeletePartialError": "ลบอีเมล {{successCount}} รายการสำเร็จ แต่ {{errorCount}} รายการล้มเหลว",
     "bulkDeleteError": "ไม่สามารถลบอีเมลได้",
     "noEmailsSelected": "ไม่ได้เลือกอีเมล",
-    "deleteSelectedConfirm": "ลบอีเมลที่เลือก {{count}} รายการ",
     "deleteSelectedConfirmDesc": "การดำเนินการนี้จะลบอีเมลที่เลือกอย่างถาวร การดำเนินการนี้ไม่สามารถยกเลิกได้"
   },
   "notFound": {
@@ -764,9 +763,7 @@
     "bulkRoleUpdatePartialError": "อัปเดตผู้ใช้ {{successCount}} คนสำเร็จ แต่ {{errorCount}} คนล้มเหลว",
     "bulkRoleUpdateError": "ไม่สามารถอัปเดตบทบาทผู้ใช้ได้",
     "noUsersSelected": "ไม่ได้เลือกผู้ใช้",
-    "suspendSelectedConfirm": "ระงับผู้ใช้ที่เลือก {{count}} คน",
     "suspendSelectedConfirmDesc": "การดำเนินการนี้จะระงับผู้ใช้ที่เลือก ป้องกันไม่ให้เข้าถึงระบบ",
-    "unsuspendSelectedConfirm": "ยกเลิกการระงับผู้ใช้ที่เลือก {{count}} คน",
     "unsuspendSelectedConfirmDesc": "การดำเนินการนี้จะคืนสิทธิ์การเข้าถึงระบบให้กับผู้ใช้ที่เลือก"
   },
   "settings": {
@@ -878,5 +875,8 @@
     "emailsDontMatch": "อีเมลไม่ตรงกัน",
     "passwordMinLength": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
     "passwordsDontMatch": "รหัสผ่านไม่ตรงกัน"
+  },
+  "user": {
+    "editUser": "แก้ไขผู้ใช้"
   }
 }
