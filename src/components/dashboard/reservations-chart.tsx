@@ -24,6 +24,7 @@ import {
 import { fetchDailyReservations } from "@/lib/dashboard-service";
 import { getLocaleString } from "@/lib/date-locale";
 import { cn } from "@/lib/utils";
+import { queryConfig } from "@/lib/query-config";
 
 const reservationsChartConfig = {
   confirmed: {
@@ -65,8 +66,8 @@ export function ReservationsChart({
   } = useQuery({
     queryKey: ["daily-reservations", currentDate.year, currentDate.month],
     queryFn: () => fetchDailyReservations(currentDate.year, currentDate.month),
-    staleTime: 5 * 60 * 1000, // 5 minutes - reservations change more frequently
-    gcTime: 15 * 60 * 1000, // 15 minutes cache
+    staleTime: queryConfig.dashboard.staleTime,
+    gcTime: queryConfig.dashboard.gcTime,
     refetchOnWindowFocus: false,
   });
 

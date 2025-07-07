@@ -18,6 +18,7 @@ import {
   where
 } from 'firebase/firestore';
 import { generateCarSearchKeywords, prepareSearchTerms } from './search-utils';
+import { batchArray, batchPromises } from './batch-utils';
 
 import { db } from './firebase';
 
@@ -294,28 +295,21 @@ export async function fetchCarsByIds(carIds: string[]): Promise<CarWithId[]> {
       return [];
     }
 
-    // Firestore 'in' queries are limited to 10 items, so we need to batch them
-    const batches: Promise<CarWithId[]>[] = [];
-    const batchSize = 10;
+    // Use the batch utility for more efficient batching
+    const batches = batchArray(carIds);
     
-    for (let i = 0; i < carIds.length; i += batchSize) {
-      const batchIds = carIds.slice(i, i + batchSize);
+    const batchPromises = batches.map(async (batchIds) => {
+      const carsCollection = collection(db, 'cars');
+      const q = query(carsCollection, where('__name__', 'in', batchIds));
+      const querySnapshot = await getDocs(q);
       
-      const batchPromise = (async () => {
-        const carsCollection = collection(db, 'cars');
-        const q = query(carsCollection, where('__name__', 'in', batchIds));
-        const querySnapshot = await getDocs(q);
-        
-        return querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data() as Car
-        }));
-      })();
-      
-      batches.push(batchPromise);
-    }
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data() as Car
+      }));
+    });
     
-    const batchResults = await Promise.all(batches);
+    const batchResults = await batchPromises(batchPromises);
     return batchResults.flat();
   } catch (error) {
     console.error('Error fetching cars by IDs:', error);

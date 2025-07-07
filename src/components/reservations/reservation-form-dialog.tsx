@@ -55,6 +55,7 @@ import {
 } from "@/lib/cars-service";
 import { format, getLocalizedFormats } from "@/lib/date-locale";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryConfig } from "@/lib/query-config";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -171,8 +172,8 @@ function CreateReservationForm({
       return fetchAvailableCarsForDateRange(startDateTime, endDateTime);
     },
     enabled: !!startDateTime && !!endDateTime,
-    staleTime: 60000, // 1 minute
-    gcTime: 300000, // 5 minutes
+    staleTime: queryConfig.availableCars.staleTime,
+    gcTime: queryConfig.availableCars.gcTime,
   });
 
   // Create reservation mutation
@@ -659,6 +660,8 @@ function EditReservationForm({
   const { data: userData } = useQuery({
     queryKey: ["user", reservation.userRef.id],
     queryFn: () => fetchUserById(reservation.userRef.id),
+    staleTime: queryConfig.users.staleTime,
+    gcTime: queryConfig.users.gcTime,
   });
 
   // Fetch available cars for the reservation time period
@@ -688,8 +691,8 @@ function EditReservationForm({
 
       return cars;
     },
-    staleTime: 60000, // 1 minute
-    gcTime: 300000, // 5 minutes
+    staleTime: queryConfig.availableCars.staleTime,
+    gcTime: queryConfig.availableCars.gcTime,
   });
 
   // Update reservation mutation

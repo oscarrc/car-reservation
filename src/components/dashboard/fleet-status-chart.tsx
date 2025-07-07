@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/chart";
 import { fetchFleetStatus } from "@/lib/dashboard-service";
 import { cn } from "@/lib/utils";
+import { queryConfig } from "@/lib/query-config";
 
 interface FleetStatusChartProps {
   className?: string;
@@ -58,8 +59,8 @@ export function FleetStatusChart({ className }: FleetStatusChartProps) {
   } = useQuery({
     queryKey: ["fleet-status"],
     queryFn: fetchFleetStatus,
-    staleTime: 10 * 60 * 1000, // 10 minutes - fleet status changes infrequently
-    gcTime: 30 * 60 * 1000, // 30 minutes - keep in cache for longer
+    staleTime: queryConfig.dashboard.staleTime,
+    gcTime: queryConfig.dashboard.gcTime,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,

@@ -31,6 +31,8 @@ import {
 } from "@tanstack/react-table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { invalidateCarQueries } from "@/lib/query-utils";
+import { queryConfig } from "@/lib/query-config";
+import { useOptimizedSearch } from "@/hooks/useOptimizedSearch";
 
 import { ColumnSelector } from "@/components/ui/column-selector";
 import { ErrorDisplay } from "@/components/ui/error-display";
@@ -69,7 +71,6 @@ export function CarsTable({
   const [rowSelection, setRowSelection] = React.useState({});
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(25);
-  const [localSearchTerm, setLocalSearchTerm] = React.useState(searchTerm);
   const [cursors, setCursors] = React.useState<{
     [key: number]: PaginationCursor;
   }>({});
@@ -77,20 +78,19 @@ export function CarsTable({
     "all"
   );
 
-  // Debounce search term
-  const [debouncedSearchTerm, setDebouncedSearchTerm] =
-    React.useState(searchTerm);
+  // Use optimized search hook
+  const { 
+    searchTerm: localSearchTerm, 
+    setSearchTerm: setLocalSearchTerm, 
+    debouncedSearchTerm,
+    isSearching 
+  } = useOptimizedSearch(searchTerm);
 
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(localSearchTerm);
-      onSearchChange?.(localSearchTerm);
-      setPageIndex(0); // Reset to first page when searching
-      setCursors({}); // Clear cursor cache when searching
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [localSearchTerm, onSearchChange]);
+    onSearchChange?.(debouncedSearchTerm);
+    setPageIndex(0); // Reset to first page when searching
+    setCursors({}); // Clear cursor cache when searching
+  }, [debouncedSearchTerm, onSearchChange]);
 
   // Status update mutation with optimistic updates
   const statusMutation = useMutation({
@@ -206,7 +206,8 @@ export function CarsTable({
       }
       return fetchCars(queryParams);
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: queryConfig.cars.staleTime,
+    gcTime: queryConfig.cars.gcTime,
   });
 
   // Fetch total count (separate query that only invalidates when filters change)
@@ -219,7 +220,8 @@ export function CarsTable({
     queryFn: async () => {
       return getCarsCount(filterParams);
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: queryConfig.counts.staleTime,
+    gcTime: queryConfig.counts.gcTime,
   });
 
   const data = carsResponse?.cars || [];
