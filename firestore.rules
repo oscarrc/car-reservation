@@ -1,38 +1,89 @@
 rules_version = '2';
 
 service cloud.firestore {
-  match /databases/{database}/documents {	  
-    match /allowedEmails/{email} {
-    	allow read: 
-      	if true;
-      allow write:
-      	if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+  match /databases/{database}/documents {
+
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
-  	match /cars {
-    	allow read: if request.auth != null;
-      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+    // Helper function to check if user is authenticated and not suspended
+    function isActiveUser() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.suspended != true;
     }
+
+    // Helper function to check if user is authenticated (regardless of suspension)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // AllowedEmails collection - anyone can read (for registration validation), only admins can write
+    match /allowedEmails/{emailId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Cars collection - only active users can read, only admins can write
+    match /cars/{carId} {
+      allow read: if isActiveUser();
+      allow write: if isAdmin();
+    }
+
+    // Cars collection (for listing all cars) - only active users can read, only admins can write
+    match /cars {
+      allow read: if isActiveUser();
+      allow write: if isAdmin();
+    }
+
+    // Reservations collection - active users can read and create, admins can modify
+    match /reservations/{reservationId} {
+      allow read: if isActiveUser();
+      allow create: if isActiveUser();
+      allow update, delete: if isAdmin();
+    }
+
+    // Reservations collection (for listing all reservations) - only active users can read
     match /reservations {
-    	allow read: if request.auth != null;
-      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-      allow create: if request.auth != null;
+      allow read: if isActiveUser();
+      allow write: if isAdmin();
     }
+
+    // Settings collection - active users can read, only admins can write
+    match /settings/{settingId} {
+      allow read: if isActiveUser();
+      allow write: if isAdmin();
+    }
+
+    // Settings collection (for listing all settings) - active users can read, only admins can write
     match /settings {
-    	allow read: if request.auth != null;
-      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow read: if isActiveUser();
+      allow write: if isAdmin();
     }
+
+    // Users collection (for listing all users) - only admins can access
     match /users {
-    	allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow read: if isAdmin();
+      allow write: if isAdmin();
     }
-    match /users/{user} {
-    	allow read: 
-      	if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || request.auth.uid == user;
-      allow write:
-      	if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'  || request.auth.uid == user;
+
+    // Individual user documents - special logic for suspended users
+    match /users/{userId} {
+      // Users can always read their own profile (even if suspended, to check status)
+      // Admins can read any user profile
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      
+      // Only active users can write to their own profile
+      // Admins can write to any user profile (including suspended users, to manage them)
+      allow write: if (isActiveUser() && request.auth.uid == userId) || isAdmin();
     }
+
+    // Catch-all rule to explicitly deny access to any other collections/documents
+    // This ensures no unintended access and suspended users are blocked from everything else
     match /{document=**} {
-      allow read, write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.suspended != true;
+      allow read, write: if false;
     }
   }
 }
