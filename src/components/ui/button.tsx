@@ -52,6 +52,7 @@ function Button({
       data-slot="button"
       className={cn(
         "cursor-pointer",
+        "disabled:cursor-not-allowed",
         buttonVariants({ variant, size, className })
       )}
       {...props}
