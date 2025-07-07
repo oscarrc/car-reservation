@@ -112,10 +112,10 @@ export async function getAllowedEmailsCount(params: AllowedEmailsFilterParams = 
 export async function addAllowedEmail(email: string, adminId: string): Promise<void> {
   try {
     const now = new Date();
-    const allowedEmail: Omit<AllowedEmail, 'timestamp'> = {
+    const allowedEmail = {
       email: email.toLowerCase().trim(),
       adminId,
-      status: 'pending',
+      status: 'pending' as const,
     };
 
     await addDoc(collection(db, 'allowedEmails'), {

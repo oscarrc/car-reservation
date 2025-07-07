@@ -1,7 +1,6 @@
 "use client";
 
 import { FleetStatusChart } from "@/components/dashboard/fleet-status-chart";
-import { MigrationRunner } from "@/components/MigrationRunner";
 import { ReservationsChart } from "@/components/dashboard/reservations-chart";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -41,7 +40,6 @@ export default function AdminPage() {
           </p>
         )}
       </div>
-      <MigrationRunner />
       <div className="grid gap-4 lg:grid-cols-5 px-4 lg:px-6">
         <ReservationsChart
           className="lg:col-span-3"
