@@ -1,4 +1,5 @@
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config";
 
 import ActionPage from "./pages/Auth/Action";
@@ -22,91 +23,163 @@ import RegisterPage from "./pages/Auth/Register";
 import ReservationsPage from "./pages/Admin/Reservations";
 import SettingsPage from "./pages/Admin/Settings";
 import SidebarLayout from "./layouts/Sidebar";
+import { Toaster } from "sonner";
 import UserFleetPage from "./pages/App/Fleet";
 import UserPage from "./pages/Admin/Users/User";
 import UserReservationsPage from "./pages/App/Reservations";
 import UsersPage from "./pages/Admin/Users";
 
 const App = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
+
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <LoginPage />,
+    },
+    {
+      path: "/auth",
+      children: [
+        {
+          index: true,
+          element: <LoginPage />,
+        },
+        {
+          path: "register",
+          element: <RegisterPage />,
+        },
+        {
+          path: "forgot",
+          element: <ForgotPage />,
+        },
+        {
+          path: "action",
+          element: <ActionPage />,
+        },
+      ],
+    },
+    {
+      path: "/admin",
+      element: (
+        <Protected requiredRole="admin">
+          <SidebarLayout config={adminSidebarConfig} />
+        </Protected>
+      ),
+      children: [
+        {
+          index: true,
+          element: <AdminPage />,
+        },
+        {
+          path: "users",
+          element: <UsersPage />,
+        },
+        {
+          path: "users/:userId",
+          element: <UserPage />,
+        },
+        {
+          path: "users/allowed-emails",
+          element: <AllowedEmailsPage />,
+        },
+        {
+          path: "fleet",
+          element: <FleetPage />,
+        },
+        {
+          path: "fleet/:carId",
+          element: <CarPage />,
+        },
+        {
+          path: "reservations",
+          element: <ReservationsPage />,
+        },
+        {
+          path: "reservations/:reservationId",
+          element: <AdminReservationPage />,
+        },
+        {
+          path: "settings",
+          element: <SettingsPage />,
+        },
+      ],
+    },
+    {
+      path: "/app",
+      element: (
+        <Protected>
+          <SidebarLayout config={appSidebarConfig} />
+        </Protected>
+      ),
+      children: [
+        {
+          index: true,
+          element: <AppPage />,
+        },
+        {
+          path: "reservations",
+          element: <UserReservationsPage />,
+        },
+        {
+          path: "reservations/:reservationId",
+          element: <AppReservationPage />,
+        },
+        {
+          path: "browse",
+          element: <UserFleetPage />,
+        },
+      ],
+    },
+    {
+      path: "/profile",
+      element: (
+        <Protected>
+          <SidebarLayout config={appSidebarConfig} />
+        </Protected>
+      ),
+      children: [
+        {
+          index: true,
+          element: <ProfilePage />,
+        },
+      ],
+    },
+    {
+      path: "onboarding",
+      element: (
+        <Protected>
+          <OnboardingLayout />
+        </Protected>
+      ),
+      children: [
+        {
+          index: true,
+          element: <OnboardingPage />,
+        },
+      ],
+    },
+    {
+      path: "*",
+      element: <NotFoundPage />,
+    },
+  ]);
+
   return (
-    <PWAProvider>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/auth">
-              <Route index element={<LoginPage />} />
-              <Route path="register" element={<RegisterPage />} />
-              <Route path="forgot" element={<ForgotPage />} />
-              <Route path="action" element={<ActionPage />} />
-            </Route>
-            <Route
-              path="/admin"
-              element={
-                <Protected requiredRole="admin" fallbackPath="/app">
-                  <SidebarLayout config={adminSidebarConfig} />
-                </Protected>
-              }
-            >
-              <Route index element={<AdminPage />} />
-              <Route path="fleet" element={<FleetPage />} />
-              <Route path="fleet/:carId" element={<CarPage />} />
-              <Route path="reservations" element={<ReservationsPage />} />
-              <Route
-                path="reservations/:reservationId"
-                element={<AdminReservationPage />}
-              />
-              <Route path="users" element={<UsersPage />} />
-              <Route path="users/:userId" element={<UserPage />} />
-              <Route
-                path="users/allowed-emails"
-                element={<AllowedEmailsPage />}
-              />
-              <Route path="settings" element={<SettingsPage />} />
-            </Route>
-
-            <Route
-              path="/app"
-              element={
-                <Protected requiredRole="teacher">
-                  <SidebarLayout config={appSidebarConfig} />
-                </Protected>
-              }
-            >
-              <Route index element={<AppPage />} />
-              <Route path="reservations" element={<UserReservationsPage />} />
-              <Route
-                path="reservations/:reservationId"
-                element={<AppReservationPage />}
-              />
-              <Route path="browse" element={<UserFleetPage />} />
-            </Route>
-
-            <Route
-              path="/profile"
-              element={
-                <Protected>
-                  <SidebarLayout config={appSidebarConfig} />
-                </Protected>
-              }
-            >
-              <Route index element={<ProfilePage />} />
-            </Route>
-            <Route
-              path="/onboarding"
-              element={
-                <Protected>
-                  <OnboardingLayout />
-                </Protected>
-              }
-            >
-              <Route index element={<OnboardingPage />} />
-            </Route>
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Router>
-      </AuthProvider>
-    </PWAProvider>
+    <QueryClientProvider client={queryClient}>
+      <PWAProvider>
+        <AuthProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </AuthProvider>
+      </PWAProvider>
+    </QueryClientProvider>
   );
 };
 
