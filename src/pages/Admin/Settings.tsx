@@ -226,7 +226,7 @@ export default function SettingsPage() {
         actionIcon={updateMutation.isPending ? Loader2 : Save}
       />
 
-      <div className="px-4 lg:px-6">
+      <div className="px-4 lg:px-6 space-y-6">
         <Form {...form}>
           <form className="grid gap-6 lg:grid-cols-2">
             {/* Reservation Management */}
@@ -504,106 +504,106 @@ export default function SettingsPage() {
                 />
               </CardContent>
             </Card>
-
-            {/* Data Cleanup Card - Full Width */}
-            <Card className="lg:col-span-2 border-destructive/20 bg-destructive/5">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
-                    <Trash2 className="h-5 w-5 text-destructive" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-destructive">
-                      {t("settings.dataCleanup.title")}
-                    </CardTitle>
-                    <CardDescription>
-                      {t("settings.dataCleanup.subtitle")}
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                  {/* Year Selector */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      {t("settings.dataCleanup.selectYear")}
-                    </label>
-                    <Select
-                      value={selectedYear?.toString() || ""}
-                      onValueChange={(value) =>
-                        setSelectedYear(value ? parseInt(value) : null)
-                      }
-                    >
-                      <SelectTrigger className="w-full mb-0 min-h-10">
-                        <SelectValue
-                          placeholder={t(
-                            "settings.dataCleanup.selectYearPlaceholder"
-                          )}
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableYears.map((year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Record Count Display */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      {t("settings.dataCleanup.estimatedRecords")}
-                    </label>
-                    <div className="h-10 px-3 py-2 border rounded-md bg-muted/50 flex items-center text-sm">
-                      {selectedYear ? (
-                        countLoading ? (
-                          <span className="text-muted-foreground">
-                            {t("settings.dataCleanup.loadingCount")}
-                          </span>
-                        ) : (
-                          <span>
-                            {reservationCount.toLocaleString()}{" "}
-                            {t("settings.dataCleanup.reservations")}
-                          </span>
-                        )
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Delete Button */}
-                  <Button
-                    variant="destructive"
-                    onClick={handleDeleteClick}
-                    disabled={
-                      !selectedYear ||
-                      countLoading ||
-                      deleteMutation.isPending ||
-                      reservationCount === 0
-                    }
-                    className="w-full md:w-auto min-h-10"
-                  >
-                    {deleteMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t("settings.dataCleanup.deleting")}
-                      </>
-                    ) : (
-                      <>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        {t("settings.dataCleanup.deleteData")}
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </form>
         </Form>
+
+        {/* Data Cleanup Card - Full Width */}
+        <Card className="lg:col-span-2 border-destructive/20 bg-destructive/5">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
+                <Trash2 className="h-5 w-5 text-destructive" />
+              </div>
+              <div>
+                <CardTitle className="text-destructive">
+                  {t("settings.dataCleanup.title")}
+                </CardTitle>
+                <CardDescription>
+                  {t("settings.dataCleanup.subtitle")}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              {/* Year Selector */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  {t("settings.dataCleanup.selectYear")}
+                </label>
+                <Select
+                  value={selectedYear?.toString() || ""}
+                  onValueChange={(value) =>
+                    setSelectedYear(value ? parseInt(value) : null)
+                  }
+                >
+                  <SelectTrigger className="w-full mb-0 min-h-10">
+                    <SelectValue
+                      placeholder={t(
+                        "settings.dataCleanup.selectYearPlaceholder"
+                      )}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableYears.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Record Count Display */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  {t("settings.dataCleanup.estimatedRecords")}
+                </label>
+                <div className="h-10 px-3 py-2 border rounded-md bg-muted/50 flex items-center text-sm">
+                  {selectedYear ? (
+                    countLoading ? (
+                      <span className="text-muted-foreground">
+                        {t("settings.dataCleanup.loadingCount")}
+                      </span>
+                    ) : (
+                      <span>
+                        {reservationCount.toLocaleString()}{" "}
+                        {t("settings.dataCleanup.reservations")}
+                      </span>
+                    )
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Delete Button */}
+              <Button
+                variant="destructive"
+                onClick={handleDeleteClick}
+                disabled={
+                  !selectedYear ||
+                  countLoading ||
+                  deleteMutation.isPending ||
+                  reservationCount === 0
+                }
+                className="w-full md:w-auto min-h-10"
+              >
+                {deleteMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t("settings.dataCleanup.deleting")}
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {t("settings.dataCleanup.deleteData")}
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Confirmation Dialog */}
         <DataCleanupConfirmationDialog

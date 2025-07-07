@@ -469,8 +469,8 @@ export async function getReservationsCountByYear(year: number): Promise<number> 
     const reservationsCollection = collection(db, 'reservations');
     const q = query(
       reservationsCollection,
-      where('startDateTime', '>=', Timestamp.fromDate(startOfYear)),
-      where('startDateTime', '<', Timestamp.fromDate(endOfYear))
+      where('endDateTime', '>=', Timestamp.fromDate(startOfYear)),
+      where('endDateTime', '<', Timestamp.fromDate(endOfYear))
     );
     
     const countSnapshot = await getCountFromServer(q);
@@ -492,8 +492,8 @@ export async function deleteReservationsByYear(year: number): Promise<{ deletedC
     // First, get all reservations for the year
     const q = query(
       reservationsCollection,
-      where('startDateTime', '>=', Timestamp.fromDate(startOfYear)),
-      where('startDateTime', '<', Timestamp.fromDate(endOfYear))
+      where('endDateTime', '>=', Timestamp.fromDate(startOfYear)),
+      where('endDateTime', '<', Timestamp.fromDate(endOfYear))
     );
     
     const querySnapshot = await getDocs(q);
