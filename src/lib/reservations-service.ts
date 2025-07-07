@@ -16,7 +16,11 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore';
-import type { ReservationStatus, ReservationWithId } from '@/types/reservation';
+import type { ReservationStatus, ReservationWithId, Reservation } from '@/types/reservation';
+import type { UserProfileWithId } from '@/types/user';
+import type { CarWithId } from '@/types/car';
+import { fetchUsersByIds } from './users-service';
+import { fetchCarsByIds } from './cars-service';
 
 import { db } from './firebase';
 
@@ -195,19 +199,31 @@ export async function fetchReservations(params: ReservationsQueryParams): Promis
     const querySnapshot = await getDocs(q);
     
     const docs = querySnapshot.docs;
-    const reservations: ReservationWithId[] = [];
+    const reservationDocs = docs.slice(0, pageSize);
     
-    // Process documents (exclude the extra one used for pagination check)
-    docs.slice(0, pageSize).forEach((doc) => {
-      const data = doc.data();
-      reservations.push({
+    const userIds = [...new Set(reservationDocs.map(doc => (doc.data() as Reservation).userRef?.id).filter(id => !!id) as string[])];
+    const carIds = [...new Set(reservationDocs.map(doc => (doc.data() as Reservation).carRef?.id).filter(id => !!id) as string[])];
+
+    const [users, cars] = await Promise.all([
+      userIds.length > 0 ? fetchUsersByIds(userIds) : Promise.resolve([]),
+      carIds.length > 0 ? fetchCarsByIds(carIds) : Promise.resolve([])
+    ]);
+
+    const usersMap = new Map(users.map(user => [user.id, user]));
+    const carsMap = new Map(cars.map(car => [car.id, car]));
+
+    const reservations: ReservationWithId[] = reservationDocs.map(doc => {
+      const data = doc.data() as Reservation;
+      return {
         id: doc.id,
         ...data,
-        startDateTime: data.startDateTime.toDate(),
-        endDateTime: data.endDateTime.toDate(),
-        createdAt: data.createdAt.toDate(),
-        updatedAt: data.updatedAt.toDate(),
-      } as ReservationWithId);
+        userRef: usersMap.get(data.userRef?.id) as UserProfileWithId,
+        carRef: carsMap.get(data.carRef?.id) as CarWithId,
+        startDateTime: (data.startDateTime as Timestamp).toDate(),
+        endDateTime: (data.endDateTime as Timestamp).toDate(),
+        createdAt: (data.createdAt as Timestamp).toDate(),
+        updatedAt: (data.updatedAt as Timestamp).toDate(),
+      };
     });
 
     // Calculate pagination state
@@ -288,14 +304,35 @@ export async function fetchReservationById(reservationId: string): Promise<Reser
       throw new Error('Reservation not found');
     }
     
-    const data = reservationSnap.data();
+    const reservationData = reservationSnap.data() as Reservation;
+
+    // Fetch user and car data
+    let userData: UserProfileWithId | undefined;
+    let carData: CarWithId | undefined;
+
+    if (reservationData.userRef?.id) {
+      const users = await fetchUsersByIds([reservationData.userRef.id]);
+      if (users.length > 0) {
+        userData = users[0];
+      }
+    }
+
+    if (reservationData.carRef?.id) {
+      const cars = await fetchCarsByIds([reservationData.carRef.id]);
+      if (cars.length > 0) {
+        carData = cars[0];
+      }
+    }
+
     return {
       id: reservationSnap.id,
-      ...data,
-      startDateTime: data.startDateTime.toDate(),
-      endDateTime: data.endDateTime.toDate(),
-      createdAt: data.createdAt.toDate(),
-      updatedAt: data.updatedAt.toDate(),
+      ...reservationData,
+      userRef: userData,
+      carRef: carData,
+      startDateTime: (reservationData.startDateTime as Timestamp).toDate(),
+      endDateTime: (reservationData.endDateTime as Timestamp).toDate(),
+      createdAt: (reservationData.createdAt as Timestamp).toDate(),
+      updatedAt: (reservationData.updatedAt as Timestamp).toDate(),
     } as ReservationWithId;
   } catch (error) {
     console.error('Error fetching reservation:', error);
