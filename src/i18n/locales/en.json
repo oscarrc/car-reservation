@@ -737,7 +737,32 @@
     "businessHoursDesc": "Set the operating hours for the reservation system",
     "supportEmails": "Support Email Addresses",
     "supportEmailsDesc": "Enter email addresses for support inquires, one per line",
-    "supportEmailsPlaceholder": "Enter support email addresses, one per line\\nsupport@company.com\\nhelp@company.com"
+    "supportEmailsPlaceholder": "Enter support email addresses, one per line\\nsupport@company.com\\nhelp@company.com",
+    "dataCleanup": {
+      "title": "Data Cleanup",
+      "subtitle": "Permanently delete old reservation data to manage storage and comply with data retention policies",
+      "selectYear": "Select Year",
+      "selectYearPlaceholder": "Choose a year to cleanup",
+      "estimatedRecords": "Estimated records",
+      "reservations": "reservations",
+      "deleteData": "Delete Data",
+      "year": "Year",
+      "recordsToDelete": "Records to delete",
+      "confirmTitle": "Permanently Delete Reservation Data?",
+      "confirmDescription": "You are about to permanently delete all reservation data for the selected year. This action cannot be undone.",
+      "confirmDelete": "Delete All Data",
+      "deleting": "Deleting...",
+      "warningTitle": "⚠️ Warning",
+      "warningPermanent": "This action is permanent and cannot be undone",
+      "warningReports": "Historical reports for this year will no longer be available",
+      "warningBackup": "Ensure you have proper backups if needed for compliance",
+      "successTitle": "Data Cleanup Completed",
+      "successDescription": "Successfully deleted {{count}} reservations from {{year}}",
+      "errorTitle": "Data Cleanup Failed",
+      "errorDescription": "Failed to delete reservation data. Please try again or contact support.",
+      "noDataFound": "No reservation data found for {{year}}",
+      "loadingCount": "Loading..."
+    }
   },
   "table": {
     "columns": "Columns",

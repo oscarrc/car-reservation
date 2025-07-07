@@ -737,7 +737,32 @@
     "businessHoursDesc": "กำหนดเวลาทำการสำหรับการจองรถยนต์",
     "supportEmails": "ที่อยู่อีเมลฝ่ายสนับสนุน",
     "supportEmailsDesc": "ที่อยู่อีเมลสำหรับฝ่ายสนับสนุนลูกค้า (หนึ่งบรรทัดต่อหนึ่งอีเมล)",
-    "supportEmailsPlaceholder": "support@company.comhelp@company.com"
+    "supportEmailsPlaceholder": "support@company.comhelp@company.com",
+    "dataCleanup": {
+      "title": "การล้างข้อมูล",
+      "subtitle": "ลบข้อมูลการจองเก่าอย่างถาวรเพื่อจัดการพื้นที่จัดเก็บและปฏิบัติตามนโยบายการเก็บรักษาข้อมูล",
+      "selectYear": "เลือกปี",
+      "selectYearPlaceholder": "เลือกปีที่ต้องการล้างข้อมูล",
+      "estimatedRecords": "ข้อมูลโดยประมาณ",
+      "reservations": "การจอง",
+      "deleteData": "ลบข้อมูล",
+      "year": "ปี",
+      "recordsToDelete": "ข้อมูลที่จะลบ",
+      "confirmTitle": "ลบข้อมูลการจองอย่างถาวร?",
+      "confirmDescription": "คุณกำลังจะลบข้อมูลการจองทั้งหมดของปีที่เลือกอย่างถาวร การดำเนินการนี้ไม่สามารถยกเลิกได้",
+      "confirmDelete": "ลบข้อมูลทั้งหมด",
+      "deleting": "กำลังลบ...",
+      "warningTitle": "⚠️ คำเตือน",
+      "warningPermanent": "การดำเนินการนี้เป็นการถาวรและไม่สามารถยกเลิกได้",
+      "warningReports": "รายงานประวัติของปีนี้จะไม่สามารถใช้งานได้อีก",
+      "warningBackup": "ตรวจสอบให้แน่ใจว่าคุณมีข้อมูลสำรองที่เหมาะสมหากจำเป็นสำหรับการปฏิบัติตามกฎหมาย",
+      "successTitle": "ล้างข้อมูลเสร็จสิ้น",
+      "successDescription": "ลบการจอง {{count}} รายการจากปี {{year}} เรียบร้อยแล้ว",
+      "errorTitle": "การล้างข้อมูลล้มเหลว",
+      "errorDescription": "ไม่สามารถลบข้อมูลการจองได้ กรุณาลองอีกครั้งหรือติดต่อฝ่ายสนับสนุน",
+      "noDataFound": "ไม่พบข้อมูลการจองสำหรับปี {{year}}",
+      "loadingCount": "กำลังโหลด..."
+    }
   },
   "table": {
     "columns": "คอลัมน์",

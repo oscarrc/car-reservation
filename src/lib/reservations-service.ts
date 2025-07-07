@@ -14,15 +14,16 @@ import {
   query,
   startAfter,
   updateDoc,
-  where
+  where,
+  writeBatch
 } from 'firebase/firestore';
 import type { ReservationStatus, ReservationWithId } from '@/types/reservation';
 
+import type { CarWithId } from '@/types/car';
+import type { UserProfileWithId } from './users-service';
 import { db } from './firebase';
 import { fetchCarsByIds } from './cars-service';
 import { fetchUsersByIds } from './users-service';
-import type { CarWithId } from '@/types/car';
-import type { UserProfileWithId } from './users-service';
 
 // Common pagination interfaces (matching cars service)
 export interface PaginationCursor {
@@ -455,6 +456,73 @@ export async function updateReservation(
     await updateDoc(reservationDoc, updates);
   } catch (error) {
     console.error('Error updating reservation:', error);
+    throw error;
+  }
+}
+
+// Get count of reservations for a specific year
+export async function getReservationsCountByYear(year: number): Promise<number> {
+  try {
+    const startOfYear = new Date(year, 0, 1); // January 1st
+    const endOfYear = new Date(year + 1, 0, 1); // January 1st of next year
+    
+    const reservationsCollection = collection(db, 'reservations');
+    const q = query(
+      reservationsCollection,
+      where('startDateTime', '>=', Timestamp.fromDate(startOfYear)),
+      where('startDateTime', '<', Timestamp.fromDate(endOfYear))
+    );
+    
+    const countSnapshot = await getCountFromServer(q);
+    return countSnapshot.data().count;
+  } catch (error) {
+    console.error('Error getting reservations count by year:', error);
+    throw error;
+  }
+}
+
+// Delete all reservations for a specific year
+export async function deleteReservationsByYear(year: number): Promise<{ deletedCount: number }> {
+  try {
+    const startOfYear = new Date(year, 0, 1); // January 1st
+    const endOfYear = new Date(year + 1, 0, 1); // January 1st of next year
+    
+    const reservationsCollection = collection(db, 'reservations');
+    
+    // First, get all reservations for the year
+    const q = query(
+      reservationsCollection,
+      where('startDateTime', '>=', Timestamp.fromDate(startOfYear)),
+      where('startDateTime', '<', Timestamp.fromDate(endOfYear))
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      return { deletedCount: 0 };
+    }
+    
+    // Firestore batch writes are limited to 500 operations
+    const batchSize = 500;
+    const docs = querySnapshot.docs;
+    let deletedCount = 0;
+    
+    // Process documents in batches
+    for (let i = 0; i < docs.length; i += batchSize) {
+      const batch = writeBatch(db);
+      const batchDocs = docs.slice(i, i + batchSize);
+      
+      batchDocs.forEach((docSnapshot) => {
+        batch.delete(docSnapshot.ref);
+      });
+      
+      await batch.commit();
+      deletedCount += batchDocs.length;
+    }
+    
+    return { deletedCount };
+  } catch (error) {
+    console.error('Error deleting reservations by year:', error);
     throw error;
   }
 } 

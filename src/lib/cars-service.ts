@@ -17,8 +17,8 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore';
-import { generateCarSearchKeywords, prepareSearchTerms } from './search-utils';
 import { batchArray, batchPromises } from './batch-utils';
+import { generateCarSearchKeywords, prepareSearchTerms } from './search-utils';
 
 import { db } from './firebase';
 
@@ -298,7 +298,7 @@ export async function fetchCarsByIds(carIds: string[]): Promise<CarWithId[]> {
     // Use the batch utility for more efficient batching
     const batches = batchArray(carIds);
     
-    const batchPromises = batches.map(async (batchIds) => {
+    const promises = batches.map(async (batchIds) => {
       const carsCollection = collection(db, 'cars');
       const q = query(carsCollection, where('__name__', 'in', batchIds));
       const querySnapshot = await getDocs(q);
@@ -309,7 +309,7 @@ export async function fetchCarsByIds(carIds: string[]): Promise<CarWithId[]> {
       }));
     });
     
-    const batchResults = await batchPromises(batchPromises);
+    const batchResults = await batchPromises(promises);
     return batchResults.flat();
   } catch (error) {
     console.error('Error fetching cars by IDs:', error);

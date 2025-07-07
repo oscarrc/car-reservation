@@ -6,7 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Trash2 } from "lucide-react";
+import * as React from "react";
 import {
   Card,
   CardContent,
@@ -29,11 +30,25 @@ import {
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { Separator } from "@/components/ui/separator";
 import { SectionHeader } from "@/components/ui/section-header";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DataCleanupConfirmationDialog } from "@/components/ui/data-cleanup-confirmation-dialog";
 import {
   fetchSettings,
   updateSettings,
   type AppSettings,
 } from "@/lib/settings-service";
+import {
+  deleteReservationsByYear,
+  getReservationsCountByYear,
+} from "@/lib/reservations-service";
+import { invalidateReservationQueries } from "@/lib/query-utils";
 
 const settingsSchema = z.object({
   // Reservation Management
@@ -56,6 +71,11 @@ type SettingsFormData = z.infer<typeof settingsSchema>;
 export default function SettingsPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+
+  // Data cleanup state
+  const [selectedYear, setSelectedYear] = React.useState<number | null>(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] =
+    React.useState(false);
 
   const {
     data: settings,
@@ -88,6 +108,54 @@ export default function SettingsPage() {
     },
   });
 
+  // Generate list of past years (current year - 10 to current year - 1)
+  const currentYear = new Date().getFullYear();
+  const availableYears = Array.from(
+    { length: 10 },
+    (_, i) => currentYear - 1 - i
+  ).reverse();
+
+  // Query for reservation count for selected year
+  const { data: reservationCount = 0, isLoading: countLoading } = useQuery({
+    queryKey: ["reservations-count-by-year", selectedYear],
+    queryFn: () =>
+      selectedYear
+        ? getReservationsCountByYear(selectedYear)
+        : Promise.resolve(0),
+    enabled: !!selectedYear,
+  });
+
+  // Mutation for deleting reservations
+  const deleteMutation = useMutation({
+    mutationFn: deleteReservationsByYear,
+    onSuccess: (result, year) => {
+      toast.success(t("settings.dataCleanup.successTitle"), {
+        description: t("settings.dataCleanup.successDescription", {
+          count: result.deletedCount,
+          year,
+        }),
+      });
+
+      // Invalidate all reservation-related queries
+      invalidateReservationQueries(queryClient, {
+        invalidateReservationsList: true,
+        invalidateReservationsCount: true,
+        invalidateDashboard: true,
+        invalidateActiveReservationsCount: true,
+      });
+
+      // Reset form
+      setSelectedYear(null);
+      setShowDeleteConfirmation(false);
+    },
+    onError: (error) => {
+      console.error("Error deleting reservations:", error);
+      toast.error(t("settings.dataCleanup.errorTitle"), {
+        description: t("settings.dataCleanup.errorDescription"),
+      });
+    },
+  });
+
   const onSubmit = (data: SettingsFormData) => {
     const settingsToUpdate: AppSettings = {
       ...data,
@@ -103,6 +171,20 @@ export default function SettingsPage() {
 
   const handleSaveSettings = () => {
     form.handleSubmit(onSubmit)();
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedYear) {
+      deleteMutation.mutate(selectedYear);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    if (selectedYear && reservationCount > 0) {
+      setShowDeleteConfirmation(true);
+    } else if (selectedYear && reservationCount === 0) {
+      toast.info(t("settings.dataCleanup.noDataFound", { year: selectedYear }));
+    }
   };
 
   if (isLoading) {
@@ -422,8 +504,116 @@ export default function SettingsPage() {
                 />
               </CardContent>
             </Card>
+
+            {/* Data Cleanup Card - Full Width */}
+            <Card className="lg:col-span-2 border-destructive/20 bg-destructive/5">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
+                    <Trash2 className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-destructive">
+                      {t("settings.dataCleanup.title")}
+                    </CardTitle>
+                    <CardDescription>
+                      {t("settings.dataCleanup.subtitle")}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                  {/* Year Selector */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      {t("settings.dataCleanup.selectYear")}
+                    </label>
+                    <Select
+                      value={selectedYear?.toString() || ""}
+                      onValueChange={(value) =>
+                        setSelectedYear(value ? parseInt(value) : null)
+                      }
+                    >
+                      <SelectTrigger className="w-full mb-0 min-h-10">
+                        <SelectValue
+                          placeholder={t(
+                            "settings.dataCleanup.selectYearPlaceholder"
+                          )}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableYears.map((year) => (
+                          <SelectItem key={year} value={year.toString()}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Record Count Display */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      {t("settings.dataCleanup.estimatedRecords")}
+                    </label>
+                    <div className="h-10 px-3 py-2 border rounded-md bg-muted/50 flex items-center text-sm">
+                      {selectedYear ? (
+                        countLoading ? (
+                          <span className="text-muted-foreground">
+                            {t("settings.dataCleanup.loadingCount")}
+                          </span>
+                        ) : (
+                          <span>
+                            {reservationCount.toLocaleString()}{" "}
+                            {t("settings.dataCleanup.reservations")}
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Delete Button */}
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteClick}
+                    disabled={
+                      !selectedYear ||
+                      countLoading ||
+                      deleteMutation.isPending ||
+                      reservationCount === 0
+                    }
+                    className="w-full md:w-auto min-h-10"
+                  >
+                    {deleteMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t("settings.dataCleanup.deleting")}
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {t("settings.dataCleanup.deleteData")}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </form>
         </Form>
+
+        {/* Confirmation Dialog */}
+        <DataCleanupConfirmationDialog
+          open={showDeleteConfirmation}
+          onOpenChange={setShowDeleteConfirmation}
+          onConfirm={handleDeleteConfirm}
+          selectedYear={selectedYear || 0}
+          recordCount={reservationCount}
+          isLoading={deleteMutation.isPending}
+        />
       </div>
     </>
   );
