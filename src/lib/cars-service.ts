@@ -196,6 +196,8 @@ export async function createCar(carData: Car): Promise<string> {
     
     // Generate search keywords for the car
     const searchKeywords = generateCarSearchKeywords(carData);
+
+    if(!carData.description) delete carData.description;
     
     const carWithSearchKeywords = {
       ...carData,
@@ -229,7 +231,9 @@ export async function updateCar(carId: string, carData: Partial<Car>): Promise<v
         const mergedCarData = { ...currentCarData, ...carData };
         
         // Generate new search keywords
-        const searchKeywords = generateCarSearchKeywords(mergedCarData);
+        const searchKeywords = generateCarSearchKeywords(mergedCarData); 
+
+        if (!carData.description) delete carData.description;
         
         await updateDoc(carDocRef, {
           ...carData,
