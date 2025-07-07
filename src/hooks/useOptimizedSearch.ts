@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useDebounced } from './useDebounced';
 import { searchConfig } from '@/lib/query-config';
+import { useDebounced } from './useDebounced';
+import { useState } from 'react';
 
 export function useOptimizedSearch(initialValue: string = '') {
   const [searchTerm, setSearchTerm] = useState(initialValue);

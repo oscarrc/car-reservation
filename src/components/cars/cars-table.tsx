@@ -79,11 +79,10 @@ export function CarsTable({
   );
 
   // Use optimized search hook
-  const { 
-    searchTerm: localSearchTerm, 
-    setSearchTerm: setLocalSearchTerm, 
+  const {
+    searchTerm: localSearchTerm,
+    setSearchTerm: setLocalSearchTerm,
     debouncedSearchTerm,
-    isSearching 
   } = useOptimizedSearch(searchTerm);
 
   React.useEffect(() => {
