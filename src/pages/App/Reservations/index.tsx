@@ -183,7 +183,7 @@ export default function UserReservationsPage() {
   const bulkCancelMutation = useMutation({
     mutationFn: async (reservationIds: string[]) => {
       setIsBulkActionsLoading(true);
-      return await bulkCancelReservations(reservationIds);
+      return await bulkCancelReservations(reservationIds, settings?.autoCancelation || false);
     },
     onSuccess: (result) => {
       invalidateReservationQueries(queryClient, {
@@ -392,47 +392,48 @@ export default function UserReservationsPage() {
       />
 
       <div className="px-4 lg:px-6">
-        <ReservationsTable
-          columns={columns}
-          data={reservationsWithCarData}
-          loading={isLoading}
-          pagination={pagination}
-          onStatusFilterChange={handleStatusFilterChange}
-          onStartDateFilterChange={handleStartDateFilterChange}
-          onEndDateFilterChange={handleEndDateFilterChange}
-          onPageChange={setPageIndex}
-          onPageSizeChange={(newSize) => {
-            setPageSize(newSize);
-            setPageIndex(0);
-            setCursors({});
-          }}
-          onFirstPage={() => {
-            setPageIndex(0);
-            setCursors({});
-          }}
-          onPreviousPage={() => {
-            setPageIndex(Math.max(0, pageIndex - 1));
-          }}
-          onNextPage={() => {
-            setPageIndex(pageIndex + 1);
-          }}
-          onLastPage={() => {
-            if (pagination?.totalCount) {
-              const lastPageIndex =
-                Math.ceil(pagination.totalCount / pageSize) - 1;
-              setPageIndex(lastPageIndex);
-            }
-          }}
-          statusFilter={statusFilter}
-          startDateFilter={startDateFilter}
-          endDateFilter={endDateFilter}
-          countError={countError}
-          countLoading={countLoading}
-          bulkActions={{
-            onCancel: handleBulkCancel,
-            isLoading: isBulkActionsLoading,
-          }}
-        />
+                  <ReservationsTable
+            columns={columns}
+            data={reservationsWithCarData}
+            loading={isLoading}
+            pagination={pagination}
+            onStatusFilterChange={handleStatusFilterChange}
+            onStartDateFilterChange={handleStartDateFilterChange}
+            onEndDateFilterChange={handleEndDateFilterChange}
+            onPageChange={setPageIndex}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPageIndex(0);
+              setCursors({});
+            }}
+            onFirstPage={() => {
+              setPageIndex(0);
+              setCursors({});
+            }}
+            onPreviousPage={() => {
+              setPageIndex(Math.max(0, pageIndex - 1));
+            }}
+            onNextPage={() => {
+              setPageIndex(pageIndex + 1);
+            }}
+                        onLastPage={() => {
+              if (pagination?.totalCount) {
+                const lastPageIndex =
+                  Math.ceil(pagination.totalCount / pageSize) - 1;
+                setPageIndex(lastPageIndex);
+              }
+            }}
+            statusFilter={statusFilter}
+            startDateFilter={startDateFilter}
+            endDateFilter={endDateFilter}
+            countError={countError}
+            countLoading={countLoading}
+            bulkActions={{
+              onCancel: handleBulkCancel,
+              isLoading: isBulkActionsLoading,
+              autoCancelation: settings?.autoCancelation || false,
+            }}
+          />
       </div>
 
       {/* Reservation Form Dialog */}

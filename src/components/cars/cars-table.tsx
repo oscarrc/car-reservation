@@ -500,9 +500,21 @@ export function CarsTable({
         open={confirmationDialog.open}
         onOpenChange={(open) => setConfirmationDialog({ open, action: confirmationDialog.action })}
         onConfirm={handleConfirmAction}
-        title={confirmationDialog.action?.confirmationTitle || ""}
-        description={confirmationDialog.action?.confirmationDescription || ""}
-        confirmText={confirmationDialog.action?.confirmText}
+        title={
+          typeof confirmationDialog.action?.confirmationTitle === 'function'
+            ? confirmationDialog.action.confirmationTitle(table.getFilteredSelectedRowModel().rows.length)
+            : confirmationDialog.action?.confirmationTitle || ""
+        }
+        description={
+          typeof confirmationDialog.action?.confirmationDescription === 'function'
+            ? confirmationDialog.action.confirmationDescription(table.getFilteredSelectedRowModel().rows.length)
+            : confirmationDialog.action?.confirmationDescription || ""
+        }
+        confirmText={
+          typeof confirmationDialog.action?.confirmText === 'function'
+            ? confirmationDialog.action.confirmText(table.getFilteredSelectedRowModel().rows.length)
+            : confirmationDialog.action?.confirmText
+        }
         isLoading={isBulkActionsLoading}
       />
 

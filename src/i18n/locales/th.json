@@ -650,7 +650,7 @@
     "reservationCancelledDesc": "การจอง {{car}} ของคุณถูกยกเลิกสำเร็จแล้ว",
     "failedToCancelReservation": "ไม่สามารถยกเลิกการจองได้",
     "cancelReservationConfirmAuto": "การดำเนินการนี้จะยกเลิกการจองของคุณทันที การดำเนินการนี้ไม่สามารถย้อนกลับได้",
-    "cancelReservationConfirmManual": "การดำเนินการนี้จะส่งคำขอยกเลิกให้ผู้ดูแลระบบพิจารณา คุณจะได้รับการแจ้งเตือนเมื่อดำเนินการเสร็จสิ้น",
+    "cancelReservationConfirmManual": "การดำเนินการนี้จะส่งคำขอยกเลิกให้ผู้ดูแลระบบพิจารณา",
     "userInformation": "ข้อมูลผู้ใช้",
     "carInformation": "ข้อมูลรถยนต์",
     "selectStatus": "เลือกสถานะ",

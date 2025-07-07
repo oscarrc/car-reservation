@@ -575,7 +575,8 @@ export async function bulkUpdateReservationStatus(
 }
 
 export async function bulkCancelReservations(
-  reservationIds: string[]
+  reservationIds: string[],
+  autoCancelation: boolean = false
 ): Promise<{ successCount: number; errorCount: number; errors: string[] }> {
   try {
     const batchSize = 500; // Firestore batch limit
@@ -592,7 +593,7 @@ export async function bulkCancelReservations(
       batchIds.forEach((reservationId) => {
         const reservationDoc = doc(db, 'reservations', reservationId);
         batch.update(reservationDoc, {
-          status: 'cancelled' as ReservationStatus,
+          status: autoCancelation ? 'cancelled' as ReservationStatus : 'cancellation_pending' as ReservationStatus,
           updatedAt: Timestamp.fromDate(new Date())
         });
       });

@@ -32,9 +32,9 @@ export interface BulkAction {
     | "link";
   onClick: () => void;
   requiresConfirmation?: boolean;
-  confirmationTitle?: string;
-  confirmationDescription?: string;
-  confirmText?: string;
+  confirmationTitle?: string | ((count: number) => string);
+  confirmationDescription?: string | ((count: number) => string);
+  confirmText?: string | ((count: number) => string);
 }
 
 export interface StatusAction {
@@ -128,10 +128,11 @@ export function BulkActions({
 // Utility functions to create common bulk actions
 
 export function createReservationBulkActions(
-  t: (key: string) => string,
+  t: (key: string, options?: any) => string,
   onCancel?: () => void,
   onStatusChange?: (status: ReservationStatus) => void,
-  _isLoading?: boolean
+  _isLoading?: boolean,
+  autoCancelation?: boolean
 ): { actions?: BulkAction[]; statusActions?: any } {
   const actions: BulkAction[] = [];
   let statusActions;
@@ -144,8 +145,10 @@ export function createReservationBulkActions(
       variant: "destructive",
       onClick: onCancel,
       requiresConfirmation: true,
-      confirmationTitle: t("reservations.cancelSelectedConfirm"),
-      confirmationDescription: t("reservations.cancelSelectedConfirmDesc"),
+      confirmationTitle: (count: number) => t("reservations.cancelSelectedConfirm", { count }),
+      confirmationDescription: autoCancelation 
+        ? t("reservations.cancelReservationConfirmAuto")
+        : t("reservations.cancelReservationConfirmManual"),
       confirmText: t("reservations.cancelSelected"),
     });
   }
@@ -180,7 +183,7 @@ export function createReservationBulkActions(
 }
 
 export function createCarBulkActions(
-  t: (key: string) => string,
+  t: (key: string, options?: any) => string,
   onDelete?: () => void,
   onStatusChange?: (status: CarStatus) => void,
   _isLoading?: boolean
@@ -196,7 +199,7 @@ export function createCarBulkActions(
       variant: "destructive",
       onClick: onDelete,
       requiresConfirmation: true,
-      confirmationTitle: t("fleet.deleteSelectedConfirm"),
+      confirmationTitle: (count: number) => t("fleet.deleteSelectedConfirm", { count }),
       confirmationDescription: t("fleet.deleteSelectedConfirmDesc"),
       confirmText: t("fleet.deleteSelected"),
     });
@@ -226,7 +229,7 @@ export function createCarBulkActions(
 }
 
 export function createUserBulkActions(
-  t: (key: string) => string,
+  t: (key: string, options?: any) => string,
   onSuspend?: () => void,
   onUnsuspend?: () => void,
   onRoleChange?: (role: string) => void,
@@ -243,7 +246,7 @@ export function createUserBulkActions(
       variant: "destructive",
       onClick: onSuspend,
       requiresConfirmation: true,
-      confirmationTitle: t("users.suspendSelectedConfirm"),
+      confirmationTitle: (count: number) => t("users.suspendSelectedConfirm", { count }),
       confirmationDescription: t("users.suspendSelectedConfirmDesc"),
       confirmText: t("users.suspendSelected"),
     });
@@ -257,7 +260,7 @@ export function createUserBulkActions(
       variant: "default",
       onClick: onUnsuspend,
       requiresConfirmation: true,
-      confirmationTitle: t("users.unsuspendSelectedConfirm"),
+      confirmationTitle: (count: number) => t("users.unsuspendSelectedConfirm", { count }),
       confirmationDescription: t("users.unsuspendSelectedConfirmDesc"),
       confirmText: t("users.unsuspendSelected"),
     });
@@ -278,7 +281,7 @@ export function createUserBulkActions(
 }
 
 export function createEmailBulkActions(
-  t: (key: string) => string,
+  t: (key: string, options?: any) => string,
   onDelete?: () => void,
   _isLoading?: boolean
 ): { actions?: BulkAction[] } {
@@ -292,7 +295,7 @@ export function createEmailBulkActions(
       variant: "destructive",
       onClick: onDelete,
       requiresConfirmation: true,
-      confirmationTitle: t("allowedEmails.deleteSelectedConfirm"),
+      confirmationTitle: (count: number) => t("allowedEmails.deleteSelectedConfirm", { count }),
       confirmationDescription: t("allowedEmails.deleteSelectedConfirmDesc"),
       confirmText: t("allowedEmails.deleteSelected"),
     });
