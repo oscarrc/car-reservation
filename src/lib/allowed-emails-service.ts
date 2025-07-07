@@ -45,13 +45,13 @@ export interface AllowedEmailsQueryParams {
   pageSize?: number;
   pageIndex?: number;
   cursor?: PaginationCursor;
-  orderBy?: 'email' | 'timestamp';
+  orderBy?: 'email' | 'createdAt';
   orderDirection?: 'asc' | 'desc';
   status?: 'pending' | 'registered';
 }
 
 export interface AllowedEmailsFilterParams {
-  orderBy?: 'email' | 'timestamp';
+  orderBy?: 'email' | 'createdAt';
   orderDirection?: 'asc' | 'desc';
   status?: 'pending' | 'registered';
 }
@@ -66,7 +66,7 @@ function buildAllowedEmailsQueryConstraints(params: AllowedEmailsQueryParams): Q
   }
 
   // Add ordering
-  const orderField = params.orderBy || 'timestamp';
+  const orderField = params.orderBy || 'updatedAt';
   const orderDir = params.orderDirection || 'desc';
   constraints.push(orderBy(orderField, orderDir));
 
@@ -83,7 +83,7 @@ function buildAllowedEmailsFilterConstraints(params: AllowedEmailsFilterParams):
   }
 
   // Add ordering for consistent results
-  const orderField = params.orderBy || 'timestamp';
+  const orderField = params.orderBy || 'updatedAt';
   const orderDir = params.orderDirection || 'desc';
   constraints.push(orderBy(orderField, orderDir));
 
@@ -111,6 +111,7 @@ export async function getAllowedEmailsCount(params: AllowedEmailsFilterParams = 
  */
 export async function addAllowedEmail(email: string, adminId: string): Promise<void> {
   try {
+    const now = new Date();
     const allowedEmail: Omit<AllowedEmail, 'timestamp'> = {
       email: email.toLowerCase().trim(),
       adminId,
@@ -119,7 +120,8 @@ export async function addAllowedEmail(email: string, adminId: string): Promise<v
 
     await addDoc(collection(db, 'allowedEmails'), {
       ...allowedEmail,
-      timestamp: new Date(),
+      createdAt: now,
+      updatedAt: now,
     });
   } catch (error) {
     console.error('Error adding allowed email:', error);
@@ -154,7 +156,8 @@ export async function updateEmailStatusToRegistered(email: string): Promise<void
     if (!querySnapshot.empty) {
       const docToUpdate = querySnapshot.docs[0];
       await updateDoc(docToUpdate.ref, {
-        status: 'registered'
+        status: 'registered',
+        updatedAt: new Date()
       });
     }
   } catch (error) {
@@ -201,7 +204,8 @@ export async function getAllowedEmails(params: AllowedEmailsQueryParams = {}): P
         id: doc.id,
         email: data.email,
         adminId: data.adminId,
-        timestamp: data.timestamp.toDate(),
+        createdAt: data.createdAt?.toDate() || data.timestamp?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || data.timestamp?.toDate() || new Date(),
         status: data.status || 'pending', // Default to pending for backward compatibility
       });
     });

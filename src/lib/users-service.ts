@@ -48,7 +48,7 @@ export interface UsersQueryParams {
   searchTerm?: string;
   role?: string;
   suspended?: boolean;
-  orderBy?: 'name' | 'email' | 'createdAt';
+  orderBy?: 'name' | 'email' | 'updatedAt';
   orderDirection?: 'asc' | 'desc';
 }
 
@@ -56,7 +56,7 @@ export interface UsersFilterParams {
   searchTerm?: string;
   role?: string;
   suspended?: boolean;
-  orderBy?: 'name' | 'email' | 'createdAt';
+  orderBy?: 'name' | 'email' | 'updatedAt';
   orderDirection?: 'asc' | 'desc';
 }
 
@@ -85,8 +85,8 @@ function buildUsersQueryConstraints(params: UsersQueryParams): QueryConstraint[]
   }
 
   // Add ordering
-  const orderField = params.orderBy || 'name';
-  const orderDir = params.orderDirection || 'asc';
+  const orderField = params.orderBy || 'updatedAt';
+  const orderDir = params.orderDirection || 'desc';
   constraints.push(orderBy(orderField, orderDir));
 
   return constraints;
@@ -117,8 +117,8 @@ function buildUsersFilterConstraints(params: UsersFilterParams): QueryConstraint
   }
 
   // Add ordering for consistent results
-  const orderField = params.orderBy || 'name';
-  const orderDir = params.orderDirection || 'asc';
+  const orderField = params.orderBy || 'updatedAt';
+  const orderDir = params.orderDirection || 'desc';
   constraints.push(orderBy(orderField, orderDir));
 
   return constraints;
@@ -337,7 +337,8 @@ export async function suspendUser(userId: string): Promise<void> {
   try {
     const userDocRef = doc(db, 'users', userId);
     await updateDoc(userDocRef, {
-      suspended: true
+      suspended: true,
+      updatedAt: new Date()
     });
   } catch (error) {
     console.error('Error suspending user:', error);
@@ -350,7 +351,8 @@ export async function unsuspendUser(userId: string): Promise<void> {
   try {
     const userDocRef = doc(db, 'users', userId);
     await updateDoc(userDocRef, {
-      suspended: false
+      suspended: false,
+      updatedAt: new Date()
     });
   } catch (error) {
     console.error('Error unsuspending user:', error);
@@ -363,7 +365,8 @@ export async function toggleUserSuspension(userId: string, currentStatus: boolea
   try {
     const userDocRef = doc(db, 'users', userId);
     await updateDoc(userDocRef, {
-      suspended: !currentStatus
+      suspended: !currentStatus,
+      updatedAt: new Date()
     });
   } catch (error) {
     console.error('Error toggling user suspension:', error);

@@ -45,14 +45,14 @@ export interface CarsQueryParams {
   cursor?: PaginationCursor;
   searchTerm?: string;
   status?: CarStatus;
-  orderBy?: 'model' | 'licensePlate' | 'createdAt';
+  orderBy?: 'model' | 'licensePlate' | 'updatedAt';
   orderDirection?: 'asc' | 'desc';
 }
 
 export interface CarsFilterParams {
   searchTerm?: string;
   status?: CarStatus;
-  orderBy?: 'model' | 'licensePlate' | 'createdAt';
+  orderBy?: 'model' | 'licensePlate' | 'updatedAt';
   orderDirection?: 'asc' | 'desc';
 }
 
@@ -76,8 +76,8 @@ function buildCarsQueryConstraints(params: CarsQueryParams): QueryConstraint[] {
   }
 
   // Add ordering
-  const orderField = params.orderBy || 'model';
-  const orderDir = params.orderDirection || 'asc';
+  const orderField = params.orderBy || 'updatedAt';
+  const orderDir = params.orderDirection || 'desc';
   constraints.push(orderBy(orderField, orderDir));
 
   return constraints;
@@ -103,8 +103,8 @@ function buildCarsFilterConstraints(params: CarsFilterParams): QueryConstraint[]
   }
 
   // Add ordering for consistent results
-  const orderField = params.orderBy || 'model';
-  const orderDir = params.orderDirection || 'asc';
+  const orderField = params.orderBy || 'updatedAt';
+  const orderDir = params.orderDirection || 'desc';
   constraints.push(orderBy(orderField, orderDir));
 
   return constraints;
@@ -191,13 +191,16 @@ export async function searchCars(searchTerm: string, params: Omit<CarsQueryParam
 export async function createCar(carData: Car): Promise<string> {
   try {
     const carsCollection = collection(db, 'cars');
+    const now = new Date();
     
     // Generate search keywords for the car
     const searchKeywords = generateCarSearchKeywords(carData);
     
     const carWithSearchKeywords = {
       ...carData,
-      searchKeywords
+      searchKeywords,
+      createdAt: now,
+      updatedAt: now
     };
     
     const docRef = await addDoc(carsCollection, carWithSearchKeywords);
@@ -229,13 +232,20 @@ export async function updateCar(carId: string, carData: Partial<Car>): Promise<v
         
         await updateDoc(carDocRef, {
           ...carData,
-          searchKeywords
+          searchKeywords,
+          updatedAt: new Date()
         });
       } else {
-        await updateDoc(carDocRef, carData);
+        await updateDoc(carDocRef, {
+          ...carData,
+          updatedAt: new Date()
+        });
       }
     } else {
-      await updateDoc(carDocRef, carData);
+      await updateDoc(carDocRef, {
+        ...carData,
+        updatedAt: new Date()
+      });
     }
   } catch (error) {
     console.error('Error updating car:', error);
@@ -247,7 +257,10 @@ export async function updateCar(carId: string, carData: Partial<Car>): Promise<v
 export async function updateCarStatus(carId: string, status: CarStatus): Promise<void> {
   try {
     const carDocRef = doc(db, 'cars', carId);
-    await updateDoc(carDocRef, { status });
+    await updateDoc(carDocRef, { 
+      status,
+      updatedAt: new Date()
+    });
   } catch (error) {
     console.error('Error updating car status:', error);
     throw error;

@@ -54,6 +54,7 @@ export async function createUser(userData: CreateUserData): Promise<{ uid: strin
     const newUser = userCredential.user;
 
     // Create user profile in Firestore
+    const now = new Date();
     const userProfile: UserProfile = {
       name: userData.name,
       email: userData.email,
@@ -67,7 +68,9 @@ export async function createUser(userData: CreateUserData): Promise<{ uid: strin
     
     const userProfileWithSearchKeywords = {
       ...userProfile,
-      searchKeywords
+      searchKeywords,
+      createdAt: now,
+      updatedAt: now
     };
 
     await setDoc(doc(db, 'users', newUser.uid), userProfileWithSearchKeywords);
@@ -116,7 +119,8 @@ export async function updateUser(
     
     const updatedProfileWithSearchKeywords = {
       ...updatedProfile,
-      searchKeywords
+      searchKeywords,
+      updatedAt: new Date()
     };
 
     await updateDoc(userDocRef, updatedProfileWithSearchKeywords as Partial<UserProfile>);

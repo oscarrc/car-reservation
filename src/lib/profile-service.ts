@@ -50,12 +50,14 @@ export async function updateUserProfile(uid: string, profileData: UpdateProfileD
       await updateDoc(userDocRef, {
         name: profileData.name,
         phone: profileData.phone,
-        searchKeywords
+        searchKeywords,
+        updatedAt: new Date()
       });
     } else {
       await updateDoc(userDocRef, {
         name: profileData.name,
         phone: profileData.phone,
+        updatedAt: new Date()
       });
     }
   } catch (error) {
@@ -120,11 +122,13 @@ export async function completeEmailUpdate(uid: string, newEmail: string): Promis
       
       await updateDoc(userDocRef, {
         email: newEmail,
-        searchKeywords
+        searchKeywords,
+        updatedAt: new Date()
       });
     } else {
       await updateDoc(userDocRef, {
-        email: newEmail
+        email: newEmail,
+        updatedAt: new Date()
       });
     }
   } catch (error) {

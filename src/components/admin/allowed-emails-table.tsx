@@ -115,11 +115,19 @@ const createAllowedEmailsColumns = ({
       },
     },
     {
-      accessorKey: "timestamp",
+      accessorKey: "createdAt",
       header: t("allowedEmails.addedDate"),
       cell: ({ row }) => {
-        const timestamp = row.getValue("timestamp") as Date;
-        return <div>{format(timestamp, "PPP")}</div>;
+        const createdAt = row.getValue("createdAt") as Date;
+        return <div>{format(createdAt, "PPP")}</div>;
+      },
+    },
+    {
+      accessorKey: "updatedAt",
+      header: t("allowedEmails.updatedDate"),
+      cell: ({ row }) => {
+        const updatedAt = row.getValue("updatedAt") as Date;
+        return <div>{format(updatedAt, "PPP")}</div>;
       },
     },
     {
@@ -324,7 +332,8 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
                 select: t("common.select"),
                 email: t("allowedEmails.email"),
                 status: t("allowedEmails.status"),
-                addedDate: t("allowedEmails.addedDate"),
+                createdAt: t("allowedEmails.addedDate"),
+                updatedAt: t("allowedEmails.updatedDate"),
                 actions: t("common.actions"),
               };
               return columnMap[columnId] || columnId;

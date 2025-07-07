@@ -17,6 +17,7 @@ export interface AuthUser {
 export interface AllowedEmail {
   email: string;
   adminId: string;
-  timestamp: Date;
+  createdAt: Date;
+  updatedAt: Date;
   status: 'pending' | 'registered';
 } 

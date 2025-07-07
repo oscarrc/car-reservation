@@ -1,6 +1,6 @@
 /**
- * Migration scripts to update existing Firestore documents with searchKeywords
- * Run these scripts to migrate existing data to support the new search functionality
+ * Migration scripts to update existing Firestore documents with searchKeywords, createdAt, and updatedAt
+ * Run these scripts to migrate existing data to support the new search functionality and timestamp tracking
  */
 
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
@@ -10,7 +10,7 @@ import type { Car } from '@/types/car';
 import type { UserProfile } from '@/types/user';
 
 /**
- * Migrate existing car documents to include searchKeywords
+ * Migrate existing car documents to include searchKeywords, createdAt, and updatedAt
  */
 export async function migrateCarsSearchKeywords(): Promise<void> {
   try {
@@ -21,15 +21,26 @@ export async function migrateCarsSearchKeywords(): Promise<void> {
     
     const updatePromises = snapshot.docs.map(async (carDoc) => {
       const carData = carDoc.data() as Car;
+      const now = new Date();
       
       // Always regenerate search keywords with new logic
       const searchKeywords = generateCarSearchKeywords(carData);
       
-      await updateDoc(doc(db, 'cars', carDoc.id), {
+      const updateData: any = {
         searchKeywords
-      });
+      };
       
-      console.log(`Updated car document ${carDoc.id} with search keywords:`, searchKeywords);
+      // Add createdAt if it doesn't exist
+      if (!carData.createdAt) {
+        updateData.createdAt = now;
+      }
+      
+      // Add or update updatedAt
+      updateData.updatedAt = now;
+      
+      await updateDoc(doc(db, 'cars', carDoc.id), updateData);
+      
+      console.log(`Updated car document ${carDoc.id} with search keywords and timestamps`);
     });
     
     await Promise.all(updatePromises);
@@ -42,7 +53,7 @@ export async function migrateCarsSearchKeywords(): Promise<void> {
 }
 
 /**
- * Migrate existing user documents to include searchKeywords
+ * Migrate existing user documents to include searchKeywords, createdAt, and updatedAt
  */
 export async function migrateUsersSearchKeywords(): Promise<void> {
   try {
@@ -53,15 +64,26 @@ export async function migrateUsersSearchKeywords(): Promise<void> {
     
     const updatePromises = snapshot.docs.map(async (userDoc) => {
       const userData = userDoc.data() as UserProfile;
+      const now = new Date();
       
       // Always regenerate search keywords with new logic
       const searchKeywords = generateUserSearchKeywords(userData);
       
-      await updateDoc(doc(db, 'users', userDoc.id), {
+      const updateData: any = {
         searchKeywords
-      });
+      };
       
-      console.log(`Updated user document ${userDoc.id} with search keywords:`, searchKeywords);
+      // Add createdAt if it doesn't exist
+      if (!userData.createdAt) {
+        updateData.createdAt = now;
+      }
+      
+      // Add or update updatedAt
+      updateData.updatedAt = now;
+      
+      await updateDoc(doc(db, 'users', userDoc.id), updateData);
+      
+      console.log(`Updated user document ${userDoc.id} with search keywords and timestamps`);
     });
     
     await Promise.all(updatePromises);
@@ -69,6 +91,90 @@ export async function migrateUsersSearchKeywords(): Promise<void> {
     console.log(`Successfully migrated ${snapshot.docs.length} user documents`);
   } catch (error) {
     console.error('Error migrating user documents:', error);
+    throw error;
+  }
+}
+
+/**
+ * Migrate existing reservations documents to include createdAt and updatedAt if missing
+ */
+export async function migrateReservationsTimestamps(): Promise<void> {
+  try {
+    console.log('Starting migration of reservation documents...');
+    
+    const reservationsCollection = collection(db, 'reservations');
+    const snapshot = await getDocs(reservationsCollection);
+    
+    const updatePromises = snapshot.docs.map(async (reservationDoc) => {
+      const reservationData = reservationDoc.data();
+      const now = new Date();
+      
+      const updateData: any = {};
+      
+      // Add createdAt if it doesn't exist
+      if (!reservationData.createdAt) {
+        updateData.createdAt = now;
+      }
+      
+      // Add updatedAt if it doesn't exist
+      if (!reservationData.updatedAt) {
+        updateData.updatedAt = now;
+      }
+      
+      // Only update if there's something to update
+      if (Object.keys(updateData).length > 0) {
+        await updateDoc(doc(db, 'reservations', reservationDoc.id), updateData);
+        console.log(`Updated reservation document ${reservationDoc.id} with timestamps`);
+      }
+    });
+    
+    await Promise.all(updatePromises);
+    
+    console.log(`Successfully migrated ${snapshot.docs.length} reservation documents`);
+  } catch (error) {
+    console.error('Error migrating reservation documents:', error);
+    throw error;
+  }
+}
+
+/**
+ * Migrate existing allowedEmails documents to use createdAt and updatedAt instead of timestamp
+ */
+export async function migrateAllowedEmailsTimestamps(): Promise<void> {
+  try {
+    console.log('Starting migration of allowedEmails documents...');
+    
+    const allowedEmailsCollection = collection(db, 'allowedEmails');
+    const snapshot = await getDocs(allowedEmailsCollection);
+    
+    const updatePromises = snapshot.docs.map(async (emailDoc) => {
+      const emailData = emailDoc.data();
+      const updateData: any = {};
+      
+      // Convert timestamp to createdAt and updatedAt if timestamp exists
+      if (emailData.timestamp) {
+        const timestamp = emailData.timestamp.toDate ? emailData.timestamp.toDate() : emailData.timestamp;
+        updateData.createdAt = timestamp;
+        updateData.updatedAt = timestamp;
+        
+        // Note: We don't remove the timestamp field in case it's still referenced elsewhere
+        // It will be ignored by the new code
+      } else {
+        // If no timestamp, use current date
+        const now = new Date();
+        updateData.createdAt = now;
+        updateData.updatedAt = now;
+      }
+      
+      await updateDoc(doc(db, 'allowedEmails', emailDoc.id), updateData);
+      console.log(`Updated allowedEmail document ${emailDoc.id} with createdAt and updatedAt`);
+    });
+    
+    await Promise.all(updatePromises);
+    
+    console.log(`Successfully migrated ${snapshot.docs.length} allowedEmail documents`);
+  } catch (error) {
+    console.error('Error migrating allowedEmail documents:', error);
     throw error;
   }
 }
@@ -82,6 +188,8 @@ export async function runAllMigrations(): Promise<void> {
     
     await migrateCarsSearchKeywords();
     await migrateUsersSearchKeywords();
+    await migrateReservationsTimestamps();
+    await migrateAllowedEmailsTimestamps();
     
     console.log('All migrations completed successfully!');
   } catch (error) {
@@ -91,7 +199,7 @@ export async function runAllMigrations(): Promise<void> {
 }
 
 /**
- * Replace existing search keywords with new logic
+ * Replace existing search keywords with new logic and ensure timestamps
  */
 export async function replaceSearchKeywords(): Promise<void> {
   try {
@@ -99,8 +207,10 @@ export async function replaceSearchKeywords(): Promise<void> {
     
     await migrateCarsSearchKeywords();
     await migrateUsersSearchKeywords();
+    await migrateReservationsTimestamps();
+    await migrateAllowedEmailsTimestamps();
     
-    console.log('Search keywords replacement completed successfully!');
+    console.log('Search keywords replacement and timestamp migration completed successfully!');
   } catch (error) {
     console.error('Error replacing search keywords:', error);
     throw error;
@@ -113,6 +223,8 @@ export async function replaceSearchKeywords(): Promise<void> {
 export async function checkMigrationStatus(): Promise<{
   cars: { total: number; migrated: number; needsMigration: number };
   users: { total: number; migrated: number; needsMigration: number };
+  reservations: { total: number; migrated: number; needsMigration: number };
+  allowedEmails: { total: number; migrated: number; needsMigration: number };
 }> {
   try {
     console.log('Checking migration status...');
@@ -120,27 +232,51 @@ export async function checkMigrationStatus(): Promise<{
     // Check cars
     const carsCollection = collection(db, 'cars');
     const carsSnapshot = await getDocs(carsCollection);
-    const carsWithSearchKeywords = carsSnapshot.docs.filter(doc => 
-      doc.data().searchKeywords
+    const carsWithTimestamps = carsSnapshot.docs.filter(doc => 
+      doc.data().searchKeywords && doc.data().createdAt && doc.data().updatedAt
     );
     
     // Check users
     const usersCollection = collection(db, 'users');
     const usersSnapshot = await getDocs(usersCollection);
-    const usersWithSearchKeywords = usersSnapshot.docs.filter(doc => 
-      doc.data().searchKeywords
+    const usersWithTimestamps = usersSnapshot.docs.filter(doc => 
+      doc.data().searchKeywords && doc.data().createdAt && doc.data().updatedAt
+    );
+    
+    // Check reservations
+    const reservationsCollection = collection(db, 'reservations');
+    const reservationsSnapshot = await getDocs(reservationsCollection);
+    const reservationsWithTimestamps = reservationsSnapshot.docs.filter(doc => 
+      doc.data().createdAt && doc.data().updatedAt
+    );
+    
+    // Check allowedEmails
+    const allowedEmailsCollection = collection(db, 'allowedEmails');
+    const allowedEmailsSnapshot = await getDocs(allowedEmailsCollection);
+    const allowedEmailsWithTimestamps = allowedEmailsSnapshot.docs.filter(doc => 
+      doc.data().createdAt && doc.data().updatedAt
     );
     
     const status = {
       cars: {
         total: carsSnapshot.docs.length,
-        migrated: carsWithSearchKeywords.length,
-        needsMigration: carsSnapshot.docs.length - carsWithSearchKeywords.length
+        migrated: carsWithTimestamps.length,
+        needsMigration: carsSnapshot.docs.length - carsWithTimestamps.length
       },
       users: {
         total: usersSnapshot.docs.length,
-        migrated: usersWithSearchKeywords.length,
-        needsMigration: usersSnapshot.docs.length - usersWithSearchKeywords.length
+        migrated: usersWithTimestamps.length,
+        needsMigration: usersSnapshot.docs.length - usersWithTimestamps.length
+      },
+      reservations: {
+        total: reservationsSnapshot.docs.length,
+        migrated: reservationsWithTimestamps.length,
+        needsMigration: reservationsSnapshot.docs.length - reservationsWithTimestamps.length
+      },
+      allowedEmails: {
+        total: allowedEmailsSnapshot.docs.length,
+        migrated: allowedEmailsWithTimestamps.length,
+        needsMigration: allowedEmailsSnapshot.docs.length - allowedEmailsWithTimestamps.length
       }
     };
     

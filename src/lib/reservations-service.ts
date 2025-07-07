@@ -47,7 +47,7 @@ export interface ReservationsQueryParams {
   endDate?: Date;
   userId?: string;
   carId?: string;
-  orderBy?: 'startDateTime' | 'endDateTime' | 'createdAt';
+  orderBy?: 'startDateTime' | 'endDateTime' | 'updatedAt';
   orderDirection?: 'asc' | 'desc';
 }
 
@@ -57,7 +57,7 @@ export interface ReservationsFilterParams {
   endDate?: Date;
   userId?: string;
   carId?: string;
-  orderBy?: 'startDateTime' | 'endDateTime' | 'createdAt';
+  orderBy?: 'startDateTime' | 'endDateTime' | 'updatedAt';
   orderDirection?: 'asc' | 'desc';
 }
 
@@ -100,7 +100,7 @@ function buildReservationsQueryConstraints(params: ReservationsQueryParams): Que
   }
 
   // Add ordering
-  const orderField = params.orderBy || 'startDateTime';
+  const orderField = params.orderBy || 'updatedAt';
   const orderDir = params.orderDirection || 'desc';
   constraints.push(orderBy(orderField, orderDir));
 
@@ -146,7 +146,7 @@ function buildReservationsFilterConstraints(params: ReservationsFilterParams): Q
   }
 
   // Add ordering for consistent results
-  const orderField = params.orderBy || 'startDateTime';
+  const orderField = params.orderBy || 'updatedAt';
   const orderDir = params.orderDirection || 'desc';
   constraints.push(orderBy(orderField, orderDir));
 
