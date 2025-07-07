@@ -72,7 +72,7 @@ export function BulkActions({
 
   return (
     <div
-      className={`flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 ${className}`}
+      className={`flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto ${className}`}
     >
       {/* Selected count badge */}
       <span className="text-sm text-muted-foreground">

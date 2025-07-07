@@ -322,7 +322,7 @@ export function ReservationsTable({
           </div>
 
           {/* Bulk Actions and Column Visibility */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full lg:w-auto">
             {bulkActions && (
               <BulkActions
                 selectedCount={table.getFilteredSelectedRowModel().rows.length}

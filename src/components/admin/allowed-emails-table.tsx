@@ -381,11 +381,12 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
   return (
     <div className="w-full space-y-4">
       {/* Filters and actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        {/* Status filter */}
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
+        {/* Filter Controls */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-2 w-full lg:w-auto">
+          {/* Status filter */}
           <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder={t("allowedEmails.filterByStatus")} />
             </SelectTrigger>
             <SelectContent>
@@ -402,7 +403,8 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
           </Select>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Bulk Actions, Column Selector, and Add Button */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full lg:w-auto">
           {/* Bulk Actions */}
           <BulkActions
             selectedCount={table.getFilteredSelectedRowModel().rows.length}
@@ -427,7 +429,7 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
             }}
           />
           {onAddEmail && (
-            <Button onClick={onAddEmail}>
+            <Button onClick={onAddEmail} className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               {t("allowedEmails.addEmail")}
             </Button>
