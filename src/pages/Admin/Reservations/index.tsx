@@ -11,15 +11,14 @@ import {
   type ReservationWithCarAndUser,
 } from "@/components/reservations/admin-reservations-columns";
 import {
-  fetchReservations,
+  fetchReservationsWithData,
   getReservationsCount,
   updateReservationStatus,
   type ReservationsQueryParams,
   type ReservationsFilterParams,
 } from "@/lib/reservations-service";
-import { fetchCarsByIds } from "@/lib/cars-service";
-import { fetchUsersByIds } from "@/lib/users-service";
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
+import { invalidateReservationQueries } from "@/lib/query-utils";
 
 export default function AdminReservationsPage() {
   const { t } = useTranslation();
@@ -54,7 +53,7 @@ export default function AdminReservationsPage() {
     endDate: endDateFilter,
   };
 
-  // Fetch all reservations (admin view)
+  // Fetch all reservations with related data (optimized to avoid N+1)
   const {
     data: reservationsResponse,
     isLoading: reservationsLoading,
@@ -62,14 +61,15 @@ export default function AdminReservationsPage() {
     refetch,
   } = useQuery({
     queryKey: [
-      "reservations",
+      "reservationsWithData",
       queryParams.pageSize,
       queryParams.pageIndex,
       queryParams.statusFilter,
       queryParams.startDate,
       queryParams.endDate,
     ],
-    queryFn: () => fetchReservations(queryParams),
+    queryFn: () => fetchReservationsWithData(queryParams),
+    staleTime: 2 * 60 * 1000, // 2 minutes - reduce refetches for performance
   });
 
   // Fetch total count (separate query that only invalidates when filters change)
@@ -82,7 +82,7 @@ export default function AdminReservationsPage() {
     queryFn: () => getReservationsCount(filterParams),
   });
 
-  const reservations = reservationsResponse?.reservations || [];
+  const reservationsWithData = reservationsResponse?.reservations || [];
 
   // Calculate pagination state locally
   const totalRows = totalCount || 0;
@@ -97,45 +97,7 @@ export default function AdminReservationsPage() {
     hasPreviousPage,
   };
 
-  // Extract unique car and user IDs from DocumentReferences
-  const carIds = [
-    ...new Set(reservations.map((r) => r.carRef.id).filter(Boolean)),
-  ];
-  const userIds = [
-    ...new Set(reservations.map((r) => r.userRef.id).filter(Boolean)),
-  ];
-
-  // Fetch cars and users data for the reservations
-  const {
-    data: carsData,
-    isLoading: carsLoading,
-    error: carsError,
-  } = useQuery({
-    queryKey: ["reservationCars", carIds],
-    queryFn: () => fetchCarsByIds(carIds),
-    enabled: carIds.length > 0,
-  });
-
-  const {
-    data: usersData,
-    isLoading: usersLoading,
-    error: usersError,
-  } = useQuery({
-    queryKey: ["reservationUsers", userIds],
-    queryFn: () => fetchUsersByIds(userIds),
-    enabled: userIds.length > 0,
-  });
-
-  // Merge reservations with car and user data using reference IDs
-  const reservationsWithData: ReservationWithCarAndUser[] = reservations.map(
-    (reservation) => ({
-      ...reservation,
-      carInfo: carsData?.find((car) => car.id === reservation.carRef.id),
-      userInfo: usersData?.find((user) => user.id === reservation.userRef.id),
-    })
-  );
-
-  // Status update mutation
+  // Status update mutation with optimistic updates
   const statusMutation = useMutation({
     mutationFn: ({
       reservationId,
@@ -144,18 +106,89 @@ export default function AdminReservationsPage() {
       reservationId: string;
       status: ReservationStatus;
     }) => updateReservationStatus(reservationId, status),
+    onMutate: async ({ reservationId, status }) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ["reservationsWithData"] });
+
+      // Snapshot the previous value
+      const previousReservations = queryClient.getQueryData([
+        "reservationsWithData",
+        queryParams.pageSize,
+        queryParams.pageIndex,
+        queryParams.statusFilter,
+        queryParams.startDate,
+        queryParams.endDate,
+      ]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(
+        [
+          "reservationsWithData",
+          queryParams.pageSize,
+          queryParams.pageIndex,
+          queryParams.statusFilter,
+          queryParams.startDate,
+          queryParams.endDate,
+        ],
+        (old: { reservations: ReservationWithCarAndUser[] }) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            reservations: old.reservations.map(
+              (reservation: ReservationWithCarAndUser) =>
+                reservation.id === reservationId
+                  ? { ...reservation, status, updatedAt: new Date() }
+                  : reservation
+            ),
+          };
+        }
+      );
+
+      // Return a context object with the snapshotted value
+      return { previousReservations };
+    },
     onSuccess: (_, { status }) => {
       toast.success(t("reservations.statusUpdated"), {
         description: t("reservations.statusUpdatedDesc", {
           status: t(`reservations.${status}`),
         }),
       });
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      // Intelligently invalidate related queries
+      invalidateReservationQueries(queryClient, {
+        invalidateReservationsList: true,
+        invalidateReservationsCount: true,
+        invalidateDashboard: true, // Status changes affect dashboard charts
+      });
     },
-    onError: (error) => {
+    onError: (error, _variables, context) => {
       console.error("Error updating reservation status:", error);
+
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousReservations) {
+        queryClient.setQueryData(
+          [
+            "reservationsWithData",
+            queryParams.pageSize,
+            queryParams.pageIndex,
+            queryParams.statusFilter,
+            queryParams.startDate,
+            queryParams.endDate,
+          ],
+          context.previousReservations
+        );
+      }
+
       toast.error(t("reservations.failedToUpdateStatus"), {
         description: t("common.retry"),
+      });
+    },
+    onSettled: () => {
+      // Ensure we're in sync with server after mutation
+      invalidateReservationQueries(queryClient, {
+        invalidateReservationsList: true,
+        invalidateReservationsCount: false, // Don't invalidate count on settled
+        invalidateDashboard: false, // Already done on success
       });
     },
   });
@@ -191,8 +224,8 @@ export default function AdminReservationsPage() {
     t,
   });
 
-  const isLoading = reservationsLoading || carsLoading || usersLoading;
-  const hasError = reservationsError || carsError || usersError;
+  const isLoading = reservationsLoading;
+  const hasError = reservationsError;
 
   if (hasError) {
     return (

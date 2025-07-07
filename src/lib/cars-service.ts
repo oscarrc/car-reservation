@@ -363,28 +363,24 @@ export async function fetchAvailableCarsForDateRange(
     }
 
     // Get all confirmed/pending reservations that might conflict with the requested time range
+    // We need reservations that overlap with our time period:
+    // - Reservation starts before our period ends AND
+    // - Reservation ends after our period starts
     const reservationsCollection = collection(db, 'reservations');
     const reservationsQuery = query(
       reservationsCollection,
       where('status', 'in', ['pending', 'confirmed']),
-      where('startDateTime', '<', endDateTime)
+      where('startDateTime', '<', endDateTime),
+      where('endDateTime', '>', startDateTime)
     );
 
     const reservationsSnapshot = await getDocs(reservationsQuery);
     const conflictingCarIds = new Set<string>();
-
-    // Check each reservation for date/time conflicts
+    
+    // Add car IDs from all overlapping reservations (query already filters for overlap)
     reservationsSnapshot.docs.forEach((reservationDoc) => {
       const reservation = reservationDoc.data();
-      const reservationStart = reservation.startDateTime.toDate();
-      const reservationEnd = reservation.endDateTime.toDate();
-
-      // Check if there's any overlap between requested time and existing reservation
-      const hasOverlap = startDateTime < reservationEnd && endDateTime > reservationStart;
-      
-      if (hasOverlap) {
-        conflictingCarIds.add(reservation.carRef.id);
-      }
+      conflictingCarIds.add(reservation.carRef.id);
     });
 
     // Filter out cars that have conflicting reservations

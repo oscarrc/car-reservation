@@ -30,6 +30,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { invalidateCarQueries } from "@/lib/query-utils";
 
 import { ColumnSelector } from "@/components/ui/column-selector";
 import { ErrorDisplay } from "@/components/ui/error-display";
@@ -91,7 +92,7 @@ export function CarsTable({
     return () => clearTimeout(timer);
   }, [localSearchTerm, onSearchChange]);
 
-  // Status update mutation
+  // Status update mutation with optimistic updates
   const statusMutation = useMutation({
     mutationFn: async ({
       carId,
@@ -102,18 +103,72 @@ export function CarsTable({
     }) => {
       return await updateCarStatus(carId, status);
     },
+    onMutate: async ({ carId, status }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["cars"] });
+
+      // Snapshot the previous value
+      const previousCars = queryClient.getQueryData([
+        "cars",
+        debouncedSearchTerm,
+        pageIndex,
+        pageSize,
+        statusFilter,
+      ]);
+
+      // Optimistically update the car status
+      queryClient.setQueryData(
+        ["cars", debouncedSearchTerm, pageIndex, pageSize, statusFilter],
+        (old: { cars: CarWithId[] }) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            cars: old.cars.map((car: CarWithId) =>
+              car.id === carId ? { ...car, status, updatedAt: new Date() } : car
+            ),
+          };
+        }
+      );
+
+      return { previousCars };
+    },
     onSuccess: (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: ["cars"] });
+      // Intelligently invalidate related queries
+      invalidateCarQueries(queryClient, {
+        invalidateCarsList: true,
+        invalidateFleetStatus: true,
+        invalidateAvailableCars: true, // Status changes affect available cars
+        invalidateCarsCount: false, // Count rarely changes
+      });
       toast.success(t("fleet.statusUpdated"), {
         description: t("fleet.statusUpdatedDesc", {
           status: t(`fleet.${status}`),
         }),
       });
     },
-    onError: (error) => {
+    onError: (error, _variables, context) => {
       console.error("Failed to update car status:", error);
+
+      // Rollback optimistic update
+      if (context?.previousCars) {
+        queryClient.setQueryData(
+          ["cars", debouncedSearchTerm, pageIndex, pageSize, statusFilter],
+          context.previousCars
+        );
+      }
+
       toast.error(t("fleet.failedToUpdateStatus"), {
         description: t("common.retry"),
+      });
+    },
+    onSettled: () => {
+      // Ensure we're in sync with server after mutation
+      invalidateCarQueries(queryClient, {
+        invalidateCarsList: true,
+        invalidateFleetStatus: false, // Already done on success
+        invalidateAvailableCars: false, // Already done on success
+        invalidateCarsCount: false,
       });
     },
   });

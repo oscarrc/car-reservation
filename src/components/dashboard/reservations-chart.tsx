@@ -65,6 +65,8 @@ export function ReservationsChart({
   } = useQuery({
     queryKey: ["daily-reservations", currentDate.year, currentDate.month],
     queryFn: () => fetchDailyReservations(currentDate.year, currentDate.month),
+    staleTime: 5 * 60 * 1000, // 5 minutes - reservations change more frequently
+    gcTime: 15 * 60 * 1000, // 15 minutes cache
     refetchOnWindowFocus: false,
   });
 

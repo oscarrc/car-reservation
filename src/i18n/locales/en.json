@@ -54,7 +54,8 @@
     "unknown": "Unknown",
     "cancelling": "Cancelling...",
     "settingsError": "Settings Error",
-    "errorLoadingCount": "Error loading count"
+    "errorLoadingCount": "Error loading count",
+    "notProvided": "Not provided"
   },
   "auth": {
     "welcome": "Welcome back",
@@ -64,7 +65,7 @@
     "loggingIn": "Logging in...",
     "failedToLogin": "Failed to log in. Please check your credentials.",
     "forgotPassword": "Forgot your password?",
-    "resetPassword": "Reset your password",
+    "resetPassword": "Reset Password",
     "resetSubtitle": "Enter your email and we'll send you a reset link",
     "sendResetLink": "Send Reset Link",
     "sending": "Sending...",
@@ -108,7 +109,7 @@
     "sendingResetLink": "Sending...",
     "resetEmailSentDesc": "We've sent a password reset link to",
     "resetPasswordTitle": "Reset your password",
-    "resetPasswordDesc": "Enter your new password below",
+    "resetPasswordDesc": "Set a new password for your account",
     "confirmPasswordPlaceholder": "Confirm your password",
     "resettingPassword": "Resetting...",
     "passwordResetSuccessDesc": "You can now login with your new password",
@@ -194,8 +195,6 @@
     "action": "Action",
     "actionDesc": "Processing your request",
     "invalidActionMode": "Invalid action mode",
-    "resetPassword": "Reset Password",
-    "resetPasswordDesc": "Set a new password for your account",
     "emailVerificationDesc": "Verify your email address",
     "emailResetDesc": "Confirm or revert email change",
     "emailChange": "Email Change",
@@ -511,7 +510,8 @@
       "springgreen": "Spring Green"
     },
     "filterByStatus": "Filter by status",
-    "allStatuses": "All statuses"
+    "allStatuses": "All statuses",
+    "errorLoadingCarDetailsDescription": "Unable to load car details. Please try again."
   },
   "browse": {
     "title": "Browse Fleet",
@@ -625,7 +625,8 @@
     "cancelReservationConfirmAuto": "This will immediately cancel your reservation. This action cannot be undone.",
     "cancelReservationConfirmManual": "This will submit a cancellation request for admin approval. You will be notified once it's processed.",
     "userInformation": "User Information",
-    "carInformation": "Car Information"
+    "carInformation": "Car Information",
+    "errorLoadingReservationsDescription": "Unable to load reservations. Please try again."
   },
   "users": {
     "management": "User Management",
@@ -696,7 +697,8 @@
     "allRoles": "All roles",
     "allStatuses": "All statuses",
     "admin": "Admin",
-    "teacher": "Teacher"
+    "teacher": "Teacher",
+    "errorLoadingUserDetailsDescription": "Unable to load user details. Please try again."
   },
   "settings": {
     "title": "Application Settings",

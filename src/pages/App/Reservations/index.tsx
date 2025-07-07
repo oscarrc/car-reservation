@@ -16,7 +16,7 @@ import {
   type ReservationWithCarAndUser,
 } from "@/components/reservations/user-reservations-columns";
 import {
-  fetchUserReservations,
+  fetchReservationsWithData,
   getReservationsCount,
   requestCancellation,
   countActiveUserReservations,
@@ -24,7 +24,7 @@ import {
   type ReservationsFilterParams,
   type PaginationCursor,
 } from "@/lib/reservations-service";
-import { fetchCarsByIds } from "@/lib/cars-service";
+import { invalidateReservationQueries } from "@/lib/query-utils";
 import type { ReservationStatus } from "@/types/reservation";
 
 export default function UserReservationsPage() {
@@ -46,7 +46,9 @@ export default function UserReservationsPage() {
     useState<ReservationWithCarAndUser | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
-  const [cursors, setCursors] = useState<{ [key: number]: PaginationCursor }>({});
+  const [cursors, setCursors] = useState<{ [key: number]: PaginationCursor }>(
+    {}
+  );
   const queryClient = useQueryClient();
 
   const queryParams: ReservationsQueryParams = {
@@ -67,7 +69,7 @@ export default function UserReservationsPage() {
     userId: currentUser?.uid,
   };
 
-  // Fetch user reservations
+  // Fetch user reservations with related data
   const {
     data: reservationsResponse,
     isLoading: reservationsLoading,
@@ -75,7 +77,7 @@ export default function UserReservationsPage() {
     refetch,
   } = useQuery({
     queryKey: [
-      "userReservations",
+      "userReservationsWithData",
       currentUser?.uid,
       queryParams.pageSize,
       queryParams.pageIndex,
@@ -85,9 +87,13 @@ export default function UserReservationsPage() {
     ],
     queryFn: () => {
       if (!currentUser?.uid) throw new Error("User not authenticated");
-      return fetchUserReservations({ ...queryParams, userId: currentUser.uid });
+      return fetchReservationsWithData({
+        ...queryParams,
+        userId: currentUser.uid,
+      });
     },
     enabled: !!currentUser?.uid,
+    staleTime: 2 * 60 * 1000, // 2 minutes - reduce refetches for performance
   });
 
   // Fetch total count (separate query that only invalidates when filters change)
@@ -96,7 +102,13 @@ export default function UserReservationsPage() {
     isLoading: countLoading,
     error: countError,
   } = useQuery({
-    queryKey: ["userReservations", "count", currentUser?.uid, pageSize, filterParams],
+    queryKey: [
+      "userReservations",
+      "count",
+      currentUser?.uid,
+      pageSize,
+      filterParams,
+    ],
     queryFn: () => {
       if (!currentUser?.uid) throw new Error("User not authenticated");
       return getReservationsCount(filterParams);
@@ -104,13 +116,13 @@ export default function UserReservationsPage() {
     enabled: !!currentUser?.uid,
   });
 
-  const reservations = reservationsResponse?.reservations || [];
-  
+  const reservationsWithCarData = reservationsResponse?.reservations || [];
+
   // Calculate pagination state locally
   const totalRows = totalCount || 0;
   const hasNextPage = pageIndex < Math.ceil(totalRows / pageSize) - 1;
   const hasPreviousPage = pageIndex > 0;
-  
+
   const pagination = {
     pageIndex: reservationsResponse?.pagination.pageIndex || 0,
     pageSize: reservationsResponse?.pagination.pageSize || 25,
@@ -119,40 +131,15 @@ export default function UserReservationsPage() {
     hasPreviousPage,
   };
 
-  // Extract unique car IDs from DocumentReferences
-  const carIds = [
-    ...new Set(reservations.map((r) => r.carRef.id).filter(Boolean)),
-  ];
-
-  // Fetch cars data for the reservations
-  const {
-    data: carsData,
-    isLoading: carsLoading,
-    error: carsError,
-  } = useQuery({
-    queryKey: ["reservationCars", carIds],
-    queryFn: () => fetchCarsByIds(carIds),
-    enabled: carIds.length > 0,
-  });
-
-  // Merge reservations with car data using reference IDs
-  const reservationsWithCarData: ReservationWithCarAndUser[] = reservations.map(
-    (reservation) => ({
-      ...reservation,
-      carInfo: carsData?.find((car) => car.id === reservation.carRef.id),
-      userEmail: currentUser?.email || "",
-    })
-  );
-
   // Cancellation mutation
   const cancelMutation = useMutation({
     mutationFn: (reservationId: string) =>
       requestCancellation(reservationId, settings?.autoCancelation || false),
     onSuccess: (result, reservationId) => {
-      const reservation = reservations.find((r) => r.id === reservationId);
-      const carInfo = carsData?.find(
-        (car) => car.id === reservation?.carRef.id
+      const reservation = reservationsWithCarData.find(
+        (r) => r.id === reservationId
       );
+      const carInfo = reservation?.carInfo;
 
       if (result.status === "cancelled") {
         toast.success(t("reservations.cancellationSuccess"), {
@@ -168,9 +155,15 @@ export default function UserReservationsPage() {
         });
       }
 
-      queryClient.invalidateQueries({ queryKey: ["userReservations"] });
-      queryClient.invalidateQueries({ queryKey: ["activeReservationsCount"] });
-      queryClient.invalidateQueries({ queryKey: ["availableCarsForDateRange"] });
+      // Use utility for targeted invalidation
+      invalidateReservationQueries(queryClient, {
+        invalidateReservationsList: false, // Don't invalidate main admin list
+        invalidateReservationsCount: false, // Don't invalidate global count
+        invalidateDashboard: false,
+        invalidateActiveReservationsCount: true,
+        invalidateAvailableCars: true,
+        specificUserId: currentUser?.uid,
+      });
       setCancelDialogOpen(false);
       setReservationToCancel(null);
     },
@@ -220,7 +213,10 @@ export default function UserReservationsPage() {
       if (!currentUser?.uid) throw new Error("User not authenticated");
       return countActiveUserReservations(currentUser.uid);
     },
-    enabled: !!currentUser?.uid && !!settings?.maxConcurrentReservations && settings.maxConcurrentReservations > 0,
+    enabled:
+      !!currentUser?.uid &&
+      !!settings?.maxConcurrentReservations &&
+      settings.maxConcurrentReservations > 0,
     staleTime: 30000, // Consider data fresh for 30 seconds
     gcTime: 300000, // Keep in cache for 5 minutes
   });
@@ -260,8 +256,8 @@ export default function UserReservationsPage() {
     t,
   });
 
-  const isLoading = reservationsLoading || carsLoading;
-  const hasError = reservationsError || carsError;
+  const isLoading = reservationsLoading;
+  const hasError = reservationsError;
 
   if (!currentUser) {
     return (
@@ -297,7 +293,7 @@ export default function UserReservationsPage() {
             error={hasError}
             onRetry={() => refetch()}
             title={t("reservations.errorLoadingReservations")}
-            description={t("reservations.errorLoadingReservationsDescription", "Unable to load reservations. Please try again.")}
+            description={t("reservations.errorLoadingReservationsDescription")}
             showHomeButton={false}
           />
         </div>
@@ -342,7 +338,8 @@ export default function UserReservationsPage() {
           }}
           onLastPage={() => {
             if (pagination?.totalCount) {
-              const lastPageIndex = Math.ceil(pagination.totalCount / pageSize) - 1;
+              const lastPageIndex =
+                Math.ceil(pagination.totalCount / pageSize) - 1;
               setPageIndex(lastPageIndex);
             }
           }}

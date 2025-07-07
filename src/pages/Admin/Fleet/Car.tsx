@@ -15,13 +15,13 @@ import type { ReservationWithCarAndUser } from "@/components/reservations/admin-
 
 import { fetchCarById } from "@/lib/cars-service";
 import {
-  fetchReservations,
+  fetchReservationsWithData,
   getReservationsCount,
   updateReservationStatus,
   type ReservationsQueryParams,
   type ReservationsFilterParams,
 } from "@/lib/reservations-service";
-import { fetchUsersByIds } from "@/lib/users-service";
+import { invalidateReservationQueries } from "@/lib/query-utils";
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
 import { CarInfoSkeleton } from "@/components/cars/car-info-skeleton";
 import { CarInfoCard } from "@/components/cars/car-info-card";
@@ -80,7 +80,7 @@ export default function CarPage() {
     error: reservationsError,
   } = useQuery({
     queryKey: [
-      "carReservations",
+      "carReservationsWithData",
       carId,
       statusFilter,
       startDateFilter,
@@ -88,8 +88,9 @@ export default function CarPage() {
       pageIndex,
       pageSize,
     ],
-    queryFn: () => fetchReservations(queryParams),
+    queryFn: () => fetchReservationsWithData(queryParams),
     enabled: !!carId,
+    staleTime: 2 * 60 * 1000, // 2 minutes - reduce refetches for performance
   });
 
   // Fetch total count (separate query that only invalidates when filters change)
@@ -103,7 +104,7 @@ export default function CarPage() {
     enabled: !!carId,
   });
 
-  const reservations = reservationsResponse?.reservations || [];
+  const reservationsWithData = reservationsResponse?.reservations || [];
 
   // Calculate pagination state locally
   const totalRows = totalCount || 0;
@@ -117,31 +118,6 @@ export default function CarPage() {
     hasNextPage,
     hasPreviousPage,
   };
-
-  // Extract unique user IDs from DocumentReferences
-  const userIds = [
-    ...new Set(reservations.map((r) => r.userRef.id).filter(Boolean)),
-  ];
-
-  // Fetch users data for the reservations
-  const {
-    data: usersData,
-    isLoading: usersLoading,
-    error: usersError,
-  } = useQuery({
-    queryKey: ["reservationUsers", userIds],
-    queryFn: () => fetchUsersByIds(userIds),
-    enabled: userIds.length > 0,
-  });
-
-  // Merge reservations with user data using reference IDs
-  const reservationsWithData: ReservationWithCarAndUser[] = reservations.map(
-    (reservation) => ({
-      ...reservation,
-      carInfo: car || undefined,
-      userInfo: usersData?.find((user) => user.id === reservation.userRef.id),
-    })
-  );
 
   // Status update mutation
   const statusMutation = useMutation({
@@ -158,7 +134,14 @@ export default function CarPage() {
           status: t(`reservations.${status}`),
         }),
       });
-      queryClient.invalidateQueries({ queryKey: ["carReservations", carId] });
+      // Use utility for targeted invalidation
+      invalidateReservationQueries(queryClient, {
+        invalidateReservationsList: true, // Update admin list
+        invalidateReservationsCount: true, // Update global count
+        invalidateDashboard: true, // Status changes affect dashboard
+        invalidateAvailableCars: true, // Car availability may change
+        specificCarId: carId,
+      });
     },
     onError: (error) => {
       console.error("Error updating reservation status:", error);
@@ -187,9 +170,8 @@ export default function CarPage() {
     t,
   });
 
-  const isLoading =
-    carLoading || reservationsLoading || usersLoading;
-  const hasError = carError || reservationsError || usersError;
+  const isLoading = carLoading || reservationsLoading;
+  const hasError = carError || reservationsError;
 
   // Show loading state first
   if (carLoading) {
@@ -201,7 +183,7 @@ export default function CarPage() {
         />
         <div className="px-4 lg:px-6 space-y-6">
           <CarInfoSkeleton />
-          
+
           {/* Reservations Table with Loading State */}
           <div>
             <h3 className="text-lg font-semibold mb-4">
@@ -242,10 +224,7 @@ export default function CarPage() {
             error={hasError}
             onRetry={() => window.location.reload()}
             title={t("fleet.errorLoadingCarDetails")}
-            description={t(
-              "fleet.errorLoadingCarDetailsDescription",
-              "Unable to load car details. Please try again."
-            )}
+            description={t("fleet.errorLoadingCarDetailsDescription")}
             homePath="/admin/fleet"
           />
         </div>

@@ -18,13 +18,13 @@ import type { ReservationWithCarAndUser } from "@/components/reservations/user-d
 
 import { fetchUserById } from "@/lib/users-service";
 import {
-  fetchReservations,
+  fetchReservationsWithData,
   getReservationsCount,
   updateReservationStatus,
   type ReservationsQueryParams,
   type ReservationsFilterParams,
 } from "@/lib/reservations-service";
-import { fetchCarsByIds } from "@/lib/cars-service";
+import { invalidateReservationQueries } from "@/lib/query-utils";
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
 
 export default function UserPage() {
@@ -82,7 +82,7 @@ export default function UserPage() {
     error: reservationsError,
   } = useQuery({
     queryKey: [
-      "userReservations",
+      "userReservationsWithData",
       userId,
       statusFilter,
       startDateFilter,
@@ -90,8 +90,9 @@ export default function UserPage() {
       pageIndex,
       pageSize,
     ],
-    queryFn: () => fetchReservations(queryParams),
+    queryFn: () => fetchReservationsWithData(queryParams),
     enabled: !!userId,
+    staleTime: 2 * 60 * 1000, // 2 minutes - reduce refetches for performance
   });
 
   // Fetch total count (separate query that only invalidates when filters change)
@@ -105,7 +106,7 @@ export default function UserPage() {
     enabled: !!userId,
   });
 
-  const reservations = reservationsResponse?.reservations || [];
+  const reservationsWithData = reservationsResponse?.reservations || [];
 
   // Calculate pagination state locally
   const totalRows = totalCount || 0;
@@ -119,31 +120,6 @@ export default function UserPage() {
     hasNextPage,
     hasPreviousPage,
   };
-
-  // Extract unique car IDs from DocumentReferences
-  const carIds = [
-    ...new Set(reservations.map((r) => r.carRef.id).filter(Boolean)),
-  ];
-
-  // Fetch cars data for the reservations
-  const {
-    data: carsData,
-    isLoading: carsLoading,
-    error: carsError,
-  } = useQuery({
-    queryKey: ["reservationCars", carIds],
-    queryFn: () => fetchCarsByIds(carIds),
-    enabled: carIds.length > 0,
-  });
-
-  // Merge reservations with car data using reference IDs
-  const reservationsWithData: ReservationWithCarAndUser[] = reservations.map(
-    (reservation) => ({
-      ...reservation,
-      carInfo: carsData?.find((car) => car.id === reservation.carRef.id),
-      userInfo: user || undefined,
-    })
-  );
 
   // Status update mutation
   const statusMutation = useMutation({
@@ -160,7 +136,13 @@ export default function UserPage() {
           status: t(`reservations.${status}`),
         }),
       });
-      queryClient.invalidateQueries({ queryKey: ["userReservations", userId] });
+      // Use utility for targeted invalidation
+      invalidateReservationQueries(queryClient, {
+        invalidateReservationsList: true, // Update admin list
+        invalidateReservationsCount: true, // Update global count  
+        invalidateDashboard: true, // Status changes affect dashboard
+        specificUserId: userId,
+      });
     },
     onError: (error) => {
       console.error("Error updating reservation status:", error);
@@ -197,9 +179,8 @@ export default function UserPage() {
     isUpdatingStatus: statusMutation.isPending,
   });
 
-  const isLoading =
-    userLoading || reservationsLoading || carsLoading;
-  const hasError = userError || reservationsError || carsError;
+  const isLoading = userLoading || reservationsLoading;
+  const hasError = userError || reservationsError;
 
   if (hasError) {
     return (
@@ -213,10 +194,7 @@ export default function UserPage() {
             error={hasError}
             onRetry={() => window.location.reload()}
             title={t("users.errorLoadingUserDetails")}
-            description={t(
-              "users.errorLoadingUserDetailsDescription",
-              "Unable to load user details. Please try again."
-            )}
+            description={t("users.errorLoadingUserDetailsDescription")}
             homePath="/admin/users"
           />
         </div>

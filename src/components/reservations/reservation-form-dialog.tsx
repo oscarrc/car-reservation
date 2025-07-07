@@ -63,6 +63,7 @@ import type { ReservationWithId } from "@/types/reservation";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { fetchUserById } from "@/lib/users-service";
+import { invalidateReservationQueries } from "@/lib/query-utils";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
@@ -216,11 +217,14 @@ function CreateReservationForm({
         });
       }
 
-      queryClient.invalidateQueries({ queryKey: ["userReservations"] });
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      queryClient.invalidateQueries({ queryKey: ["activeReservationsCount"] });
-      queryClient.invalidateQueries({
-        queryKey: ["availableCarsForDateRange"],
+      // Use utility for targeted invalidation after creating reservation
+      invalidateReservationQueries(queryClient, {
+        invalidateReservationsList: true, // Update all reservation lists
+        invalidateReservationsCount: true, // Update counts
+        invalidateDashboard: true, // New reservations affect dashboard
+        invalidateActiveReservationsCount: true,
+        invalidateAvailableCars: true,
+        specificUserId: currentUser?.uid,
       });
       onOpenChange(false);
       form.reset();
@@ -451,7 +455,10 @@ function CreateReservationForm({
                     open={carDropdownOpen}
                     onOpenChange={setCarDropdownOpen}
                   >
-                    <PopoverTrigger asChild>
+                    <PopoverTrigger
+                      asChild
+                      disabled={!startDateTime || !endDateTime}
+                    >
                       <FormControl>
                         <Button
                           variant="outline"
@@ -706,13 +713,19 @@ function EditReservationForm({
         }),
       });
 
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      queryClient.invalidateQueries({
-        queryKey: ["reservation", reservation.id],
-      });
-      queryClient.invalidateQueries({ queryKey: ["userReservations"] });
-      queryClient.invalidateQueries({
-        queryKey: ["availableCarsForDateRange"],
+      // Use utility for targeted invalidation after updating reservation
+      invalidateReservationQueries(queryClient, {
+        invalidateReservationsList: true, // Update all reservation lists
+        invalidateReservationsCount: false, // Count doesn't change on edit
+        invalidateDashboard: false, // Edits don't typically affect dashboard
+        invalidateActiveReservationsCount: false,
+        invalidateAvailableCars: true, // Car/date changes affect availability
+        specificReservationId: reservation.id,
+        specificUserId: reservation.userRef?.id,
+        specificCarId:
+          formData.carId !== reservation.carRef?.id
+            ? formData.carId
+            : undefined,
       });
       onOpenChange(false);
     },

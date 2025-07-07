@@ -54,7 +54,8 @@
     "unknown": "ไม่ทราบ",
     "cancelling": "กำลังยกเลิก...",
     "settingsError": "ข้อผิดพลาดในการตั้งค่า",
-    "errorLoadingCount": "ข้อผิดพลาดในการโหลดจำนวน"
+    "errorLoadingCount": "ข้อผิดพลาดในการโหลดจำนวน",
+    "notProvided": "ไม่ได้จัดเตรียมไว้"
   },
   "auth": {
     "welcome": "ยินดีต้อนรับกลับ",
@@ -509,7 +510,8 @@
       "springgreen": "เขียวใส"
     },
     "filterByStatus": "กรองตามสถานะ",
-    "allStatuses": "สถานะทั้งหมด"
+    "allStatuses": "สถานะทั้งหมด",
+    "errorLoadingCarDetailsDescription": "ไม่สามารถโหลดรายละเอียดรถยนต์ได้ \nโปรดลองอีกครั้ง"
   },
   "browse": {
     "title": "เรียกดูยานพาหนะ",
@@ -623,7 +625,8 @@
     "cancelReservationConfirmManual": "การดำเนินการนี้จะส่งคำขอยกเลิกให้ผู้ดูแลระบบพิจารณา คุณจะได้รับการแจ้งเตือนเมื่อดำเนินการเสร็จสิ้น",
     "userInformation": "ข้อมูลผู้ใช้",
     "carInformation": "ข้อมูลรถยนต์",
-    "selectStatus": "เลือกสถานะ"
+    "selectStatus": "เลือกสถานะ",
+    "errorLoadingReservationsDescription": "ไม่สามารถโหลดการจอง \nโปรดลองอีกครั้ง"
   },
   "users": {
     "management": "จัดการผู้ใช้",
@@ -694,7 +697,8 @@
     "allRoles": "บทบาททั้งหมด",
     "allStatuses": "สถานะทั้งหมด",
     "admin": "ผู้ดูแลระบบ",
-    "teacher": "ครู"
+    "teacher": "ครู",
+    "errorLoadingUserDetailsDescription": "ไม่สามารถโหลดรายละเอียดผู้ใช้ได้ \nโปรดลองอีกครั้ง"
   },
   "settings": {
     "title": "การตั้งค่าแอปพลิเคชัน",

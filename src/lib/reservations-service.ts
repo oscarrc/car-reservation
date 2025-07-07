@@ -19,6 +19,10 @@ import {
 import type { ReservationStatus, ReservationWithId } from '@/types/reservation';
 
 import { db } from './firebase';
+import { fetchCarsByIds } from './cars-service';
+import { fetchUsersByIds } from './users-service';
+import type { CarWithId } from '@/types/car';
+import type { UserProfileWithId } from './users-service';
 
 // Common pagination interfaces (matching cars service)
 export interface PaginationCursor {
@@ -35,6 +39,17 @@ export interface PaginationState {
 
 export interface ReservationsResponse {
   reservations: ReservationWithId[];
+  pagination: PaginationState;
+}
+
+// Extended reservation type with car and user information
+export interface ReservationWithCarAndUser extends ReservationWithId {
+  carInfo?: CarWithId;
+  userInfo?: UserProfileWithId;
+}
+
+export interface ReservationsWithDataResponse {
+  reservations: ReservationWithCarAndUser[];
   pagination: PaginationState;
 }
 
@@ -359,6 +374,56 @@ export async function createReservation(reservationData: {
 }
 
 // Update a reservation
+/**
+ * Fetch reservations with their related car and user data in one optimized call
+ * This reduces N+1 queries by batching the related data fetches
+ */
+export async function fetchReservationsWithData(params: ReservationsQueryParams): Promise<ReservationsWithDataResponse> {
+  try {
+    // First, fetch the reservations
+    const reservationsResponse = await fetchReservations(params);
+    const reservations = reservationsResponse.reservations;
+
+    if (reservations.length === 0) {
+      return {
+        reservations: [],
+        pagination: reservationsResponse.pagination
+      };
+    }
+
+    // Extract unique car and user IDs from DocumentReferences
+    const carIds = [...new Set(reservations.map((r) => r.carRef.id).filter(Boolean))];
+    const userIds = [...new Set(reservations.map((r) => r.userRef.id).filter(Boolean))];
+
+    // Fetch related data in parallel
+    const [carsData, usersData] = await Promise.all([
+      carIds.length > 0 ? fetchCarsByIds(carIds) : Promise.resolve([]),
+      userIds.length > 0 ? fetchUsersByIds(userIds) : Promise.resolve([])
+    ]);
+
+    // Create maps for faster lookup
+    const carsMap = new Map(carsData.map(car => [car.id, car]));
+    const usersMap = new Map(usersData.map(user => [user.id, user]));
+
+    // Merge reservations with related data
+    const reservationsWithData: ReservationWithCarAndUser[] = reservations.map(
+      (reservation) => ({
+        ...reservation,
+        carInfo: carsMap.get(reservation.carRef.id),
+        userInfo: usersMap.get(reservation.userRef.id),
+      })
+    );
+
+    return {
+      reservations: reservationsWithData,
+      pagination: reservationsResponse.pagination
+    };
+  } catch (error) {
+    console.error('Error fetching reservations with data:', error);
+    throw error;
+  }
+}
+
 export async function updateReservation(
   reservationId: string,
   updateData: {
