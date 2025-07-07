@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/chart";
 import { fetchFleetStatus } from "@/lib/dashboard-service";
 import { cn } from "@/lib/utils";
+import { CACHE_STRATEGIES } from "@/lib/query-config"; // Added
 
 interface FleetStatusChartProps {
   className?: string;
@@ -58,9 +59,10 @@ export function FleetStatusChart({ className }: FleetStatusChartProps) {
   } = useQuery({
     queryKey: ["fleet-status"],
     queryFn: fetchFleetStatus,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
+    // refetchOnWindowFocus: false, // Covered by CACHE_STRATEGIES.counts or cars
+    // refetchOnMount: false, // Default behavior
+    // refetchOnReconnect: false, // Default behavior
+    ...CACHE_STRATEGIES.counts, // Or CACHE_STRATEGIES.cars if more appropriate
   });
 
   const totalCars = useMemo(() => {

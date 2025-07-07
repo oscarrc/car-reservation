@@ -19,6 +19,7 @@ import {
   type PaginationCursor,
   type UsersFilterParams,
 } from "@/lib/users-service";
+import { CACHE_STRATEGIES } from "@/lib/query-config"; // Added
 import {
   flexRender,
   getCoreRowModel,
@@ -135,7 +136,8 @@ export function UsersTable({
       }
       return fetchUsers(queryParams);
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    // staleTime: 5 * 60 * 1000, // 5 minutes - Replaced by CACHE_STRATEGIES.users
+    ...CACHE_STRATEGIES.users,
   });
 
   // Fetch total count (separate query that only invalidates when filters change)
@@ -148,7 +150,8 @@ export function UsersTable({
     queryFn: async () => {
       return getUsersCount(filterParams);
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    // staleTime: 5 * 60 * 1000, // 5 minutes - Replaced by CACHE_STRATEGIES.counts
+    ...CACHE_STRATEGIES.counts,
   });
 
   const data = usersResponse?.users || [];

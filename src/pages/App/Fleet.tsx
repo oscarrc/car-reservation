@@ -15,6 +15,7 @@ import {
 } from "@/lib/cars-service";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { CACHE_STRATEGIES } from "@/lib/query-config"; // Added
 
 // Helper function to get status variant
 const getStatusVariant = (status: CarStatus) => {
@@ -56,6 +57,7 @@ export default function FleetPage() {
         cursor,
       });
     },
+    ...CACHE_STRATEGIES.cars, // Added cache strategy
   });
 
   // Fetch total count (separate query that only invalidates when filters change)
@@ -68,6 +70,7 @@ export default function FleetPage() {
     queryFn: async () => {
       return getCarsCount({});
     },
+    ...CACHE_STRATEGIES.counts, // Added cache strategy
   });
 
   // Handle data updates

@@ -21,6 +21,7 @@ import {
   type PaginationCursor,
   type CarsFilterParams,
 } from "@/lib/cars-service";
+import { CACHE_STRATEGIES } from "@/lib/query-config"; // Added
 import {
   flexRender,
   getCoreRowModel,
@@ -151,7 +152,8 @@ export function CarsTable({
       }
       return fetchCars(queryParams);
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    // staleTime: 5 * 60 * 1000, // 5 minutes - Replaced by CACHE_STRATEGIES.cars
+    ...CACHE_STRATEGIES.cars,
   });
 
   // Fetch total count (separate query that only invalidates when filters change)
@@ -164,7 +166,8 @@ export function CarsTable({
     queryFn: async () => {
       return getCarsCount(filterParams);
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    // staleTime: 5 * 60 * 1000, // 5 minutes - Replaced by CACHE_STRATEGIES.counts
+    ...CACHE_STRATEGIES.counts,
   });
 
   const data = carsResponse?.cars || [];

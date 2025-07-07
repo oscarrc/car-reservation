@@ -429,4 +429,140 @@ export async function updateReservation(
     console.error('Error updating reservation:', error);
     throw error;
   }
-} 
+}
+
+// Interface for reservations with populated car and user data
+export interface ReservationWithCarAndUser extends ReservationWithId {
+  carInfo?: CarWithId;
+  userInfo?: UserProfileWithId;
+}
+
+interface ReservationsWithDataResponse {
+  reservations: ReservationWithCarAndUser[];
+  pagination: PaginationState;
+}
+
+// Helper function to build pagination state (simplified version)
+// Note: This is a basic implementation. You might need a more robust one
+// if you are handling complex pagination scenarios across different services.
+function buildPaginationState(
+  params: ReservationsQueryParams,
+  docs: QueryDocumentSnapshot<DocumentData>[]
+): PaginationState {
+  const { pageSize = 25, pageIndex = 0 } = params;
+  const hasNextPage = docs.length > pageSize;
+  const actualDocs = hasNextPage ? docs.slice(0, pageSize) : docs;
+
+  return {
+    pageIndex,
+    pageSize,
+    startCursor: actualDocs.length > 0 ? actualDocs[0] : undefined,
+    endCursor: actualDocs.length > 0 ? actualDocs[actualDocs.length - 1] : undefined,
+    // You might want to add hasNextPage, hasPreviousPage flags if needed by UI
+  };
+}
+
+export async function fetchReservationsWithPopulatedData(
+  params: ReservationsQueryParams
+): Promise<ReservationsWithDataResponse> {
+  // Step 1: Fetch reservations with existing query builder
+  const reservationsCollection = collection(db, 'reservations');
+  const constraints = buildReservationsQueryConstraints(params); // Existing helper
+
+  // Add cursor pagination
+  if (params.cursor) {
+    constraints.push(
+      params.cursor.direction === 'forward'
+        ? startAfter(params.cursor.docSnapshot)
+        : endBefore(params.cursor.docSnapshot)
+    );
+  }
+
+  // Ensure pageSize is defined, default if not
+  const pageSize = params.pageSize || 25;
+  constraints.push(limit(pageSize + 1)); // Fetch one extra to check for next page
+
+  const q = query(reservationsCollection, ...constraints);
+  const querySnapshot = await getDocs(q);
+
+  // Slice to current page size after fetching one extra for pagination check
+  const reservationDocs = querySnapshot.docs.slice(0, pageSize);
+
+  if (reservationDocs.length === 0) {
+    return {
+      reservations: [],
+      pagination: buildPaginationState(params, [])
+    };
+  }
+
+  // Step 2: Extract unique DocumentReferences (not IDs)
+  // Filter out undefined refs before mapping
+  const uniqueUserRefs = Array.from(
+    new Map(
+      reservationDocs
+        .map(doc => (doc.data() as Reservation).userRef)
+        .filter(ref => ref) // Ensure ref is not undefined
+        .map(ref => [ref.id, ref])
+    ).values()
+  );
+
+  const uniqueCarRefs = Array.from(
+    new Map(
+      reservationDocs
+        .map(doc => (doc.data() as Reservation).carRef)
+        .filter(ref => ref) // Ensure ref is not undefined
+        .map(ref => [ref.id, ref])
+    ).values()
+  );
+
+  // Step 3: Parallel fetch using getDoc for each reference
+  // Handle cases where uniqueUserRefs or uniqueCarRefs might be empty
+  const [userDocs, carDocs] = await Promise.all([
+    uniqueUserRefs.length > 0
+      ? Promise.all(uniqueUserRefs.map(ref => getDoc(ref!))) // ref! because we filtered undefined
+      : Promise.resolve([]),
+    uniqueCarRefs.length > 0
+      ? Promise.all(uniqueCarRefs.map(ref => getDoc(ref!))) // ref! because we filtered undefined
+      : Promise.resolve([])
+  ]);
+
+  // Step 4: Create lookup maps
+  const usersMap = new Map(
+    userDocs
+      .filter(doc => doc.exists())
+      .map(doc => [doc.id, { id: doc.id, ...doc.data() } as UserProfileWithId])
+  );
+
+  const carsMap = new Map(
+    carDocs
+      .filter(doc => doc.exists())
+      .map(doc => [doc.id, { id: doc.id, ...doc.data() } as CarWithId])
+  );
+
+  // Step 5: Build populated reservations
+  const populatedReservations = reservationDocs.map(doc => {
+    const data = doc.data() as Reservation; // Base reservation data
+    // Construct ReservationWithId first
+    const reservationWithId: ReservationWithId = {
+      id: doc.id,
+      ...data,
+      // Convert Timestamps to Dates
+      startDateTime: (data.startDateTime as Timestamp).toDate(),
+      endDateTime: (data.endDateTime as Timestamp).toDate(),
+      createdAt: (data.createdAt as Timestamp).toDate(),
+      updatedAt: (data.updatedAt as Timestamp).toDate(),
+    };
+
+    // Then add carInfo and userInfo to create ReservationWithCarAndUser
+    return {
+      ...reservationWithId,
+      carInfo: data.carRef ? carsMap.get(data.carRef.id) : undefined,
+      userInfo: data.userRef ? usersMap.get(data.userRef.id) : undefined,
+    } as ReservationWithCarAndUser;
+  });
+
+  return {
+    reservations: populatedReservations,
+    pagination: buildPaginationState(params, querySnapshot.docs) // Pass original docs for pagination logic
+  };
+}

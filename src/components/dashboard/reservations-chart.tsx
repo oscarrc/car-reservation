@@ -24,6 +24,7 @@ import {
 import { fetchDailyReservations } from "@/lib/dashboard-service";
 import { getLocaleString } from "@/lib/date-locale";
 import { cn } from "@/lib/utils";
+import { CACHE_STRATEGIES } from "@/lib/query-config"; // Added
 
 const reservationsChartConfig = {
   confirmed: {
@@ -65,7 +66,8 @@ export function ReservationsChart({
   } = useQuery({
     queryKey: ["daily-reservations", currentDate.year, currentDate.month],
     queryFn: () => fetchDailyReservations(currentDate.year, currentDate.month),
-    refetchOnWindowFocus: false,
+    // refetchOnWindowFocus: false, // Covered by CACHE_STRATEGIES.counts or reservations
+    ...CACHE_STRATEGIES.counts, // Or CACHE_STRATEGIES.reservations
   });
 
   const currentMonth = new Date(

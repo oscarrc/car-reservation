@@ -11,17 +11,20 @@ import { ReservationsTable } from "@/components/reservations/reservations-table"
 import { CarFormDialog } from "@/components/cars/car-form-dialog";
 import { ReservationFormDialog } from "@/components/reservations/reservation-form-dialog";
 import { createCarDetailsReservationColumns } from "@/components/reservations/car-details-reservation-columns";
-import type { ReservationWithCarAndUser } from "@/components/reservations/admin-reservations-columns";
+// import type { ReservationWithCarAndUser } from "@/components/reservations/admin-reservations-columns"; // Will use from service
 
 import { fetchCarById } from "@/lib/cars-service";
 import {
-  fetchReservations,
+  // fetchReservations, // Removed
+  fetchReservationsWithPopulatedData, // Added
   getReservationsCount,
   updateReservationStatus,
   type ReservationsQueryParams,
   type ReservationsFilterParams,
+  type ReservationWithCarAndUser, // Added
 } from "@/lib/reservations-service";
-import { fetchUsersByIds } from "@/lib/users-service";
+import { CACHE_STRATEGIES } from "@/lib/query-config"; // Added
+// import { fetchUsersByIds } from "@/lib/users-service"; // Removed
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
 import { CarInfoSkeleton } from "@/components/cars/car-info-skeleton";
 import { CarInfoCard } from "@/components/cars/car-info-card";
@@ -55,6 +58,7 @@ export default function CarPage() {
     queryKey: ["car", carId],
     queryFn: () => fetchCarById(carId!),
     enabled: !!carId,
+    ...CACHE_STRATEGIES.cars, // Added cache strategy
   });
 
   const queryParams: ReservationsQueryParams = {
@@ -74,74 +78,51 @@ export default function CarPage() {
     endDate: endDateFilter,
   };
 
+  // Fetch reservations with populated data for this specific car
   const {
-    data: reservationsResponse,
+    data: populatedDataResponse,
     isLoading: reservationsLoading,
     error: reservationsError,
   } = useQuery({
-    queryKey: [
-      "carReservations",
-      carId,
-      statusFilter,
-      startDateFilter,
-      endDateFilter,
-      pageIndex,
-      pageSize,
-    ],
-    queryFn: () => fetchReservations(queryParams),
-    enabled: !!carId,
+    queryKey: ["reservations-populated-by-car", queryParams], // Updated queryKey, pass full queryParams
+    queryFn: () => fetchReservationsWithPopulatedData(queryParams),
+    enabled: !!carId, // Only run if carId is available
+    ...CACHE_STRATEGIES.reservations, // Added cache strategy
   });
 
-  // Fetch total count (separate query that only invalidates when filters change)
+  // Fetch total count for reservations of this car
   const {
     data: totalCount,
     isLoading: countLoading,
     error: countError,
   } = useQuery({
-    queryKey: ["carReservations", "count", carId, pageSize, filterParams],
+    queryKey: ["reservations-count-for-car", filterParams], // Updated queryKey, pass full filterParams
     queryFn: () => getReservationsCount(filterParams),
     enabled: !!carId,
+    ...CACHE_STRATEGIES.counts, // Added cache strategy
   });
 
-  const reservations = reservationsResponse?.reservations || [];
+  const reservationsWithData = populatedDataResponse?.reservations || [];
+  const responsePagination = populatedDataResponse?.pagination;
 
-  // Calculate pagination state locally
   const totalRows = totalCount || 0;
-  const hasNextPage = pageIndex < Math.ceil(totalRows / pageSize) - 1;
-  const hasPreviousPage = pageIndex > 0;
+
+  const currentEffectivePageIndex = responsePagination?.pageIndex ?? pageIndex;
+  const currentEffectivePageSize = responsePagination?.pageSize ?? pageSize;
+
+  const hasNextPage = (currentEffectivePageIndex + 1) * currentEffectivePageSize < totalRows;
+  const hasPreviousPage = currentEffectivePageIndex > 0;
 
   const pagination = {
-    pageIndex: reservationsResponse?.pagination.pageIndex || 0,
-    pageSize: reservationsResponse?.pagination.pageSize || 25,
+    pageIndex: currentEffectivePageIndex,
+    pageSize: currentEffectivePageSize,
     totalCount: totalRows,
     hasNextPage,
     hasPreviousPage,
   };
 
-  // Extract unique user IDs from DocumentReferences
-  const userIds = [
-    ...new Set(reservations.map((r) => r.userRef.id).filter(Boolean)),
-  ];
-
-  // Fetch users data for the reservations
-  const {
-    data: usersData,
-    isLoading: usersLoading,
-    error: usersError,
-  } = useQuery({
-    queryKey: ["reservationUsers", userIds],
-    queryFn: () => fetchUsersByIds(userIds),
-    enabled: userIds.length > 0,
-  });
-
-  // Merge reservations with user data using reference IDs
-  const reservationsWithData: ReservationWithCarAndUser[] = reservations.map(
-    (reservation) => ({
-      ...reservation,
-      carInfo: car || undefined,
-      userInfo: usersData?.find((user) => user.id === reservation.userRef.id),
-    })
-  );
+  // No need to fetch usersData separately or merge data manually.
+  // reservationsWithData from fetchReservationsWithPopulatedData already contains carInfo and userInfo.
 
   // Status update mutation
   const statusMutation = useMutation({
@@ -158,7 +139,9 @@ export default function CarPage() {
           status: t(`reservations.${status}`),
         }),
       });
-      queryClient.invalidateQueries({ queryKey: ["carReservations", carId] });
+      // Invalidate the new populated query and the count query for this car
+      queryClient.invalidateQueries({ queryKey: ["reservations-populated-by-car", queryParams] });
+      queryClient.invalidateQueries({ queryKey: ["reservations-count-for-car", filterParams] });
     },
     onError: (error) => {
       console.error("Error updating reservation status:", error);
@@ -187,12 +170,25 @@ export default function CarPage() {
     t,
   });
 
-  const isLoading =
-    carLoading || reservationsLoading || usersLoading;
-  const hasError = carError || reservationsError || usersError;
+  // isLoading now depends on carLoading, reservationsLoading (which includes users), and countLoading.
+  const isLoading = carLoading || reservationsLoading || countLoading;
+  // Prioritize carError for the page, then reservationsError.
+  const displayError = carError || reservationsError || (countError && !reservationsWithData.length ? countError : null);
+
+
+  const handleRetry = () => {
+    // Refetch car details and reservations data
+    if (carId) {
+      queryClient.invalidateQueries({ queryKey: ["car", carId] });
+      queryClient.invalidateQueries({ queryKey: ["reservations-populated-by-car", queryParams] });
+      queryClient.invalidateQueries({ queryKey: ["reservations-count-for-car", filterParams] });
+    } else {
+      window.location.reload(); // Fallback if carId is missing, though query `enabled` should prevent this
+    }
+  };
 
   // Show loading state first
-  if (carLoading) {
+  if (carLoading) { // Still show skeleton for car info while car details load
     return (
       <>
         <SectionHeader
@@ -239,8 +235,8 @@ export default function CarPage() {
         />
         <div className="px-4 lg:px-6">
           <ErrorDisplay
-            error={hasError}
-            onRetry={() => window.location.reload()}
+            error={displayError} // Use the determined displayError
+            onRetry={handleRetry} // Use the new handleRetry
             title={t("fleet.errorLoadingCarDetails")}
             description={t(
               "fleet.errorLoadingCarDetailsDescription",

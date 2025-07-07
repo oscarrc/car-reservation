@@ -34,6 +34,7 @@ import {
   updateSettings,
   type AppSettings,
 } from "@/lib/settings-service";
+import { CACHE_STRATEGIES } from "@/lib/query-config"; // Added
 
 const settingsSchema = z.object({
   // Reservation Management
@@ -64,6 +65,7 @@ export default function SettingsPage() {
   } = useQuery({
     queryKey: ["settings"],
     queryFn: fetchSettings,
+    ...CACHE_STRATEGIES.settings, // Added cache strategy
   });
 
   const form = useForm<SettingsFormData>({
