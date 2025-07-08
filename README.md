@@ -1,237 +1,481 @@
 # Car Reservation System
 
-A modern car reservation management system built with React, TypeScript, and Firebase. This application allows administrators to manage fleet vehicles and reservations, while teachers can browse and reserve cars.
+A modern, full-featured car reservation management system built with React, TypeScript, and Firebase. This application provides role-based access control for administrators and teachers, enabling efficient fleet management and reservation handling.
 
 ## 🚀 Features
 
-- **User Authentication**: Role-based access control (Admin/Teacher)
-- **Fleet Management**: Add, edit, and manage vehicle fleet
-- **Reservation System**: Create, manage, and track car reservations
-- **Multi-language Support**: English and Thai languages
-- **Real-time Updates**: Firebase Firestore integration
-- **Responsive Design**: Works on desktop and mobile devices
-- **Admin Dashboard**: Analytics and fleet status overview
+### Core Functionality
 
-## 🏗️ Project Structure
+- **Role-Based Authentication**: Secure login system with admin/teacher roles
+- **Fleet Management**: Complete car inventory management with status tracking
+- **Reservation System**: Advanced booking system with conflict detection
+- **Real-time Updates**: Live data synchronization via Firebase Firestore
+- **Multi-language Support**: English and Thai internationalization
+- **Responsive Design**: Mobile-first design that works on all devices
+- **Analytics Dashboard**: Comprehensive insights and reporting
+
+### Advanced Features
+
+- **Conflict Resolution**: Automatic detection and handling of booking conflicts
+- **Status Management**: Dynamic car availability tracking
+- **User Suspension**: Administrative control over user access
+- **Configurable Settings**: System-wide settings management
+- **Export Functionality**: Data export for reporting and analysis
+- **Progressive Web App**: Installable app experience
+
+## 🏗️ Architecture Overview
+
+### Technology Stack
+
+**Frontend Framework**
+
+- React 19 with TypeScript for type safety and modern development
+- Vite for fast development and optimized builds
+- React Router v7 for client-side routing
+
+**State Management**
+
+- TanStack Query for server state management and caching
+- React Context for global application state
+- React Hook Form with Zod validation for form handling
+
+**UI Components**
+
+- Radix UI primitives for accessible, unstyled components
+- Tailwind CSS v4 for utility-first styling
+- Lucide React for consistent iconography
+- Custom component library built on top of Radix UI
+
+**Backend Services**
+
+- Firebase Authentication for secure user management
+- Firestore for real-time database operations
+- Firebase Hosting for static site deployment
+- Firebase Security Rules for data protection
+
+**Development Tools**
+
+- TypeScript for enhanced development experience
+- ESLint for code quality and consistency
+- Vite PWA Plugin for progressive web app features
+- Firebase Tools for deployment and management
+
+### Project Structure
 
 ```
 car-reservation/
 ├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── ui/             # Base UI components (buttons, forms, etc.)
-│   │   ├── cars/           # Car-related components
-│   │   ├── reservations/   # Reservation-related components
-│   │   ├── dashboard/      # Dashboard components
-│   │   └── users/          # User management components
-│   ├── contexts/           # React contexts
-│   │   ├── AuthContext.tsx # Authentication context
-│   │   └── SettingsContext.tsx # Settings context
-│   ├── hooks/              # Custom React hooks
-│   ├── i18n/               # Internationalization
-│   │   └── locales/        # Language files (en.json, th.json)
-│   ├── layouts/            # Layout components
-│   ├── lib/                # Utility functions and services
-│   │   ├── firebase.ts     # Firebase configuration
-│   │   ├── cars-service.ts # Car management service
-│   │   ├── reservations-service.ts # Reservation service
-│   │   └── users-service.ts # User management service
-│   ├── pages/              # Page components
-│   │   ├── Admin/          # Admin-only pages
-│   │   ├── App/            # General app pages
-│   │   └── Auth/           # Authentication pages
-│   └── types/              # TypeScript type definitions
-├── public/                 # Static assets
-├── firebase.json           # Firebase configuration
-├── firestore.rules         # Firestore security rules
-├── firestore.indexes.json  # Firestore indexes
-└── package.json           # Project dependencies
+│   ├── components/              # Reusable UI components
+│   │   ├── ui/                 # Base UI components (Button, Input, etc.)
+│   │   ├── cars/               # Car-specific components
+│   │   ├── reservations/       # Reservation management components
+│   │   ├── dashboard/          # Analytics and dashboard components
+│   │   └── users/              # User management components
+│   ├── contexts/               # React context providers
+│   │   ├── AuthContext.tsx     # Authentication state management
+│   │   └── SettingsContext.tsx # Application settings
+│   ├── hooks/                  # Custom React hooks
+│   ├── i18n/                   # Internationalization setup
+│   │   ├── index.ts           # i18next configuration
+│   │   └── locales/           # Translation files
+│   │       ├── en.json        # English translations
+│   │       └── th.json        # Thai translations
+│   ├── layouts/                # Layout components
+│   │   ├── AdminLayout.tsx    # Admin panel layout
+│   │   └── AppLayout.tsx      # User application layout
+│   ├── lib/                    # Service layer and utilities
+│   │   ├── firebase.ts        # Firebase configuration and initialization
+│   │   ├── cars-service.ts    # Car management operations
+│   │   ├── reservations-service.ts # Reservation CRUD operations
+│   │   ├── users-service.ts   # User management operations
+│   │   ├── dashboard-service.ts # Analytics and reporting
+│   │   └── utils.ts           # Helper functions
+│   ├── pages/                  # Page components
+│   │   ├── Admin/             # Administrator pages
+│   │   │   ├── Dashboard.tsx  # Admin dashboard
+│   │   │   ├── Fleet.tsx      # Fleet management
+│   │   │   ├── Reservations.tsx # Reservation management
+│   │   │   ├── Users.tsx      # User administration
+│   │   │   └── Settings.tsx   # System settings
+│   │   ├── App/               # User application pages
+│   │   │   ├── index.tsx      # User dashboard
+│   │   │   ├── Cars.tsx       # Car browsing
+│   │   │   ├── Reservations.tsx # User reservations
+│   │   │   └── Profile.tsx    # User profile
+│   │   └── Auth/              # Authentication pages
+│   │       ├── Login.tsx      # Login page
+│   │       └── ForgotPassword.tsx # Password reset
+│   ├── types/                  # TypeScript type definitions
+│   │   ├── car.ts             # Car-related types
+│   │   ├── reservation.ts     # Reservation types
+│   │   ├── user.ts            # User profile types
+│   │   └── settings.ts        # Settings types
+│   ├── App.tsx                 # Main application component
+│   └── main.tsx               # Application entry point
+├── public/                     # Static assets
+│   ├── favicon.ico
+│   ├── manifest.json          # PWA manifest
+│   └── icons/                 # PWA icons
+├── firebase.json              # Firebase project configuration
+├── firestore.rules           # Firestore security rules
+├── firestore.indexes.json    # Firestore database indexes
+├── tailwind.config.js        # Tailwind CSS configuration
+├── vite.config.ts            # Vite build configuration
+└── package.json              # Dependencies and scripts
 ```
 
 ## 🛠️ Development Setup
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- npm or yarn
-- Firebase account
-- Git
+Before getting started, ensure you have the following installed:
 
-### Installation
+- **Node.js** (v18 or higher) - [Download here](https://nodejs.org/)
+- **npm** or **yarn** - Comes with Node.js
+- **Git** - [Download here](https://git-scm.com/)
+- **Firebase CLI** - Install with `npm install -g firebase-tools`
 
-1. **Clone the repository**
+### Installation Steps
+
+1. **Clone the Repository**
 
    ```bash
    git clone <repository-url>
    cd car-reservation
    ```
 
-2. **Install dependencies**
+2. **Install Dependencies**
 
    ```bash
    npm install
    ```
 
-3. **Firebase Setup**
+   This will install all required packages including React, TypeScript, Firebase, and development tools.
 
-   - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
-   - Enable Authentication with Email/Password
-   - Create a Firestore database
-   - Get your Firebase configuration
+3. **Firebase Project Setup**
+
+   **Create a new Firebase project:**
+
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Click "Add project" and follow the setup wizard
+   - Choose a unique project ID (e.g., `car-reservation-prod`)
+
+   **Enable required Firebase services:**
+
+   - **Authentication**: Go to Authentication → Sign-in method → Enable Email/Password
+   - **Firestore**: Go to Firestore Database → Create database → Start in test mode
+   - **Hosting**: Go to Hosting → Get started (optional for deployment)
+
+   **Get your Firebase configuration:**
+
+   - Go to Project Settings → General → Your apps
+   - Click "Add app" → Web app → Register app
+   - Copy the Firebase config object
 
 4. **Environment Configuration**
-   Create a `.env.local` file in the root directory:
+
+   Create a `.env` file in the root directory:
 
    ```env
-   VITE_FIREBASE_API_KEY=your_api_key
+   VITE_FIREBASE_API_KEY=your_api_key_here
    VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
    VITE_FIREBASE_PROJECT_ID=your_project_id
    VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
    VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
    VITE_FIREBASE_APP_ID=your_app_id
+   VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
    ```
 
-5. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run deploy` - Deploy to Firebase Hosting
-
-## 🔧 Configuration
-
-### Firebase Configuration
-
-Update `src/lib/firebase.ts` with your Firebase configuration:
-
-```typescript
-const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "your-sender-id",
-  appId: "your-app-id",
-};
-```
-
-### Firestore Security Rules
-
-The project includes security rules in `firestore.rules`:
-
-- **Cars**: Read access for authenticated users, write access for admins only
-- **Reservations**: Read access for authenticated users, write access for admins, create access for all authenticated users
-- **Users**: Read/write access for admins, users can read/write their own profile
-- **Settings**: Read access for authenticated users, write access for admins only
-
-### Settings Available
-
-The application includes configurable settings managed through the admin panel:
-
-- **Company Information**: Name, contact details
-- **Reservation Policies**: Maximum reservation duration, advance booking limits
-- **Fleet Settings**: Default car status, maintenance schedules
-- **User Management**: Role assignments, suspension controls
-- **Language Settings**: Default language, available languages
-
-## 👥 User Roles & Usage
-
-### Admin Users
-
-Admins have full access to all features:
-
-#### Fleet Management
-
-- **Add New Cars**: Navigate to Admin → Fleet → Add Car
-- **Edit Car Details**: Model, license plate, capacity, color, status
-- **Manage Car Status**: Available, In Maintenance, Out of Service
-- **View Fleet Analytics**: Dashboard shows fleet status distribution
-
-#### Reservation Management
-
-- **View All Reservations**: Admin → Reservations
-- **Approve/Reject Reservations**: Change reservation status
-- **Manage Conflicts**: Handle overlapping reservations
-- **Generate Reports**: Export reservation data
-
-#### User Management
-
-- **Add Users**: Admin → Users → Add User
-- **Manage Roles**: Assign admin/teacher roles
-- **Suspend Users**: Temporarily disable user accounts
-- **View User Activity**: Track user reservations and usage
-
-#### Settings
-
-- **System Configuration**: Admin → Settings
-- **Update Company Info**: Name, contact details
-- **Set Policies**: Reservation rules and limits
-- **Manage Languages**: Default language settings
-
-### Teacher Users
-
-Teachers have limited access focused on reservations:
-
-#### Browse Cars
-
-- **View Available Cars**: Browse fleet with filters
-- **Car Details**: View specifications, availability
-- **Search & Filter**: Find cars by model, capacity, etc.
-
-#### Make Reservations
-
-- **Create Reservations**: Select car, date, and time
-- **View My Reservations**: Track personal reservations
-- **Cancel Reservations**: Cancel future reservations
-- **Reservation History**: View past reservations
-
-#### Profile Management
-
-- **Update Profile**: Personal information, contact details
-- **Language Preference**: Choose interface language
-- **Notification Settings**: Email preferences
-
-## 🚀 Deployment
-
-### Firebase Hosting
-
-1. **Install Firebase CLI**
-
-   ```bash
-   npm install -g firebase-tools
-   ```
-
-2. **Login to Firebase**
+5. **Initialize Firebase in Your Project**
 
    ```bash
    firebase login
-   ```
-
-3. **Initialize Firebase in your project**
-
-   ```bash
    firebase init
    ```
 
-   - Select Hosting and Firestore
+   - Select Firestore and Hosting
    - Choose your Firebase project
-   - Set public directory to `dist`
+   - Accept default settings for Firestore
+   - Set `dist` as your hosting directory
    - Configure as single-page app: Yes
 
-4. **Build and Deploy**
+6. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
+   The application will be available at `http://localhost:5173`
+
+### Available Scripts
+
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Run ESLint for code quality checks
+- `npm run deploy` - Deploy to Firebase Hosting
+- `npm run deploy:hosting` - Deploy only hosting
+- `npm run deploy:rules` - Deploy only Firestore rules
+- `npm run deploy:indexes` - Deploy only Firestore indexes
+
+## 🔐 Firebase Configuration
+
+### Authentication Setup
+
+The application uses Firebase Authentication with email/password sign-in. To set up authentication:
+
+1. **Enable Email/Password Authentication**
+
+   - Go to Firebase Console → Authentication → Sign-in method
+   - Enable "Email/Password" provider
+   - Optionally enable "Email link (passwordless sign-in)"
+
+2. **Configure Email Templates**
+
+   - Go to Authentication → Templates
+   - Customize email templates for:
+     - Email verification
+     - Password reset
+     - Email address change
+   - Set the url to `https://your-production-domain.com/auth/action` for email actions
+
+3. **Set Up Authorized Domains**
+   - Add your production domain to authorized domains
+   - localhost is automatically included for development
+
+### Firestore Database Structure
+
+The application uses the following Firestore collections:
+
+**Users Collection (`users`)**
+
+```typescript
+{
+  id: string; // Document ID (matches Firebase Auth UID)
+  name: string; // User's full name
+  email: string; // User's email address
+  phone: string; // Phone number
+  role: "admin" | "teacher"; // User role
+  language: "en" | "th"; // Preferred language
+  suspended: boolean; // Account suspension status
+  createdAt: Timestamp; // Account creation date
+  updatedAt: Timestamp; // Last profile update
+}
+```
+
+**Cars Collection (`cars`)**
+
+```typescript
+{
+  id: string;           // Document ID
+  licensePlate: string; // Unique license plate
+  model: string;        // Car model
+  color: string;        // Car color
+  seats: number;        // Number of seats
+  year?: number;        // Manufacturing year
+  status: 'available' | 'maintenance' | 'out_of_service';
+  description?: string; // Additional notes
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+```
+
+**Reservations Collection (`reservations`)**
+
+```typescript
+{
+  id: string;           // Document ID
+  userId: string;       // Reference to user
+  carId: string;        // Reference to car
+  startDateTime: Timestamp;  // Reservation start
+  endDateTime: Timestamp;    // Reservation end
+  status: 'pending' | 'confirmed' | 'cancelled' | 'cancellation_pending';
+  purpose?: string;     // Reservation purpose
+  notes?: string;       // Additional notes
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+```
+
+**Settings Collection (`settings`)**
+
+```typescript
+{
+  id: string; // Document ID
+  companyName: string;
+  contactEmail: string;
+  contactPhone: string;
+  defaultLanguage: "en" | "th";
+  maxReservationDays: number;
+  advanceBookingDays: number;
+  // ... other configurable settings
+}
+```
+
+### Security Rules
+
+The application includes comprehensive Firestore security rules in `firestore.rules`:
+
+```javascript
+// Users can read their own profile, admins can read/write all
+match /users/{userId} {
+  allow read, write: if request.auth != null &&
+    (request.auth.uid == userId || isAdmin());
+}
+
+// Cars are readable by authenticated users, writable by admins
+match /cars/{carId} {
+  allow read: if request.auth != null;
+  allow write: if request.auth != null && isAdmin();
+}
+
+// Reservations are readable by authenticated users,
+// writable by admins, creatable by authenticated users
+match /reservations/{reservationId} {
+  allow read: if request.auth != null;
+  allow create: if request.auth != null && request.auth.uid == resource.data.userId;
+  allow update, delete: if request.auth != null && isAdmin();
+}
+```
+
+## 👥 User Roles and Permissions
+
+### Administrator Role
+
+Administrators have full access to all system features:
+
+**Fleet Management**
+
+- Add, edit, and delete vehicles
+- Update car status (available, maintenance, out of service)
+- View comprehensive fleet analytics
+- Manage car maintenance schedules
+
+**Reservation Management**
+
+- View all system reservations
+- Approve or reject reservation requests
+- Approve or reject cancelation requests
+- Cancel reservations
+- Handle reservation conflicts
+- Generate reservation reports
+
+**User Administration**
+
+- Add allowed emails for registration
+- Assign and modify user roles
+- Suspend or reactivate user accounts
+- View user activity and statistics
+- Manage user profiles
+
+**System Settings**
+
+- Configure company information
+- Set reservation policies and limits
+- Manage system-wide settings
+
+### Teacher Role
+
+Teachers have focused access to reservation-related features:
+
+**Car Browsing**
+
+- View available cars
+- See detailed car information and specifications
+- Check car availability for specific dates
+
+**Reservation Management**
+
+- Create new reservations
+- View personal reservation history
+- Cancel future reservations
+
+**Profile Management**
+
+- Update personal information
+- Change password and contact details
+- Set language preferences
+- Configure notification settings
+
+## 🌐 Internationalization
+
+The application supports multiple languages using i18next:
+
+### Supported Languages
+
+- **English (en)** - Default language
+- **Thai (th)** - Secondary language
+
+### Translation Files
+
+- `src/i18n/locales/en.json` - English translations
+- `src/i18n/locales/th.json` - Thai translations
+
+### Adding New Languages
+
+1. **Create translation file:**
+
+   ```bash
+   # Create new language file
+   touch src/i18n/locales/es.json
+   ```
+
+2. **Add translations:**
+
+   ```json
+   {
+     "common": {
+       "save": "Guardar",
+       "cancel": "Cancelar",
+       "delete": "Eliminar"
+     },
+     "navigation": {
+       "dashboard": "Panel de control",
+       "cars": "Vehículos",
+       "reservations": "Reservas"
+     }
+   }
+   ```
+
+3. **Update i18n configuration:**
+
+   ```typescript
+   // src/i18n/index.ts
+   import es from "./locales/es.json";
+
+   i18n.addResourceBundle("es", "translation", es);
+   ```
+
+## 🚀 Deployment
+
+### Firebase Hosting Deployment
+
+1. **Build the application:**
+
    ```bash
    npm run build
+   ```
+
+2. **Deploy to Firebase:**
+
+   ```bash
    npm run deploy
    ```
 
-### Environment Variables for Production
+3. **Deploy specific components:**
 
-Set the following environment variables in your hosting platform:
+   ```bash
+   # Deploy only hosting
+   npm run deploy:hosting
+
+   # Deploy only Firestore rules
+   npm run deploy:rules
+
+   # Deploy only Firestore indexes
+   npm run deploy:indexes
+   ```
+
+### Production Environment Variables
+
+For production deployment, set these environment variables:
 
 ```env
 VITE_FIREBASE_API_KEY=your_production_api_key
@@ -240,493 +484,170 @@ VITE_FIREBASE_PROJECT_ID=your_production_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_production_project.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_production_sender_id
 VITE_FIREBASE_APP_ID=your_production_app_id
+VITE_FIREBASE_MEASUREMENT_ID=your_production_measurement_id
 ```
 
-## � User Authentication Management
+### CI/CD Pipeline
 
-### Firebase Authentication Setup
+For automated deployment, you can set up GitHub Actions:
 
-#### Initial Setup in Firebase Console
-
-1. **Enable Authentication**
-
-   - Go to Firebase Console → Authentication
-   - Click "Get Started"
-   - Go to "Sign-in method" tab
-   - Enable "Email/Password" provider
-
-2. **Configure Email Settings**
-   - Go to "Templates" tab
-   - Customize email templates for:
-     - Email verification
-     - Password reset
-     - Email address change
-
-#### User Management
-
-##### Creating Initial Admin User
-
-1. **Through Firebase Console**
-
-   - Go to Authentication → Users
-   - Click "Add User"
-   - Enter email and password
-   - After creation, go to Firestore Database
-   - Navigate to `users` collection
-   - Create/edit the user document with admin role:
-
-   ```json
-   {
-     "name": "Admin User",
-     "email": "admin@company.com",
-     "phone": "+1234567890",
-     "role": "admin",
-     "language": "en",
-     "suspended": false,
-     "createdAt": "2025-01-01T00:00:00Z",
-     "updatedAt": "2025-01-01T00:00:00Z"
-   }
-   ```
-
-2. **Through Application (Once you have admin access)**
-   - Login as admin
-   - Go to Admin → Users
-   - Click "Add User"
-   - Fill in user details and assign role
-
-##### User Roles
-
-The system supports two roles:
-
-- **Admin**: Full access to all features
-
-  - Fleet management
-  - User management
-  - Reservation management
-  - System settings
-  - Analytics dashboard
-
-- **Teacher**: Limited access for reservations
-  - View available cars
-  - Create reservations
-  - Manage own reservations
-  - Update profile
-
-##### User Status Management
-
-**Suspending Users**
-
-- Go to Admin → Users
-- Find the user and click "Edit"
-- Toggle the "Suspended" status
-- Suspended users cannot login or access the system
-
-**Reactivating Users**
-
-- Go to Admin → Users
-- Find the suspended user
-- Edit and uncheck "Suspended"
-
-#### Authentication Flow
-
-##### Login Process
-
-1. User enters email and password
-2. Firebase Authentication validates credentials
-3. Application fetches user profile from Firestore
-4. User role determines available features
-5. User is redirected to appropriate dashboard
-
-##### Registration Process
-
-- New users must be created by administrators
-- No self-registration is allowed
-- Admin creates user account with email and temporary password
-- User receives email to set permanent password
-
-#### Security Configuration
-
-##### Authentication Rules
-
-```javascript
-// Firestore Security Rules for Authentication
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Users can read their own profile
-    match /users/{userId} {
-      allow read: if request.auth.uid == userId;
-      allow write: if request.auth.uid == userId ||
-                   get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Only authenticated users can read
-    match /{document=**} {
-      allow read: if request.auth != null;
-    }
-
-    // Only non-suspended users can perform operations
-    match /{document=**} {
-      allow read, write: if request.auth != null &&
-                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.suspended != true;
-    }
-  }
-}
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy to Firebase
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "18"
+      - run: npm ci
+      - run: npm run build
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
+          projectId: your-project-id
 ```
 
-##### Password Requirements
+## 🔧 Development Guidelines
 
-- Minimum 6 characters (Firebase default)
-- For production, consider implementing stronger password policies
-- Use Firebase Auth's password policy settings
+### Code Structure
 
-#### Managing Authentication in Code
+**Components Organization**
 
-##### Authentication Context
+- Keep components focused and single-purpose
+- Use TypeScript interfaces for all props
+- Implement proper error boundaries
+- Follow React best practices for hooks
 
-The application uses React Context for authentication state management:
+**State Management**
 
-```typescript
-// AuthContext.tsx
-interface AuthContextType {
-  currentUser: User | null;
-  userProfile: UserProfile | null;
-  authUser: AuthUser | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  loading: boolean;
-  hasRole: (role: "admin" | "teacher") => boolean;
-}
-```
+- Use TanStack Query for server state
+- Use React Context for global UI state
+- Implement proper loading and error states
+- Cache frequently accessed data
 
-##### Role-Based Access Control
+**Styling Guidelines**
 
-```typescript
-// Checking user roles in components
-const { hasRole } = useAuth();
+- Use Tailwind CSS utility classes
+- Create reusable component variants
+- Maintain consistent spacing and typography
+- Implement responsive design patterns
 
-if (hasRole("admin")) {
-  // Show admin-only features
-}
+### Testing Strategy
 
-// Protecting routes
-<Route
-  path="/admin/*"
-  element={
-    <ProtectedRoute requiredRole="admin">
-      <AdminLayout />
-    </ProtectedRoute>
-  }
-/>;
-```
+**Unit Testing**
 
-#### Common Authentication Tasks
+- Test utility functions thoroughly
+- Test complex component logic
+- Mock Firebase services for testing
+- Use React Testing Library for component tests
 
-##### Password Reset
+**Integration Testing**
 
-1. **Through Firebase Console**
+- Test user workflows end-to-end
+- Test Firebase integration points
+- Verify role-based access control
+- Test form validation and submission
 
-   - Go to Authentication → Users
-   - Find user and click "Reset Password"
-   - User receives reset email
+### Performance Optimization
 
-2. **Through Application**
-   - User clicks "Forgot Password" on login page
-   - Enters email address
-   - Receives reset email from Firebase
+**Code Splitting**
 
-##### Email Verification
+- Implement route-based code splitting
+- Lazy load heavy components
+- Use React.memo for expensive renders
+- Optimize bundle size with tree shaking
 
-1. **Enable Email Verification**
+**Data Optimization**
 
-   - In Firebase Console → Authentication → Settings
-   - Enable "Email verification"
+- Implement pagination for large datasets
+- Use Firestore query optimization
+- Cache frequently accessed data
+- Implement proper loading states
 
-2. **Send Verification Email**
+## 📊 Monitoring and Analytics
 
-   ```typescript
-   import { sendEmailVerification } from "firebase/auth";
+### Error Tracking
 
-   await sendEmailVerification(user);
-   ```
+The application includes comprehensive error handling:
 
-##### Update User Profile
-
-```typescript
-// Update user profile in Firestore
-await updateDoc(doc(db, "users", userId), {
-  name: newName,
-  phone: newPhone,
-  language: newLanguage,
-  updatedAt: new Date(),
-});
-```
-
-#### Monitoring Authentication
-
-##### Firebase Console Analytics
-
-1. **User Activity**
-
-   - Go to Authentication → Users
-   - View user sign-in activity
-   - Monitor daily active users
-
-2. **Authentication Logs**
-   - Go to Authentication → Usage
-   - View authentication events
-   - Monitor failed login attempts
-
-##### Setting Up Alerts
-
-1. **Failed Login Monitoring**
-
-   - Set up Cloud Monitoring alerts
-   - Monitor for unusual login patterns
-   - Configure notifications for multiple failed attempts
-
-2. **User Growth Tracking**
-   - Monitor new user registrations
-   - Track user retention rates
-   - Analyze authentication patterns
-
-#### Troubleshooting Authentication
-
-##### Common Issues
-
-1. **User Can't Login**
-
-   - Check if user exists in Authentication tab
-   - Verify user is not suspended in Firestore
-   - Check if email is verified (if required)
-   - Verify password is correct
-
-2. **User Has No Access**
-
-   - Check user role in Firestore `users` collection
-   - Verify user profile exists
-   - Check if user is suspended
-
-3. **Authentication Errors**
-   - Check Firebase configuration
-   - Verify API keys are correct
-   - Check internet connectivity
-   - Review browser console for errors
-
-##### Testing Authentication
-
-```typescript
-// Test authentication flow
-const testAuth = async () => {
-  try {
-    // Test login
-    await signInWithEmailAndPassword(auth, "test@example.com", "password");
-
-    // Test profile fetch
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-
-    // Test role check
-    const hasAdminRole = userDoc.data()?.role === "admin";
-
-    console.log("Auth test passed:", { hasAdminRole });
-  } catch (error) {
-    console.error("Auth test failed:", error);
-  }
-};
-```
-
-#### Best Practices
-
-1. **Security**
-
-   - Never store sensitive data in client-side code
-   - Use environment variables for configuration
-   - Implement proper error handling
-   - Log authentication events
-
-2. **User Experience**
-
-   - Provide clear error messages
-   - Implement loading states
-   - Show authentication status
-   - Handle network errors gracefully
-
-3. **Data Management**
-   - Keep user profiles in sync with Firebase Auth
-   - Implement proper data validation
-   - Use transactions for critical updates
-   - Backup user data regularly
-
-## �🔥 Firestore Database Structure
-
-### Collections
-
-#### `cars`
-
-```typescript
-{
-  id: string,
-  model: string,
-  licensePlate: string,
-  year?: number,
-  color: string,
-  seats: number,
-  status: 'available' | 'maintenance' | 'out_of_service',
-  description?: string,
-  createdAt: Timestamp,
-  updatedAt: Timestamp
-}
-```
-
-#### `reservations`
-
-```typescript
-{
-  id: string,
-  carId: string,
-  userId: string,
-  startDate: Timestamp,
-  endDate: Timestamp,
-  status: 'pending' | 'approved' | 'rejected' | 'cancelled',
-  purpose: string,
-  notes?: string,
-  createdAt: Timestamp,
-  updatedAt: Timestamp
-}
-```
-
-#### `users`
-
-```typescript
-{
-  id: string,
-  name: string,
-  email: string,
-  phone: string,
-  role: 'admin' | 'teacher',
-  language: 'en' | 'th',
-  suspended: boolean,
-  createdAt: Timestamp,
-  updatedAt: Timestamp
-}
-```
-
-#### `settings`
-
-```typescript
-{
-  id: string,
-  companyName: string,
-  contactEmail: string,
-  contactPhone: string,
-  maxReservationDays: number,
-  advanceBookingDays: number,
-  defaultLanguage: 'en' | 'th',
-  updatedAt: Timestamp
-}
-```
-
-### Indexes
-
-The project includes optimized indexes in `firestore.indexes.json`:
-
-- **Reservations**: Compound indexes for efficient querying by user, car, and date ranges
-- **Cars**: Index by status for fleet management
-- **Users**: Index by role for user management queries
-
-## 📊 Firebase Usage Monitoring
-
-### Firebase Console Analytics
-
-1. **Navigate to Firebase Console**
-
-   - Go to [Firebase Console](https://console.firebase.google.com/)
-   - Select your project
-
-2. **Firestore Usage**
-
-   - Go to Firestore Database
-   - Click on "Usage" tab
-   - Monitor reads, writes, and deletes
-   - Set up billing alerts
-
-3. **Authentication Usage**
-
-   - Go to Authentication
-   - View daily active users
-   - Monitor sign-in methods usage
-
-4. **Hosting Usage**
-   - Go to Hosting
-   - View bandwidth and storage usage
-   - Monitor deploy frequency
-
-### Setting Up Usage Alerts
-
-1. **Billing Alerts**
-
-   - Go to Google Cloud Console
-   - Navigate to Billing
-   - Set up budget alerts
-   - Configure notification thresholds
-
-2. **Quota Monitoring**
-   - Monitor Firestore quotas
-   - Set up alerts for approaching limits
-   - Plan for scaling needs
+- **Client-side error boundaries** for graceful error recovery
+- **Firebase error handling** with user-friendly messages
+- **Form validation errors** with clear feedback
+- **Network error handling** with retry mechanisms
 
 ### Performance Monitoring
 
-1. **Enable Performance Monitoring**
+Monitor application performance with:
 
-   ```bash
-   firebase init performance
-   ```
+- **Firebase Performance Monitoring** for real-time metrics
+- **Lighthouse audits** for performance optimization
+- **Bundle analysis** for size optimization
+- **User experience metrics** for usability insights
 
-2. **View Performance Data**
-   - Go to Firebase Console → Performance
-   - Monitor page load times
-   - Track user interactions
-   - Identify performance bottlenecks
+## 🤝 Contributing
 
-## 🔧 Troubleshooting
+### Development Workflow
 
-### Common Issues
+1. **Fork the repository** and create a feature branch
+2. **Install dependencies** and set up development environment
+3. **Make changes** following the code style guidelines
+4. **Test thoroughly** including unit and integration tests
+5. **Submit a pull request** with detailed description
 
-1. **Firebase Configuration**
+### Code Style
 
-   - Ensure environment variables are set correctly
-   - Check Firebase project settings
-   - Verify API keys are valid
+- Follow TypeScript best practices
+- Use meaningful variable and function names
+- Include comprehensive JSDoc comments
+- Maintain consistent formatting with Prettier
+- Follow React and Firebase conventions
 
-2. **Firestore Rules**
+### Pull Request Process
 
-   - Test rules in Firebase Console
-   - Check user roles are set correctly
-   - Verify authentication state
+1. **Ensure all tests pass** and code builds successfully
+2. **Update documentation** for any new features
+3. **Include screenshots** for UI changes
+4. **Request code review** from maintainers
+5. **Address feedback** and make necessary changes
 
-3. **Build Issues**
-   - Clear node_modules and reinstall
-   - Check TypeScript errors
-   - Verify all dependencies are installed
+## 📚 Additional Resources
 
-### Development Tips
+### Documentation
 
-- Use Firebase Local Emulator Suite for development
-- Test Firestore rules locally before deploying
-- Monitor console for errors and warnings
-- Use React DevTools for debugging
+- [React Documentation](https://react.dev/)
+- [Firebase Documentation](https://firebase.google.com/docs)
+- [TanStack Query Documentation](https://tanstack.com/query)
+- [Tailwind CSS Documentation](https://tailwindcss.com/)
+
+### Learning Resources
+
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [React Router Documentation](https://reactrouter.com/)
+- [Radix UI Documentation](https://www.radix-ui.com/)
+- [i18next Documentation](https://www.i18next.com/)
 
 ## 📄 License
 
-(c) 2025 Oscar R.C. All rights reserved.
+Copyright © 2025 Oscar R.C. All rights reserved.
 
-## 📞 Support
+This project is proprietary software. Unauthorized copying, distribution, or modification is prohibited.
 
-For support and questions:
+## 🆘 Support
 
-- Create an issue in the repository
-- Contact the development team
-- Check the documentation
+For questions, issues, or feature requests:
+
+1. **Check existing issues** in the repository
+2. **Create a new issue** with detailed description
+3. **Contact the development team** for urgent matters
+4. **Review documentation** for common questions
 
 ---
+
+**Built with ❤️ using React, TypeScript, and Firebase**
