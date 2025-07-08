@@ -209,11 +209,11 @@
     "emailChangeErrorSubtitle": "ไม่สามารถเปลี่ยนที่อยู่อีเมลได้ กรุณาลองใหม่อีกครั้ง",
     "emailChangeInvalidCode": "รหัสการเปลี่ยนแปลงอีเมลไม่ถูกต้องหรือหมดอายุแล้ว",
     "emailChangeSecurityNotice": "ประกาศความปลอดภัย",
-    "emailChangeSecurityDesc": "หากคุณไม่ได้ขอการเปลี่ยนแปลงอีเมลนี้ กรุณาย้อนกลับทันทีเพื่อรักษาความปลอดภัยบัญชีของคุณ",
+    "emailChangeSecurityDesc": "หากคุณไม่ได้ขอการเปลี่ยนแปลงอีเมลนี้โปรดละเว้นการแจ้งเตือนนี้และเปลี่ยนรหัสผ่านของคุณอย่างเป็นทางการ",
     "emailChangePrevious": "ก่อนหน้า:",
     "emailChangeWhatToDo": "คุณควรทำอย่างไร?",
     "emailChangeWhatToDoConfirm": "• หากคุณขอการเปลี่ยนแปลงนี้ ให้คลิก \"ยืนยันการเปลี่ยนแปลงอีเมล\"",
-    "emailChangeWhatToDoRevert": "• หากคุณไม่ได้ขอการเปลี่ยนแปลงนี้ ให้คลิก \"ย้อนการเปลี่ยนแปลงอีเมล\" ทันที",
+    "emailChangeWhatToDoRevert": "•หากคุณไม่ได้ขอการเปลี่ยนแปลงนี้ให้เปลี่ยนรหัสผ่านทันที",
     "emailChangeWhatToDoContact": "• ติดต่อฝ่ายสนับสนุนหากคุณไม่แน่ใจเกี่ยวกับการเปลี่ยนแปลงนี้",
     "emailChangeReverting": "กำลังย้อน...",
     "emailChangeConfirming": "กำลังยืนยัน...",
@@ -410,7 +410,8 @@
     "currentPasswordIncorrect": "รหัสผ่านปัจจุบันไม่ถูกต้อง",
     "failedToUpdateProfile": "ไม่สามารถอัปเดตโปรไฟล์ได้",
     "failedToUpdateEmail": "ไม่สามารถอัปเดตอีเมลได้",
-    "failedToUpdatePassword": "ไม่สามารถอัปเดตรหัสผ่านได้"
+    "failedToUpdatePassword": "ไม่สามารถอัปเดตรหัสผ่านได้",
+    "email": "อีเมล"
   },
   "brand": {
     "name": "Car Reservation System"

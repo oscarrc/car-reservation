@@ -22,7 +22,6 @@ import {
   updateUserPassword,
   updateUserProfile,
 } from "@/lib/profile-service";
-import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { EmailVerificationAlert } from "@/components/ui/email-verification-alert";
@@ -32,6 +31,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -51,7 +51,9 @@ export default function ProfilePage() {
   // Email form schema
   const emailSchema = z
     .object({
-      currentPassword: z.string().min(1, t("validation.currentPasswordRequired")),
+      currentPassword: z
+        .string()
+        .min(1, t("validation.currentPasswordRequired")),
       newEmail: z.string().email(t("validation.invalidEmail")),
       confirmEmail: z.string().email(t("validation.invalidEmail")),
     })
@@ -63,11 +65,11 @@ export default function ProfilePage() {
   // Password form schema
   const passwordSchema = z
     .object({
-      currentPassword: z.string().min(1, t("validation.currentPasswordRequired")),
-      newPassword: z.string().min(6, t("validation.passwordMinLength")),
-      confirmPassword: z
+      currentPassword: z
         .string()
-        .min(6, t("validation.passwordMinLength")),
+        .min(1, t("validation.currentPasswordRequired")),
+      newPassword: z.string().min(6, t("validation.passwordMinLength")),
+      confirmPassword: z.string().min(6, t("validation.passwordMinLength")),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
       message: t("validation.passwordsDontMatch"),
@@ -122,7 +124,9 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error(
-        error instanceof Error ? error.message : t("profile.failedToUpdateProfile")
+        error instanceof Error
+          ? error.message
+          : t("profile.failedToUpdateProfile")
       );
     } finally {
       setIsUpdatingProfile(false);
@@ -143,7 +147,9 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Error updating email:", error);
       toast.error(
-        error instanceof Error ? error.message : t("profile.failedToUpdateEmail")
+        error instanceof Error
+          ? error.message
+          : t("profile.failedToUpdateEmail")
       );
     } finally {
       setIsUpdatingEmail(false);
@@ -164,7 +170,9 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Error updating password:", error);
       toast.error(
-        error instanceof Error ? error.message : t("profile.failedToUpdatePassword")
+        error instanceof Error
+          ? error.message
+          : t("profile.failedToUpdatePassword")
       );
     } finally {
       setIsUpdatingPassword(false);
@@ -218,7 +226,10 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>{t("profile.name")}</FormLabel>
                         <FormControl>
-                          <Input placeholder={t("profile.namePlaceholder")} {...field} />
+                          <Input
+                            placeholder={t("profile.namePlaceholder")}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -236,6 +247,23 @@ export default function ProfilePage() {
                             type="tel"
                             placeholder={t("profile.phonePlaceholder")}
                             {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("profile.email")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            disabled
+                            {...field}
+                            value={currentUser.email as string}
                           />
                         </FormControl>
                         <FormMessage />
@@ -265,9 +293,7 @@ export default function ProfilePage() {
                 <Mail className="h-5 w-5" />
                 {t("profile.changeEmail")}
               </CardTitle>
-              <CardDescription>
-                {t("profile.changeEmailDesc")}
-              </CardDescription>
+              <CardDescription>{t("profile.changeEmailDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...emailForm}>
@@ -284,7 +310,9 @@ export default function ProfilePage() {
                         <FormControl>
                           <Input
                             type="password"
-                            placeholder={t("profile.currentPasswordPlaceholder")}
+                            placeholder={t(
+                              "profile.currentPasswordPlaceholder"
+                            )}
                             {...field}
                           />
                         </FormControl>
@@ -370,7 +398,9 @@ export default function ProfilePage() {
                         <FormControl>
                           <Input
                             type="password"
-                            placeholder={t("profile.currentPasswordPlaceholder")}
+                            placeholder={t(
+                              "profile.currentPasswordPlaceholder"
+                            )}
                             {...field}
                           />
                         </FormControl>
@@ -406,7 +436,9 @@ export default function ProfilePage() {
                         <FormControl>
                           <Input
                             type="password"
-                            placeholder={t("profile.confirmPasswordPlaceholder")}
+                            placeholder={t(
+                              "profile.confirmPasswordPlaceholder"
+                            )}
                             {...field}
                           />
                         </FormControl>

@@ -16,7 +16,6 @@ export const EmailChange = () => {
   >("pending");
   const [errorMessage, setErrorMessage] = useState("");
   const [isChanging, setIsChanging] = useState(false);
-  const [isReverting, setIsReverting] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [previousEmail, setPreviousEmail] = useState("");
   const { t } = useTranslation();
@@ -71,29 +70,6 @@ export const EmailChange = () => {
       setErrorMessage(t("auth.emailChangeErrorSubtitle"));
     } finally {
       setIsChanging(false);
-    }
-  };
-
-  const handleRevertEmailChange = async () => {
-    const oobCode = searchParams.get("oobCode");
-    if (!oobCode) return;
-
-    setIsReverting(true);
-    try {
-      // Apply the action code to revert the email change
-      await applyActionCode(auth, oobCode);
-
-      // Refresh user data to get the reverted email
-      await refreshUser();
-      await refreshProfile();
-
-      setEmailChangeStatus("success");
-    } catch (error) {
-      console.error("Error reverting email change:", error);
-      setEmailChangeStatus("error");
-      setErrorMessage(t("auth.emailChangeErrorSubtitle"));
-    } finally {
-      setIsReverting(false);
     }
   };
 
@@ -182,10 +158,6 @@ export const EmailChange = () => {
                 )}
               </div>
 
-              <p className="text-sm text-muted-foreground">
-                {t("auth.emailChangeInstructions")}
-              </p>
-
               <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-md text-sm">
                 <p className="font-medium">
                   {t("auth.emailChangeSecurityDesc")}
@@ -195,19 +167,8 @@ export const EmailChange = () => {
 
             <div className="space-y-3">
               <Button
-                onClick={handleRevertEmailChange}
-                disabled={isReverting || isChanging}
-                variant="destructive"
-                className="w-full"
-              >
-                {isReverting
-                  ? t("auth.emailChangeReverting")
-                  : t("auth.emailChangeRevert")}
-              </Button>
-
-              <Button
                 onClick={handleConfirmEmailChange}
-                disabled={isChanging || isReverting}
+                disabled={isChanging}
                 className="w-full"
               >
                 {isChanging

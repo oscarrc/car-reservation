@@ -209,11 +209,11 @@
     "emailChangeErrorSubtitle": "Failed to change email address. Please try again.",
     "emailChangeInvalidCode": "Invalid or expired email change code.",
     "emailChangeSecurityNotice": "Security Notice",
-    "emailChangeSecurityDesc": "If you didn't request this email change, please revert it immediately to secure your account.",
+    "emailChangeSecurityDesc": "If you didn't request this email change, please ignore this notification, and change your password inmediatly.",
     "emailChangePrevious": "Previous:",
     "emailChangeWhatToDo": "What should you do?",
     "emailChangeWhatToDoConfirm": "• If you requested this change, click \"Confirm Email Change\"",
-    "emailChangeWhatToDoRevert": "• If you didn't request this change, click \"Revert Email Change\" immediately",
+    "emailChangeWhatToDoRevert": "• If you didn't request this change, change your password immediately",
     "emailChangeWhatToDoContact": "• Contact support if you're unsure about this change",
     "emailChangeReverting": "Reverting...",
     "emailChangeConfirming": "Confirming...",
@@ -410,7 +410,8 @@
     "currentPasswordIncorrect": "Current password is incorrect",
     "failedToUpdateProfile": "Failed to update profile",
     "failedToUpdateEmail": "Failed to update email",
-    "failedToUpdatePassword": "Failed to update password"
+    "failedToUpdatePassword": "Failed to update password",
+    "email": "Email"
   },
   "brand": {
     "name": "Car Reservation System"
