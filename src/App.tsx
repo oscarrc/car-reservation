@@ -25,7 +25,7 @@ import RegisterPage from "./pages/Auth/Register";
 import ReservationsPage from "./pages/Admin/Reservations";
 import SettingsPage from "./pages/Admin/Settings";
 import SidebarLayout from "./layouts/Sidebar";
-import { ThemeProvider } from "./components/theme-provider";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { Toaster } from "sonner";
 import UserFleetPage from "./pages/App/Fleet";
 import UserPage from "./pages/Admin/Users/User";

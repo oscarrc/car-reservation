@@ -1,6 +1,7 @@
 import { Moon, Sun } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/components/theme-provider";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -24,7 +25,9 @@ export function ThemeToggle() {
   // Determine current effective theme
   const getEffectiveTheme = () => {
     if (theme === "system") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
     }
     return theme;
   };
@@ -39,11 +42,7 @@ export function ThemeToggle() {
       className="h-9 w-9"
       aria-label="Toggle theme"
     >
-      {isDark ? (
-        <Sun className="h-4 w-4" />
-      ) : (
-        <Moon className="h-4 w-4" />
-      )}
+      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </Button>
   );
 }
