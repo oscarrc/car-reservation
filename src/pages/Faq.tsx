@@ -19,9 +19,13 @@ import { useTranslation } from "react-i18next";
 
 // Types
 export type FaqType = "admin" | "app";
-interface FaqSection {
+interface FaqItem {
   title: string;
   content: string;
+}
+interface FaqSection {
+  title: string;
+  items: FaqItem[];
 }
 
 function useFaqMarkdown(type: FaqType, locale: string): string {
@@ -40,34 +44,65 @@ function useFaqMarkdown(type: FaqType, locale: string): string {
   return markdown;
 }
 
-// Parse markdown into sections by ##
+// Parse markdown into sections (## level) containing items (### level)
 function parseSections(markdown: string): FaqSection[] {
-  // Split on lines that start with ##
   const lines = markdown.split(/\r?\n/);
   const sections: FaqSection[] = [];
-  let currentTitle = "";
+  let currentSection: FaqSection | null = null;
+  let currentItem: FaqItem | null = null;
   let currentContent: string[] = [];
+
   for (const line of lines) {
-    const match = line.match(/^##\s+(.+)/);
-    if (match) {
-      if (currentTitle) {
-        sections.push({
-          title: currentTitle,
-          content: currentContent.join("\n").trim(),
-        });
+    const sectionMatch = line.match(/^##\s+(.+)/);
+    const itemMatch = line.match(/^###\s+(.+)/);
+
+    if (sectionMatch) {
+      // Save previous item if it exists
+      if (currentItem && currentSection) {
+        currentItem.content = currentContent.join("\n").trim();
+        currentSection.items.push(currentItem);
       }
-      currentTitle = match[1].trim();
+
+      // Save previous section if it exists
+      if (currentSection) {
+        sections.push(currentSection);
+      }
+
+      // Start new section
+      currentSection = {
+        title: sectionMatch[1].trim(),
+        items: [],
+      };
+      currentItem = null;
+      currentContent = [];
+    } else if (itemMatch) {
+      // Save previous item if it exists
+      if (currentItem && currentSection) {
+        currentItem.content = currentContent.join("\n").trim();
+        currentSection.items.push(currentItem);
+      }
+
+      // Start new item
+      currentItem = {
+        title: itemMatch[1].trim(),
+        content: "",
+      };
       currentContent = [];
     } else {
+      // Add line to current content
       currentContent.push(line);
     }
   }
-  if (currentTitle) {
-    sections.push({
-      title: currentTitle,
-      content: currentContent.join("\n").trim(),
-    });
+
+  // Save final item and section
+  if (currentItem && currentSection) {
+    currentItem.content = currentContent.join("\n").trim();
+    currentSection.items.push(currentItem);
   }
+  if (currentSection) {
+    sections.push(currentSection);
+  }
+
   return sections;
 }
 
@@ -99,11 +134,30 @@ export function FaqPage({ type }: { type: FaqType }) {
   const filteredSections = useMemo(() => {
     if (!searchQuery.trim()) return sections;
 
-    return sections.filter(
-      (section) =>
-        section.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        section.content.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return sections
+      .map((section) => {
+        // Filter items within the section
+        const filteredItems = section.items.filter(
+          (item) =>
+            item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.content.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+        // Include section if title matches or if it has matching items
+        const sectionMatches = section.title
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+
+        if (sectionMatches || filteredItems.length > 0) {
+          return {
+            ...section,
+            items: sectionMatches ? section.items : filteredItems,
+          };
+        }
+
+        return null;
+      })
+      .filter(Boolean) as FaqSection[];
   }, [sections, searchQuery]);
 
   const handleClearSearch = () => {
@@ -141,60 +195,70 @@ export function FaqPage({ type }: { type: FaqType }) {
 
         {/* Results */}
         {sections.length === 0 ? (
-          <div className="text-muted-foreground text-center py-8">
+          <div className="flex flex-col flex-1 items-center justify-center text-muted-foreground text-center py-8">
             {t("faq.noFaqs")}
           </div>
         ) : filteredSections.length === 0 ? (
-          <div className="text-muted-foreground text-center py-8">
+          <div className="flex flex-col flex-1 items-center justify-center text-muted-foreground text-center py-8">
             <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p className="text-lg font-medium mb-2">{t("faq.noResults")}</p>
             <p className="text-sm">{t("faq.tryDifferentKeywords")}</p>
           </div>
         ) : (
-          <div className="flex-1 space-y-4 px-2 lg:px-4">
+          <div className="flex-1 space-y-8 px-2 lg:px-4">
             {searchQuery && (
               <div className="text-sm text-muted-foreground mb-4">
                 {t("faq.searchResults", {
-                  count: filteredSections.length,
+                  count: filteredSections.reduce(
+                    (total, section) => total + section.items.length,
+                    0
+                  ),
                   query: searchQuery,
                 })}
               </div>
             )}
-            <Accordion type="single" collapsible className="w-full">
-              {filteredSections.map((section, idx) => (
-                <AccordionItem key={idx} value={`item-${idx}`}>
-                  <AccordionTrigger className="text-left text-lg font-semibold">
-                    {section.title}
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="prose max-w-none">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        rehypePlugins={[rehypeRaw, rehypeSanitize]}
-                        components={{
-                          a: MarkdownLink,
-                          img: (props) => (
-                            <img
-                              {...props}
-                              style={{ maxWidth: "100%", borderRadius: 8 }}
-                            />
-                          ),
-                          video: (props) => (
-                            <video
-                              {...props}
-                              style={{ maxWidth: "100%", borderRadius: 8 }}
-                              controls
-                            />
-                          ),
-                        }}
-                      >
-                        {section.content}
-                      </ReactMarkdown>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+            {filteredSections.map((section, sectionIdx) => (
+              <div key={sectionIdx} className="space-y-4">
+                <h2 className="text-2xl font-bold text-foreground border-b pb-2">
+                  {section.title}
+                </h2>
+                <Accordion type="single" collapsible className="w-full">
+                  {section.items.map((item, itemIdx) => (
+                    <AccordionItem
+                      key={itemIdx}
+                      value={`section-${sectionIdx}-item-${itemIdx}`}
+                    >
+                      <AccordionTrigger className="text-left text-lg font-semibold">
+                        {item.title}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="prose max-w-none">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                            components={{
+                              a: MarkdownLink,
+                              img: (props) => (
+                                <img {...props} className="max-w-full my-4" />
+                              ),
+                              video: (props) => (
+                                <video
+                                  {...props}
+                                  className="max-w-full  my-4"
+                                  controls
+                                />
+                              ),
+                            }}
+                          >
+                            {item.content}
+                          </ReactMarkdown>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+            ))}
           </div>
         )}
 
