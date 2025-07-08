@@ -12,6 +12,7 @@ import { EmailVerificationBadge } from "@/components/ui/email-verification-badge
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useTranslation } from "react-i18next";
 
 interface SiteHeaderProps {
@@ -135,6 +136,7 @@ export function SiteHeader({ companyName, homePageUrl }: SiteHeaderProps) {
       <div className="flex items-center gap-4">
         <EmailVerificationBadge />
         <LanguageSwitcher />
+        <ThemeToggle />
       </div>
     </header>
   );

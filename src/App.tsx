@@ -25,6 +25,7 @@ import RegisterPage from "./pages/Auth/Register";
 import ReservationsPage from "./pages/Admin/Reservations";
 import SettingsPage from "./pages/Admin/Settings";
 import SidebarLayout from "./layouts/Sidebar";
+import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "sonner";
 import UserFleetPage from "./pages/App/Fleet";
 import UserPage from "./pages/Admin/Users/User";
@@ -182,14 +183,16 @@ const App = () => {
   ]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <PWAProvider>
-        <AuthProvider>
-          <RouterProvider router={router} />
-          <Toaster />
-        </AuthProvider>
-      </PWAProvider>
-    </QueryClientProvider>
+    <ThemeProvider defaultTheme="system" storageKey="car-reservation-theme">
+      <QueryClientProvider client={queryClient}>
+        <PWAProvider>
+          <AuthProvider>
+            <RouterProvider router={router} />
+            <Toaster />
+          </AuthProvider>
+        </PWAProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };
 
