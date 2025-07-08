@@ -396,7 +396,7 @@
     "confirmEmail": "Confirm New Email",
     "confirmEmailPlaceholder": "Confirm new email address",
     "updateEmail": "Update Email",
-    "emailUpdated": "Email updated successfully. Please check your new email for verification.",
+    "emailUpdated": "Email update requested. Please check your email to confirm the change.",
     "changePassword": "Change Password",
     "changePasswordDesc": "Update your password to keep your account secure",
     "newPassword": "New Password",
