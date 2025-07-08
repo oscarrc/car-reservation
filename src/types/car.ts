@@ -9,8 +9,8 @@ export interface Car {
   year?: number;
   description?: string;
   searchKeywords?: string[];  
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface CarWithId extends Car {

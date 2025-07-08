@@ -6,8 +6,8 @@ export interface UserProfile {
   language?: 'en' | 'th';
   suspended: boolean;
   searchKeywords?: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface AuthUser {
