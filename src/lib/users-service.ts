@@ -171,9 +171,12 @@ export async function fetchUsers(params: UsersQueryParams): Promise<UsersRespons
     
     // Process documents (exclude the extra one used for pagination check)
     docs.slice(0, pageSize).forEach((doc) => {
+      const data = doc.data();
       users.push({
         id: doc.id,
-        ...doc.data() as UserProfile
+        ...data as UserProfile,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate()
       });
     });
 

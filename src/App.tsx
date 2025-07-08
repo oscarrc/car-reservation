@@ -5,32 +5,37 @@ import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config";
 
 // Auth routes (not lazy loaded)
 import ActionPage from "./pages/Auth/Action";
-import ForgotPage from "./pages/Auth/Forgot";
-import LoginPage from "./pages/Auth/Login";
-import RegisterPage from "./pages/Auth/Register";
-
-// Layouts and contexts (not lazy loaded)
-import { AuthProvider } from "./contexts/AuthContext";
-import { PWAProvider } from "./contexts/PWAContext";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import { LoadingScreen } from "./components/ui/loading-screen";
-import OnboardingLayout from "./layouts/Onboarding";
-import Protected from "./layouts/Protected";
-import SidebarLayout from "./layouts/Sidebar";
-import { Toaster } from "sonner";
-
 // Index pages (not lazy loaded)
 import AdminPage from "./pages/Admin";
 import AppPage from "./pages/App";
+// Layouts and contexts (not lazy loaded)
+import { AuthProvider } from "./contexts/AuthContext";
+import ErrorPage from "./pages/Error";
+import ForgotPage from "./pages/Auth/Forgot";
+import { LoadingScreen } from "./components/ui/loading-screen";
+import LoginPage from "./pages/Auth/Login";
+import OnboardingLayout from "./layouts/Onboarding";
 import OnboardingPage from "./pages/Onboarding";
+import { PWAProvider } from "./contexts/PWAContext";
 import ProfilePage from "./pages/Profile";
+import Protected from "./layouts/Protected";
+import RegisterPage from "./pages/Auth/Register";
+import SidebarLayout from "./layouts/Sidebar";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { Toaster } from "sonner";
 
 // Lazy loaded components
 const AdminFaq = lazy(() => import("./pages/Admin/Faq"));
-const AdminReservationPage = lazy(() => import("./pages/Admin/Reservations/Reservation"));
-const AllowedEmailsPage = lazy(() => import("./pages/Admin/Users/AllowedEmails"));
+const AdminReservationPage = lazy(
+  () => import("./pages/Admin/Reservations/Reservation")
+);
+const AllowedEmailsPage = lazy(
+  () => import("./pages/Admin/Users/AllowedEmails")
+);
 const AppFaq = lazy(() => import("./pages/App/Faq"));
-const AppReservationPage = lazy(() => import("./pages/App/Reservations/Reservation"));
+const AppReservationPage = lazy(
+  () => import("./pages/App/Reservations/Reservation")
+);
 const CarPage = lazy(() => import("./pages/Admin/Fleet/Car"));
 const FleetPage = lazy(() => import("./pages/Admin/Fleet"));
 const NotFoundPage = lazy(() => import("./pages/NotFound"));
@@ -58,6 +63,7 @@ const App = () => {
     },
     {
       path: "/auth",
+      errorElement: <ErrorPage />,
       children: [
         {
           index: true,
@@ -79,6 +85,7 @@ const App = () => {
     },
     {
       path: "/admin",
+      errorElement: <ErrorPage />,
       element: (
         <Protected requiredRole="admin">
           <SidebarLayout config={adminSidebarConfig} />
@@ -165,6 +172,7 @@ const App = () => {
     },
     {
       path: "/app",
+      errorElement: <ErrorPage />,
       element: (
         <Protected>
           <SidebarLayout config={appSidebarConfig} />
@@ -216,6 +224,7 @@ const App = () => {
           <SidebarLayout config={appSidebarConfig} />
         </Protected>
       ),
+      errorElement: <ErrorPage />,
       children: [
         {
           index: true,
@@ -230,6 +239,7 @@ const App = () => {
           <OnboardingLayout />
         </Protected>
       ),
+      errorElement: <ErrorPage />,
       children: [
         {
           index: true,

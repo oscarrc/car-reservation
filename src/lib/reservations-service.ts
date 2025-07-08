@@ -213,7 +213,7 @@ export async function fetchReservations(params: ReservationsQueryParams): Promis
     const docs = querySnapshot.docs;
     const reservations: ReservationWithId[] = [];
     
-    // Process documents (exclude the extra one used for pagination check)
+    // Process documents
     docs.slice(0, pageSize).forEach((doc) => {
       const data = doc.data();
       reservations.push({

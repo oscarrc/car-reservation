@@ -159,9 +159,12 @@ export async function fetchCars(params: CarsQueryParams): Promise<CarsResponse> 
 
     // Process documents (exclude the extra one used for pagination check)
     docs.slice(0, pageSize).forEach((doc) => {
+      const data = doc.data();
       cars.push({
-        id: doc.id,
-        ...doc.data() as Car
+        id: doc.id,        
+        ...data as Car,        
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
       });
     });
 

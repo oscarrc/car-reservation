@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowUpDown, Edit, Eye, UserCheck, UserX } from "lucide-react";
+import { format, getLocalizedFormats } from "@/lib/date-locale";
 import {
   Tooltip,
   TooltipContent,
@@ -121,6 +122,14 @@ export const createUserColumns = ({
             {suspended ? t("users.suspended") : t("users.active")}
           </Badge>
         );
+      },
+    },
+    {
+      accessorKey: "createdAt",
+      header: t("users.memberSince"),
+      cell: ({ row }) => {
+        const date = row.getValue("createdAt") as Date;
+        return format(date, getLocalizedFormats().dateShort);
       },
     },
 

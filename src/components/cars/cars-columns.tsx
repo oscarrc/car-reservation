@@ -2,6 +2,7 @@
 
 import type { CarStatus, CarWithId } from "@/types/car";
 import { Edit, Eye, Trash2 } from "lucide-react";
+import { format, getLocalizedFormats } from "@/lib/date-locale";
 import {
   Select,
   SelectContent,
@@ -158,6 +159,14 @@ export function createCarColumns({
             </SelectContent>
           </Select>
         );
+      },
+    },
+    {
+      accessorKey: "createdAt",
+      header: t("fleet.addedOn"),
+      cell: ({ row }) => {
+        const date = row.getValue("createdAt") as Date;
+        return format(date, getLocalizedFormats().dateShort);
       },
     },
     {
