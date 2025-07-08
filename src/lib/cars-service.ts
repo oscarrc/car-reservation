@@ -56,6 +56,7 @@ export interface CarsFilterParams {
   status?: CarStatus;
   orderBy?: 'model' | 'licensePlate' | 'updatedAt';
   orderDirection?: 'asc' | 'desc';
+  seats?: 'all' | number
 }
 
 // Helper function to build query constraints
