@@ -26,25 +26,6 @@ import { getLocaleString } from "@/lib/date-locale";
 import { cn } from "@/lib/utils";
 import { queryConfig } from "@/lib/query-config";
 
-const reservationsChartConfig = {
-  confirmed: {
-    label: "Confirmed",
-    color: "var(--success)",
-  },
-  pending: {
-    label: "Pending",
-    color: "var(--warning)",
-  },
-  cancellation_pending: {
-    label: "Cancellation Pending",
-    color: "var(--orange)",
-  },
-  cancelled: {
-    label: "Cancelled",
-    color: "var(--error)",
-  },
-} satisfies ChartConfig;
-
 interface ReservationsChartProps {
   className?: string;
   currentDate: { year: number; month: number };
@@ -58,6 +39,25 @@ export function ReservationsChart({
 }: ReservationsChartProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const reservationsChartConfig = {
+    confirmed: {
+      label: t("reservations.confirmed"),
+      color: "var(--success)",
+    },
+    pending: {
+      label: t("reservations.pending"),
+      color: "var(--warning)",
+    },
+    cancellation_pending: {
+      label: t("reservations.cancellation_pending"),
+      color: "var(--orange)",
+    },
+    cancelled: {
+      label: t("reservations.cancelled"),
+      color: "var(--error)",
+    },
+  } satisfies ChartConfig;
 
   const {
     data: reservationsData,
@@ -144,13 +144,12 @@ export function ReservationsChart({
               <ChartTooltip content={<ChartTooltipContent hideLabel />} />
               <ChartLegend
                 formatter={(value) => {
-                  const formatted = value.replace(/_/g, " ");
                   return (
                     <span
                       className="capitalize"
                       style={{ color: "var(--foreground)" }}
                     >
-                      {formatted}
+                      {t(`reservations.${value}`)}
                     </span>
                   );
                 }}
