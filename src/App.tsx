@@ -1,36 +1,45 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config";
 
+// Auth routes (not lazy loaded)
 import ActionPage from "./pages/Auth/Action";
-import AdminFaq from "./pages/Admin/Faq";
-import AdminPage from "./pages/Admin";
-import AdminReservationPage from "./pages/Admin/Reservations/Reservation";
-import AllowedEmailsPage from "./pages/Admin/Users/AllowedEmails";
-import AppFaq from "./pages/App/Faq";
-import AppPage from "./pages/App";
-import AppReservationPage from "./pages/App/Reservations/Reservation";
-import { AuthProvider } from "./contexts/AuthContext";
-import CarPage from "./pages/Admin/Fleet/Car";
-import FleetPage from "./pages/Admin/Fleet";
 import ForgotPage from "./pages/Auth/Forgot";
 import LoginPage from "./pages/Auth/Login";
-import NotFoundPage from "./pages/NotFound";
-import OnboardingLayout from "./layouts/Onboarding";
-import OnboardingPage from "./pages/Onboarding";
-import { PWAProvider } from "./contexts/PWAContext";
-import ProfilePage from "./pages/Profile";
-import Protected from "./layouts/Protected";
 import RegisterPage from "./pages/Auth/Register";
-import ReservationsPage from "./pages/Admin/Reservations";
-import SettingsPage from "./pages/Admin/Settings";
-import SidebarLayout from "./layouts/Sidebar";
+
+// Layouts and contexts (not lazy loaded)
+import { AuthProvider } from "./contexts/AuthContext";
+import { PWAProvider } from "./contexts/PWAContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { LoadingScreen } from "./components/ui/loading-screen";
+import OnboardingLayout from "./layouts/Onboarding";
+import Protected from "./layouts/Protected";
+import SidebarLayout from "./layouts/Sidebar";
 import { Toaster } from "sonner";
-import UserFleetPage from "./pages/App/Fleet";
-import UserPage from "./pages/Admin/Users/User";
-import UserReservationsPage from "./pages/App/Reservations";
-import UsersPage from "./pages/Admin/Users";
+
+// Index pages (not lazy loaded)
+import AdminPage from "./pages/Admin";
+import AppPage from "./pages/App";
+import OnboardingPage from "./pages/Onboarding";
+import ProfilePage from "./pages/Profile";
+
+// Lazy loaded components
+const AdminFaq = lazy(() => import("./pages/Admin/Faq"));
+const AdminReservationPage = lazy(() => import("./pages/Admin/Reservations/Reservation"));
+const AllowedEmailsPage = lazy(() => import("./pages/Admin/Users/AllowedEmails"));
+const AppFaq = lazy(() => import("./pages/App/Faq"));
+const AppReservationPage = lazy(() => import("./pages/App/Reservations/Reservation"));
+const CarPage = lazy(() => import("./pages/Admin/Fleet/Car"));
+const FleetPage = lazy(() => import("./pages/Admin/Fleet"));
+const NotFoundPage = lazy(() => import("./pages/NotFound"));
+const ReservationsPage = lazy(() => import("./pages/Admin/Reservations"));
+const SettingsPage = lazy(() => import("./pages/Admin/Settings"));
+const UserFleetPage = lazy(() => import("./pages/App/Fleet"));
+const UserPage = lazy(() => import("./pages/Admin/Users/User"));
+const UserReservationsPage = lazy(() => import("./pages/App/Reservations"));
+const UsersPage = lazy(() => import("./pages/Admin/Users"));
 
 const App = () => {
   const queryClient = new QueryClient({
@@ -82,39 +91,75 @@ const App = () => {
         },
         {
           path: "users",
-          element: <UsersPage />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <UsersPage />
+            </Suspense>
+          ),
         },
         {
           path: "users/:userId",
-          element: <UserPage />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <UserPage />
+            </Suspense>
+          ),
         },
         {
           path: "users/allowed-emails",
-          element: <AllowedEmailsPage />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <AllowedEmailsPage />
+            </Suspense>
+          ),
         },
         {
           path: "fleet",
-          element: <FleetPage />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <FleetPage />
+            </Suspense>
+          ),
         },
         {
           path: "fleet/:carId",
-          element: <CarPage />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <CarPage />
+            </Suspense>
+          ),
         },
         {
           path: "reservations",
-          element: <ReservationsPage />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <ReservationsPage />
+            </Suspense>
+          ),
         },
         {
           path: "reservations/:reservationId",
-          element: <AdminReservationPage />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <AdminReservationPage />
+            </Suspense>
+          ),
         },
         {
           path: "settings",
-          element: <SettingsPage />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <SettingsPage />
+            </Suspense>
+          ),
         },
         {
           path: "help",
-          element: <AdminFaq />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <AdminFaq />
+            </Suspense>
+          ),
         },
       ],
     },
@@ -132,19 +177,35 @@ const App = () => {
         },
         {
           path: "reservations",
-          element: <UserReservationsPage />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <UserReservationsPage />
+            </Suspense>
+          ),
         },
         {
           path: "reservations/:reservationId",
-          element: <AppReservationPage />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <AppReservationPage />
+            </Suspense>
+          ),
         },
         {
           path: "browse",
-          element: <UserFleetPage />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <UserFleetPage />
+            </Suspense>
+          ),
         },
         {
           path: "help",
-          element: <AppFaq />,
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <AppFaq />
+            </Suspense>
+          ),
         },
       ],
     },
@@ -178,7 +239,11 @@ const App = () => {
     },
     {
       path: "*",
-      element: <NotFoundPage />,
+      element: (
+        <Suspense fallback={<LoadingScreen />}>
+          <NotFoundPage />
+        </Suspense>
+      ),
     },
   ]);
 
