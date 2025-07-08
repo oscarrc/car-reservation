@@ -568,6 +568,8 @@
     "noMoreCars": "No more cars to load",
     "errorLoadingCars": "Error loading cars",
     "noDescription": "No description available",
+    "filterBySeats": "Filter by seats",
+    "allSeats": "All seats",
     "carCard": {
       "status": "Status",
       "capacity": "Capacity",

@@ -1,4 +1,4 @@
-import { CarFront, Users } from "lucide-react";
+import { CarFront, Users, Search } from "lucide-react";
 import type { CarStatus, CarWithId } from "@/types/car";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
@@ -8,13 +8,24 @@ import { Button } from "@/components/ui/button";
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   fetchCars,
   getCarsCount,
+  searchCars,
   type PaginationCursor,
+  type CarsFilterParams,
 } from "@/lib/cars-service";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { useOptimizedSearch } from "@/hooks/useOptimizedSearch";
 
 // Helper function to get status variant
 const getStatusVariant = (status: CarStatus) => {
@@ -38,8 +49,31 @@ export default function FleetPage() {
   );
   const [pageIndex, setPageIndex] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"all" | CarStatus>("all");
+  const [seatsFilter, setSeatsFilter] = useState<"all" | string>("all");
 
   const pageSize = 25;
+
+  // Use optimized search hook
+  const {
+    searchTerm: localSearchTerm,
+    setSearchTerm: setLocalSearchTerm,
+    debouncedSearchTerm,
+  } = useOptimizedSearch("");
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPageIndex(0);
+    setCursors({});
+    setAllCars([]);
+  }, [debouncedSearchTerm, statusFilter, seatsFilter]);
+
+  // Filter params for queries
+  const filterParams: CarsFilterParams = {
+    searchTerm: debouncedSearchTerm.trim() || undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    seats: seatsFilter === "all" ? undefined : parseInt(seatsFilter),
+  };
 
   // Fetch cars with cursor pagination
   const {
@@ -47,14 +81,20 @@ export default function FleetPage() {
     isLoading: initialLoading,
     error: initialError,
   } = useQuery({
-    queryKey: ["cars", "fleet", pageIndex, pageSize],
+    queryKey: ["cars", "fleet", pageIndex, pageSize, debouncedSearchTerm, statusFilter, seatsFilter],
     queryFn: async () => {
       const cursor = cursors[pageIndex];
-      return fetchCars({
+      const queryParams = {
         pageSize,
         pageIndex,
         cursor,
-      });
+        ...filterParams,
+      };
+
+      if (debouncedSearchTerm.trim()) {
+        return searchCars(debouncedSearchTerm, queryParams);
+      }
+      return fetchCars(queryParams);
     },
   });
 
@@ -64,9 +104,9 @@ export default function FleetPage() {
     // isLoading: countLoading,
     error: countError,
   } = useQuery({
-    queryKey: ["cars", "count"],
+    queryKey: ["cars", "count", filterParams],
     queryFn: async () => {
-      return getCarsCount({});
+      return getCarsCount(filterParams);
     },
   });
 
@@ -108,6 +148,43 @@ export default function FleetPage() {
       setPageIndex((prev) => prev + 1);
     }
   };
+
+  const handleSearchChange = (value: string) => {
+    setLocalSearchTerm(value);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value as "all" | CarStatus);
+  };
+
+  const handleSeatsFilterChange = (value: string) => {
+    setSeatsFilter(value);
+  };
+
+  // Filter cars based on current filters (for display)
+  const filteredCars = allCars.filter((car) => {
+    // Apply status filter
+    if (statusFilter !== "all" && car.status !== statusFilter) {
+      return false;
+    }
+
+    // Apply seats filter
+    if (seatsFilter !== "all" && car.seats !== parseInt(seatsFilter)) {
+      return false;
+    }
+
+    // Apply search filter (model and license plate)
+    if (debouncedSearchTerm.trim()) {
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      const modelMatch = car.model.toLowerCase().includes(searchLower);
+      const licensePlateMatch = car.licensePlate.toLowerCase().includes(searchLower);
+      if (!modelMatch && !licensePlateMatch) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   const getColorCircle = (color: string) => (
     <div
@@ -180,7 +257,54 @@ export default function FleetPage() {
       />
 
       <div className="px-4 lg:px-6">
-        {allCars.length === 0 ? (
+        {/* Filters Section */}
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+            {/* Search Input */}
+            <div className="relative w-full sm:w-auto sm:min-w-[300px]">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder={t("fleet.searchPlaceholder")}
+                value={localSearchTerm}
+                onChange={(event) => handleSearchChange(event.target.value)}
+                className="pl-10 w-full"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectValue placeholder={t("fleet.filterByStatus")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("fleet.allStatuses")}</SelectItem>
+                <SelectItem value="available">{t("fleet.available")}</SelectItem>
+                <SelectItem value="maintenance">
+                  {t("fleet.maintenance")}
+                </SelectItem>
+                <SelectItem value="out_of_service">
+                  {t("fleet.out_of_service")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Seats Filter */}
+            <Input
+              type="number"
+              placeholder={t("browse.filterBySeats")}
+              value={seatsFilter === "all" ? "" : seatsFilter}
+              onChange={(event) => {
+                const value = event.target.value;
+                handleSeatsFilterChange(value === "" ? "all" : value);
+              }}
+              className="w-full sm:w-[140px]"
+              min="1"
+              max="20"
+            />
+          </div>
+        </div>
+
+        {filteredCars.length === 0 ? (
           <div className="text-center py-12">
             <CarFront className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-lg font-medium text-muted-foreground">
@@ -191,7 +315,7 @@ export default function FleetPage() {
           <>
             {/* Cars Grid */}
             <div className="grid gap-6">
-              {allCars.map((car) => (
+              {filteredCars.map((car) => (
                 <Card
                   key={car.id}
                   className="w-full hover:shadow-lg transition-shadow"
@@ -308,7 +432,7 @@ export default function FleetPage() {
             <div className="text-center mt-4 mb-8">
               <p className="text-xs text-muted-foreground">
                 {t("browse.viewingCars", {
-                  count: allCars.length,
+                  count: filteredCars.length,
                   total:
                     totalCount !== undefined
                       ? totalCount

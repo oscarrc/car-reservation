@@ -567,6 +567,8 @@
     "noMoreCars": "ไม่มีรถให้โหลดเพิ่ม",
     "errorLoadingCars": "เกิดข้อผิดพลาดในการโหลดรถ",
     "noDescription": "ไม่มีรายละเอียด",
+    "filterBySeats": "กรองตามจำนวนที่นั่ง",
+    "allSeats": "ทุกจำนวนที่นั่ง",
     "carCard": {
       "status": "สถานะ",
       "capacity": "ความจุ",
