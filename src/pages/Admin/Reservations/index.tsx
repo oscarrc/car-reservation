@@ -14,6 +14,7 @@ import {
   fetchReservationsWithData,
   getReservationsCount,
   updateReservationStatus,
+  checkReservationOverlap,
   type ReservationsQueryParams,
   type ReservationsFilterParams,
 } from "@/lib/reservations-service";
@@ -193,10 +194,35 @@ export default function AdminReservationsPage() {
     },
   });
 
-  const handleStatusChange = (
+  const handleStatusChange = async (
     reservation: ReservationWithCarAndUser,
     status: ReservationStatus
   ) => {
+    // Check for overlap if confirming a reservation
+    if (status === "confirmed") {
+      try {
+        const hasOverlap = await checkReservationOverlap(
+          reservation.carInfo?.id || reservation.carRef.id,
+          reservation.startDateTime,
+          reservation.endDateTime,
+          reservation.id
+        );
+
+        if (hasOverlap) {
+          toast.error(t("reservations.overlapError"), {
+            description: t("reservations.overlapErrorDesc"),
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking reservation overlap:", error);
+        toast.error(t("reservations.overlapCheckError"), {
+          description: t("common.retry"),
+        });
+        return;
+      }
+    }
+
     statusMutation.mutate({ reservationId: reservation.id, status });
   };
 
@@ -270,10 +296,7 @@ export default function AdminReservationsPage() {
             error={hasError}
             onRetry={() => refetch()}
             title={t("reservations.errorLoadingReservations")}
-            description={t(
-              "reservations.errorLoadingReservationsDescription",
-              "Unable to load reservations. Please try again."
-            )}
+            description={t("reservations.errorLoadingReservationsDescription")}
             showHomeButton={false}
           />
         </div>

@@ -48,6 +48,7 @@ import {
 import {
   createReservation,
   updateReservation,
+  checkReservationOverlap,
 } from "@/lib/reservations-service";
 import {
   fetchAvailableCarsForDateRange,
@@ -189,6 +190,19 @@ function CreateReservationForm({
         `${data.endDate.toDateString()} ${data.endTime}`
       );
 
+      // Check for overlap if auto-reservation is enabled (will be confirmed immediately)
+      if (settings?.autoReservation) {
+        const hasOverlap = await checkReservationOverlap(
+          data.carId,
+          startDateTime,
+          endDateTime
+        );
+        
+        if (hasOverlap) {
+          throw new Error('OVERLAP_ERROR');
+        }
+      }
+
       return await createReservation({
         userRef: currentUser.uid,
         carRef: data.carId,
@@ -232,9 +246,16 @@ function CreateReservationForm({
     },
     onError: (error) => {
       console.error("Failed to create reservation:", error);
-      toast.error(t("reservations.failedToCreateReservation"), {
-        description: t("common.retry"),
-      });
+      
+      if (error.message === 'OVERLAP_ERROR') {
+        toast.error(t("reservations.overlapError"), {
+          description: t("reservations.overlapErrorDesc"),
+        });
+      } else {
+        toast.error(t("reservations.failedToCreateReservation"), {
+          description: t("common.retry"),
+        });
+      }
     },
   });
 
@@ -698,6 +719,20 @@ function EditReservationForm({
   // Update reservation mutation
   const updateMutation = useMutation({
     mutationFn: async (data: EditReservationFormData) => {
+      // Check for overlap if confirming a reservation
+      if (data.status === 'confirmed') {
+        const hasOverlap = await checkReservationOverlap(
+          data.carId,
+          reservation.startDateTime,
+          reservation.endDateTime,
+          reservation.id
+        );
+        
+        if (hasOverlap) {
+          throw new Error('OVERLAP_ERROR');
+        }
+      }
+      
       return await updateReservation(reservation.id, {
         carRef: data.carId,
         status: data.status,
@@ -734,9 +769,16 @@ function EditReservationForm({
     },
     onError: (error) => {
       console.error("Failed to update reservation:", error);
-      toast.error(t("reservations.failedToUpdateReservation"), {
-        description: t("common.retry"),
-      });
+      
+      if (error.message === 'OVERLAP_ERROR') {
+        toast.error(t("reservations.overlapError"), {
+          description: t("reservations.overlapErrorDesc"),
+        });
+      } else {
+        toast.error(t("reservations.failedToUpdateReservation"), {
+          description: t("common.retry"),
+        });
+      }
     },
   });
 

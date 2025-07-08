@@ -343,7 +343,8 @@
     "bulkDeletePartialError": "Deleted {{successCount}} emails successfully, but {{errorCount}} failed",
     "bulkDeleteError": "Failed to delete emails",
     "noEmailsSelected": "No emails selected",
-    "deleteSelectedConfirmDesc": "This will permanently delete the selected emails. This action cannot be undone."
+    "deleteSelectedConfirmDesc": "This will permanently delete the selected emails. This action cannot be undone.",
+    "updatedDate": "Updated at"
   },
   "notFound": {
     "title": "Page Not Found",
@@ -671,7 +672,10 @@
     "bulkCancelError": "Failed to cancel reservations",
     "noReservationsSelected": "No reservations selected",
     "cancelSelectedConfirm": "Cancel {{count}} Selected Reservations",
-    "cancelSelectedConfirmDesc": "This will cancel the selected reservations. This action cannot be undone."
+    "cancelSelectedConfirmDesc": "This will cancel the selected reservations. This action cannot be undone.",
+    "overlapError": "Reservation conflict detected",
+    "overlapErrorDesc": "Cannot confirm this reservation because it overlaps with another confirmed reservation for the same car.",
+    "overlapCheckError": "Failed to check reservation conflicts"
   },
   "users": {
     "management": "User Management",

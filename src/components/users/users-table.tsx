@@ -34,7 +34,10 @@ import { ColumnSelector } from "@/components/ui/column-selector";
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { Input } from "@/components/ui/input";
 import { TablePagination } from "@/components/ui/table-pagination";
-import { BulkActions, createUserBulkActions } from "@/components/ui/bulk-actions";
+import {
+  BulkActions,
+  createUserBulkActions,
+} from "@/components/ui/bulk-actions";
 import { BulkConfirmationDialog } from "@/components/ui/bulk-confirmation-dialog";
 import { invalidateUserQueries } from "@/lib/query-utils";
 import type { UserProfileWithId } from "@/lib/users-service";
@@ -89,10 +92,11 @@ export function UsersTable({
 
   // Bulk actions state
   const [isBulkActionsLoading, setIsBulkActionsLoading] = React.useState(false);
-  
+
   // Confirmation dialog state
   const [confirmationDialog, setConfirmationDialog] = React.useState<{
     open: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     action: any;
   }>({
     open: false,
@@ -175,7 +179,13 @@ export function UsersTable({
 
   // Bulk status update mutation
   const bulkStatusMutation = useMutation({
-    mutationFn: async ({ userIds, suspended }: { userIds: string[]; suspended: boolean }) => {
+    mutationFn: async ({
+      userIds,
+      suspended,
+    }: {
+      userIds: string[];
+      suspended: boolean;
+    }) => {
       setIsBulkActionsLoading(true);
       return await bulkUpdateUserStatus(userIds, suspended);
     },
@@ -186,16 +196,20 @@ export function UsersTable({
       });
 
       if (result.successCount > 0) {
-        toast.success(t("users.bulkStatusUpdateSuccess", { 
-          count: result.successCount,
-          status: suspended ? t("users.suspended") : t("users.active")
-        }));
+        toast.success(
+          t("users.bulkStatusUpdateSuccess", {
+            count: result.successCount,
+            status: suspended ? t("users.suspended") : t("users.active"),
+          })
+        );
       }
       if (result.errorCount > 0) {
-        toast.error(t("users.bulkStatusUpdatePartialError", { 
-          successCount: result.successCount, 
-          errorCount: result.errorCount 
-        }));
+        toast.error(
+          t("users.bulkStatusUpdatePartialError", {
+            successCount: result.successCount,
+            errorCount: result.errorCount,
+          })
+        );
       }
 
       // Clear selection
@@ -211,7 +225,13 @@ export function UsersTable({
 
   // Bulk role update mutation
   const bulkRoleMutation = useMutation({
-    mutationFn: async ({ userIds, role }: { userIds: string[]; role: string }) => {
+    mutationFn: async ({
+      userIds,
+      role,
+    }: {
+      userIds: string[];
+      role: string;
+    }) => {
       setIsBulkActionsLoading(true);
       return await bulkUpdateUserRole(userIds, role);
     },
@@ -222,16 +242,20 @@ export function UsersTable({
       });
 
       if (result.successCount > 0) {
-        toast.success(t("users.bulkRoleUpdateSuccess", { 
-          count: result.successCount,
-          role: t(`users.${role}`)
-        }));
+        toast.success(
+          t("users.bulkRoleUpdateSuccess", {
+            count: result.successCount,
+            role: t(`users.${role}`),
+          })
+        );
       }
       if (result.errorCount > 0) {
-        toast.error(t("users.bulkRoleUpdatePartialError", { 
-          successCount: result.successCount, 
-          errorCount: result.errorCount 
-        }));
+        toast.error(
+          t("users.bulkRoleUpdatePartialError", {
+            successCount: result.successCount,
+            errorCount: result.errorCount,
+          })
+        );
       }
 
       // Clear selection
@@ -310,8 +334,8 @@ export function UsersTable({
   // Bulk action handlers
   const handleBulkSuspend = () => {
     const selectedUsers = table.getFilteredSelectedRowModel().rows;
-    const userIds = selectedUsers.map(row => row.original.id);
-    
+    const userIds = selectedUsers.map((row) => row.original.id);
+
     if (userIds.length === 0) {
       toast.error(t("users.noUsersSelected"));
       return;
@@ -322,8 +346,8 @@ export function UsersTable({
 
   const handleBulkUnsuspend = () => {
     const selectedUsers = table.getFilteredSelectedRowModel().rows;
-    const userIds = selectedUsers.map(row => row.original.id);
-    
+    const userIds = selectedUsers.map((row) => row.original.id);
+
     if (userIds.length === 0) {
       toast.error(t("users.noUsersSelected"));
       return;
@@ -332,19 +356,20 @@ export function UsersTable({
     bulkStatusMutation.mutate({ userIds, suspended: false });
   };
 
-    const handleBulkRoleChange = (role: string) => {
+  const handleBulkRoleChange = (role: string) => {
     const selectedUsers = table.getFilteredSelectedRowModel().rows;
-    const userIds = selectedUsers.map(row => row.original.id);
-    
+    const userIds = selectedUsers.map((row) => row.original.id);
+
     if (userIds.length === 0) {
       toast.error(t("users.noUsersSelected"));
       return;
     }
-    
+
     bulkRoleMutation.mutate({ userIds, role });
   };
 
   // Handle bulk action clicks with confirmation
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleBulkActionClick = (action: any) => {
     if (action.requiresConfirmation) {
       setConfirmationDialog({
@@ -384,10 +409,7 @@ export function UsersTable({
         error={error}
         onRetry={() => refetch()}
         title={t("users.errorLoadingUsers")}
-        description={t(
-          "users.errorLoadingUsersDescription",
-          "Unable to load users. Please try again."
-        )}
+        description={t("users.errorLoadingUsersDescription")}
         showHomeButton={false}
       />
     );
@@ -447,7 +469,7 @@ export function UsersTable({
               isBulkActionsLoading
             )}
           />
-          
+
           <ColumnSelector
             tableId="users-table"
             columns={table.getAllColumns()}
@@ -459,21 +481,30 @@ export function UsersTable({
       {/* Bulk Confirmation Dialog */}
       <BulkConfirmationDialog
         open={confirmationDialog.open}
-        onOpenChange={(open) => setConfirmationDialog({ open, action: confirmationDialog.action })}
+        onOpenChange={(open) =>
+          setConfirmationDialog({ open, action: confirmationDialog.action })
+        }
         onConfirm={handleConfirmAction}
         title={
-          typeof confirmationDialog.action?.confirmationTitle === 'function'
-            ? confirmationDialog.action.confirmationTitle(table.getFilteredSelectedRowModel().rows.length)
+          typeof confirmationDialog.action?.confirmationTitle === "function"
+            ? confirmationDialog.action.confirmationTitle(
+                table.getFilteredSelectedRowModel().rows.length
+              )
             : confirmationDialog.action?.confirmationTitle || ""
         }
         description={
-          typeof confirmationDialog.action?.confirmationDescription === 'function'
-            ? confirmationDialog.action.confirmationDescription(table.getFilteredSelectedRowModel().rows.length)
+          typeof confirmationDialog.action?.confirmationDescription ===
+          "function"
+            ? confirmationDialog.action.confirmationDescription(
+                table.getFilteredSelectedRowModel().rows.length
+              )
             : confirmationDialog.action?.confirmationDescription || ""
         }
         confirmText={
-          typeof confirmationDialog.action?.confirmText === 'function'
-            ? confirmationDialog.action.confirmText(table.getFilteredSelectedRowModel().rows.length)
+          typeof confirmationDialog.action?.confirmText === "function"
+            ? confirmationDialog.action.confirmText(
+                table.getFilteredSelectedRowModel().rows.length
+              )
             : confirmationDialog.action?.confirmText
         }
         isLoading={isBulkActionsLoading}

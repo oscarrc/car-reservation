@@ -527,6 +527,42 @@ export async function deleteReservationsByYear(year: number): Promise<{ deletedC
   }
 } 
 
+// Check if a reservation overlaps with existing confirmed reservations for the same car
+export async function checkReservationOverlap(
+  carId: string,
+  startDateTime: Date,
+  endDateTime: Date,
+  excludeReservationId?: string
+): Promise<boolean> {
+  try {
+    const reservationsCollection = collection(db, 'reservations');
+    
+    // Query for confirmed reservations of the same car that could overlap
+    const q = query(
+      reservationsCollection,
+      where('carRef', '==', doc(db, 'cars', carId)),
+      where('status', '==', 'confirmed'),
+      where('startDateTime', '<', Timestamp.fromDate(endDateTime)),
+      where('endDateTime', '>', Timestamp.fromDate(startDateTime))
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    // If we're updating an existing reservation, exclude it from the overlap check
+    if (excludeReservationId) {
+      const overlappingReservations = querySnapshot.docs.filter(
+        doc => doc.id !== excludeReservationId
+      );
+      return overlappingReservations.length > 0;
+    }
+    
+    return querySnapshot.size > 0;
+  } catch (error) {
+    console.error('Error checking reservation overlap:', error);
+    throw error;
+  }
+}
+
 // Bulk operations for reservations
 export async function bulkUpdateReservationStatus(
   reservationIds: string[],
