@@ -56,7 +56,8 @@
     "processing": "กำลังประมวลผล...",
     "settingsError": "ข้อผิดพลาดในการตั้งค่า",
     "errorLoadingCount": "ข้อผิดพลาดในการโหลดจำนวน",
-    "notProvided": "ไม่ได้จัดเตรียมไว้"
+    "notProvided": "ไม่ได้จัดเตรียมไว้",
+    "backToReservations": "กลับไปยังการจอง"
   },
   "auth": {
     "welcome": "ยินดีต้อนรับกลับ",
@@ -428,6 +429,9 @@
   },
   "brand": {
     "name": "Car Reservation System"
+  },
+  "installApp": {
+    "install": "ติดตั้งแอป"
   },
   "fleet": {
     "management": "จัดการยานพาหนะ",

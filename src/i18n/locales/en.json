@@ -56,7 +56,8 @@
     "processing": "Processing...",
     "settingsError": "Settings Error",
     "errorLoadingCount": "Error loading count",
-    "notProvided": "Not provided"
+    "notProvided": "Not provided",
+    "backToReservations": "Back to Reservations"
   },
   "auth": {
     "welcome": "Welcome back",
@@ -429,6 +430,9 @@
   "brand": {
     "name": "Car Reservation System"
   },
+  "installApp": {
+    "install": "Install App"
+  },
   "fleet": {
     "management": "Fleet Management",
     "subtitle": "Manage your vehicle fleet, track availability, and update car status.",
@@ -537,6 +541,7 @@
     "filterByStatus": "Filter by status",
     "allStatuses": "All statuses",
     "errorLoadingCarDetailsDescription": "Unable to load car details. Please try again.",
+    "outOfService": "Out of Service",
     "bulkActions": "Bulk Actions",
     "selectedCount": "{{count}} selected",
     "deleteSelected": "Delete Selected",
@@ -704,6 +709,7 @@
     "userInformation": "User Information",
     "userReservations": "User Reservations",
     "errorLoadingUserDetails": "Error loading user details",
+    "errorLoadingUserDetailsDescription": "Unable to load user details. Please try again.",
     "userNotFound": "User not found",
     "name": "Name",
     "email": "Email",
@@ -723,6 +729,7 @@
     "searchPlaceholder": "Search users by name or email...",
     "noUsersFound": "No users found",
     "errorLoadingUsers": "Error loading users",
+    "errorLoadingUsersDescription": "Unable to load users. Please try again.",
     "userCreatedSuccessfully": "User created successfully",
     "userUpdatedSuccessfully": "User updated successfully",
     "userDeleted": "User profile deleted successfully",
@@ -758,7 +765,6 @@
     "allStatuses": "All statuses",
     "admin": "Admin",
     "teacher": "Teacher",
-    "errorLoadingUserDetailsDescription": "Unable to load user details. Please try again.",
     "bulkActions": "Bulk Actions",
     "selectedCount": "{{count}} selected",
     "suspendSelected": "Suspend Selected",
@@ -777,7 +783,9 @@
     "bulkRoleUpdateSuccess": "Successfully updated {{count}} users to {{role}} role",
     "bulkRoleUpdatePartialError": "Updated {{successCount}} users successfully, but {{errorCount}} failed",
     "bulkRoleUpdateError": "Failed to update user roles",
+    "bulkStatusUpdateError": "Failed to update user status",
     "noUsersSelected": "No users selected",
+    "searchNoUsersFound": "No users found matching your search",
     "suspendSelectedConfirm": "Suspend {{count}} Selected Users",
     "suspendSelectedConfirmDesc": "This will suspend the selected users, preventing them from accessing the system.",
     "unsuspendSelectedConfirm": "Unsuspend {{count}} Selected Users",
