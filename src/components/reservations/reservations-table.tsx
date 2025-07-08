@@ -39,7 +39,10 @@ import {
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { ColumnSelector } from "@/components/ui/column-selector";
-import { BulkActions, createReservationBulkActions } from "@/components/ui/bulk-actions";
+import {
+  BulkActions,
+  createReservationBulkActions,
+} from "@/components/ui/bulk-actions";
 import { BulkConfirmationDialog } from "@/components/ui/bulk-confirmation-dialog";
 import { cn } from "@/lib/utils";
 import type { ReservationWithId, ReservationStatus } from "@/types/reservation";
@@ -72,7 +75,10 @@ interface ReservationsTableProps {
   // Bulk actions
   bulkActions?: {
     onCancel?: (reservationIds: string[]) => void;
-    onStatusChange?: (reservationIds: string[], status: ReservationStatus) => void;
+    onStatusChange?: (
+      reservationIds: string[],
+      status: ReservationStatus
+    ) => void;
     isLoading?: boolean;
     autoCancelation?: boolean;
   };
@@ -102,10 +108,11 @@ export function ReservationsTable({
   const { t } = useTranslation();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
-  
+
   // Confirmation dialog state
   const [confirmationDialog, setConfirmationDialog] = React.useState<{
     open: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     action: any;
   }>({
     open: false,
@@ -161,16 +168,17 @@ export function ReservationsTable({
   // Bulk action handlers
   const handleBulkCancel = () => {
     if (!bulkActions?.onCancel) return;
-    
+
     const selectedReservations = table.getFilteredSelectedRowModel().rows;
-    const reservationIds = selectedReservations.map(row => row.original.id);
-    
+    const reservationIds = selectedReservations.map((row) => row.original.id);
+
     if (reservationIds.length === 0) return;
-    
+
     bulkActions.onCancel(reservationIds);
   };
 
   // Handle bulk action clicks with confirmation
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleBulkActionClick = (action: any) => {
     if (action.requiresConfirmation) {
       setConfirmationDialog({
@@ -192,12 +200,12 @@ export function ReservationsTable({
 
   const handleBulkStatusChange = (status: ReservationStatus) => {
     if (!bulkActions?.onStatusChange) return;
-    
+
     const selectedReservations = table.getFilteredSelectedRowModel().rows;
-    const reservationIds = selectedReservations.map(row => row.original.id);
-    
+    const reservationIds = selectedReservations.map((row) => row.original.id);
+
     if (reservationIds.length === 0) return;
-    
+
     bulkActions.onStatusChange(reservationIds, status);
   };
 
@@ -331,13 +339,15 @@ export function ReservationsTable({
                 {...createReservationBulkActions(
                   t,
                   bulkActions.onCancel ? handleBulkCancel : undefined,
-                  bulkActions.onStatusChange ? handleBulkStatusChange : undefined,
+                  bulkActions.onStatusChange
+                    ? handleBulkStatusChange
+                    : undefined,
                   bulkActions.isLoading,
                   bulkActions.autoCancelation
                 )}
               />
             )}
-            
+
             <ColumnSelector
               tableId="reservations-table"
               columns={table.getAllColumns()}
@@ -350,21 +360,30 @@ export function ReservationsTable({
       {/* Bulk Confirmation Dialog */}
       <BulkConfirmationDialog
         open={confirmationDialog.open}
-        onOpenChange={(open) => setConfirmationDialog({ open, action: confirmationDialog.action })}
+        onOpenChange={(open) =>
+          setConfirmationDialog({ open, action: confirmationDialog.action })
+        }
         onConfirm={handleConfirmAction}
         title={
-          typeof confirmationDialog.action?.confirmationTitle === 'function'
-            ? confirmationDialog.action.confirmationTitle(table.getFilteredSelectedRowModel().rows.length)
+          typeof confirmationDialog.action?.confirmationTitle === "function"
+            ? confirmationDialog.action.confirmationTitle(
+                table.getFilteredSelectedRowModel().rows.length
+              )
             : confirmationDialog.action?.confirmationTitle || ""
         }
         description={
-          typeof confirmationDialog.action?.confirmationDescription === 'function'
-            ? confirmationDialog.action.confirmationDescription(table.getFilteredSelectedRowModel().rows.length)
+          typeof confirmationDialog.action?.confirmationDescription ===
+          "function"
+            ? confirmationDialog.action.confirmationDescription(
+                table.getFilteredSelectedRowModel().rows.length
+              )
             : confirmationDialog.action?.confirmationDescription || ""
         }
         confirmText={
-          typeof confirmationDialog.action?.confirmText === 'function'
-            ? confirmationDialog.action.confirmText(table.getFilteredSelectedRowModel().rows.length)
+          typeof confirmationDialog.action?.confirmText === "function"
+            ? confirmationDialog.action.confirmText(
+                table.getFilteredSelectedRowModel().rows.length
+              )
             : confirmationDialog.action?.confirmText
         }
         isLoading={bulkActions?.isLoading}

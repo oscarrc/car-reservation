@@ -17,6 +17,7 @@ import {
   checkReservationOverlap,
   type ReservationsQueryParams,
   type ReservationsFilterParams,
+  bulkUpdateReservationStatus,
 } from "@/lib/reservations-service";
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
 import { invalidateReservationQueries } from "@/lib/query-utils";
@@ -38,6 +39,9 @@ export default function AdminReservationsPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
   const queryClient = useQueryClient();
+
+  // Bulk actions state
+  const [isBulkActionsLoading, setIsBulkActionsLoading] = useState(false);
 
   const queryParams: ReservationsQueryParams = {
     pageSize,
@@ -226,6 +230,51 @@ export default function AdminReservationsPage() {
     statusMutation.mutate({ reservationId: reservation.id, status });
   };
 
+  // Bulk status update mutation
+  const bulkStatusMutation = useMutation({
+    mutationFn: async ({
+      reservationIds,
+      status,
+    }: {
+      reservationIds: string[];
+      status: ReservationStatus;
+    }) => {
+      setIsBulkActionsLoading(true);
+      return await bulkUpdateReservationStatus(reservationIds, status);
+    },
+    onSuccess: (result, { status }) => {
+      invalidateReservationQueries(queryClient, {
+        invalidateReservationsList: true,
+        invalidateReservationsCount: true,
+        invalidateDashboard: true,
+      });
+
+      if (result.successCount > 0) {
+        toast.success(
+          t("reservations.bulkStatusUpdateSuccess", {
+            count: result.successCount,
+            status: t(`reservations.${status}`),
+          })
+        );
+      }
+      if (result.errorCount > 0) {
+        toast.error(
+          t("reservations.bulkStatusUpdatePartialError", {
+            successCount: result.successCount,
+            errorCount: result.errorCount,
+          })
+        );
+      }
+
+      setIsBulkActionsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Error in bulk status update:", error);
+      toast.error(t("reservations.bulkStatusUpdateError"));
+      setIsBulkActionsLoading(false);
+    },
+  });
+
   const handleStatusFilterChange = (status: ReservationStatus | "all") => {
     setStatusFilter(status);
   };
@@ -249,6 +298,18 @@ export default function AdminReservationsPage() {
     onEdit: handleEditReservation,
     t,
   });
+
+  const handleBulkStatusChange = (
+    reservationIds: string[],
+    status: ReservationStatus
+  ) => {
+    if (reservationIds.length === 0) {
+      toast.error(t("reservations.noReservationsSelected"));
+      return;
+    }
+
+    bulkStatusMutation.mutate({ reservationIds, status });
+  };
 
   const isLoading = reservationsLoading;
   const hasError = reservationsError;
@@ -330,6 +391,10 @@ export default function AdminReservationsPage() {
           endDateFilter={endDateFilter}
           countError={countError}
           countLoading={countLoading}
+          bulkActions={{
+            onStatusChange: handleBulkStatusChange,
+            isLoading: isBulkActionsLoading,
+          }}
         />
 
         {/* Edit Reservation Dialog */}
