@@ -266,7 +266,7 @@ export function FaqPage({ type }: { type: FaqType }) {
         <footer className="mt-4 pt-4 border-t border-border">
           <div className="text-center text-sm text-muted-foreground">
             © {new Date().getFullYear()}. Made with{" "}
-            <Heart className="inline-block h-4 w-4 text-black fill-current" />{" "}
+            <Heart className="inline-block h-4 w-4 text-primary fill-current" />{" "}
             by{" "}
             <a
               href="https://oscarrc.me"
