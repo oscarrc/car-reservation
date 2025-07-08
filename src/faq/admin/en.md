@@ -124,6 +124,6 @@ The system includes Firebase Authentication, role-based access control, email ve
 
 ### Why these features are not implemented?
 
-This app was developed in less than 2 weeks, on the Firebase free tier and with free labour. As such, it does not include advanced features like real-time conflict resolution, detailed analytics, or complex user management. The focus was on core functionality for educational purposes. Take a look at the following graph to undertand it better:
+This app was developed in less than 2 weeks, on the Firebase free tier and with free labour. As such, it does not include advanced features like real-time conflict resolution, detailed analytics, or complex user management. The focus was on core functionality based on budget and time constraints. Take a look at the following graph to undertand it better:
 
 ![Feature Limitations](/assets/FastCheapGood.webp)
