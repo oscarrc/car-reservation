@@ -882,9 +882,9 @@
     "editUser": "Edit user"
   },
   "faq": {
-    "adminTitle": "Admin FAQ",
+    "adminTitle": "Admin Help",
     "adminSubtitle": "Frequently asked questions for administrators.",
-    "appTitle": "App FAQ",
+    "appTitle": "App Help",
     "appSubtitle": "Frequently asked questions for users.",
     "noFaqs": "No FAQs found.",
     "searchPlaceholder": "Search FAQs...",
