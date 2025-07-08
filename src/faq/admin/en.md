@@ -12,6 +12,14 @@ You can create the first admin user through the Firebase Console. Go to Authenti
 
 The system supports two main roles: **Admin** (full access to fleet management, user management, reservations, and settings) and **Teacher** (limited access for viewing cars and making reservations).
 
+### What are the limitations?
+
+The system runs on Firebase's free tier, which means there are limitations on data storage, bandwith usage and database read/write/deletions. It does not support advanced features like real-time conflict resolution or detailed analytics.
+
+Due to the storage limitations of Firebase free tier, the system does not support uploading images for cars or users. All car and user data must be text-based.
+
+It is recomended to yearly delete old reservations to keep the database size manageable. The system does not automatically delete old reservations, so you should periodically review and remove outdated records. You can do this through the Admin → Settings by selecting a year to remove the reservations.
+
 ## User Management
 
 ### How do I add new users to the system?
