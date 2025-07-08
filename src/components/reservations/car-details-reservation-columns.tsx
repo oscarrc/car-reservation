@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit, Eye } from "lucide-react";
+import { ArrowUpDown, Edit, Eye } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -57,7 +57,18 @@ export function createCarDetailsReservationColumns({
     },
     {
       accessorKey: "userInfo.name",
-      header: t("table.userName"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("table.userName")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const userInfo = row.original.userInfo;
         return userInfo ? (
@@ -68,10 +79,28 @@ export function createCarDetailsReservationColumns({
           </div>
         );
       },
+      sortingFn: (rowA, rowB) => {
+        const userA = rowA.original.userInfo;
+        const userB = rowB.original.userInfo;
+        if (!userA?.name) return 1;
+        if (!userB?.name) return -1;
+        return userA.name.localeCompare(userB.name);
+      },
     },
     {
       accessorKey: "startDateTime",
-      header: t("table.start"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("table.start")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const startDate = row.getValue("startDateTime") as Date;
         return (
@@ -84,10 +113,22 @@ export function createCarDetailsReservationColumns({
           </div>
         );
       },
+      sortingFn: "datetime",
     },
     {
       accessorKey: "endDateTime",
-      header: t("table.end"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("table.end")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const endDate = row.getValue("endDateTime") as Date;
         return (
@@ -100,6 +141,7 @@ export function createCarDetailsReservationColumns({
           </div>
         );
       },
+      sortingFn: "datetime",
     },
     {
       accessorKey: "status",

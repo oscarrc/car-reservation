@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit, Eye, Trash2 } from "lucide-react";
+import { ArrowUpDown, Edit, Eye, Trash2 } from "lucide-react";
 import type { ReservationStatus, ReservationWithId } from "@/types/reservation";
 import {
   Tooltip,
@@ -66,7 +66,18 @@ export function createAdminColumns({
     },
     {
       accessorKey: "userInfo",
-      header: () => t("table.user"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("table.user")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const userInfo = row.getValue("userInfo") as UserProfileWithId;
         if (!userInfo) {
@@ -81,10 +92,28 @@ export function createAdminColumns({
           </div>
         );
       },
+      sortingFn: (rowA, rowB) => {
+        const userA = rowA.getValue("userInfo") as UserProfileWithId;
+        const userB = rowB.getValue("userInfo") as UserProfileWithId;
+        if (!userA?.name) return 1;
+        if (!userB?.name) return -1;
+        return userA.name.localeCompare(userB.name);
+      },
     },
     {
       accessorKey: "carInfo",
-      header: () => t("reservations.car"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("reservations.car")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const carInfo = row.getValue("carInfo") as CarWithId;
         if (!carInfo) {
@@ -99,22 +128,53 @@ export function createAdminColumns({
           </div>
         );
       },
+      sortingFn: (rowA, rowB) => {
+        const carA = rowA.getValue("carInfo") as CarWithId;
+        const carB = rowB.getValue("carInfo") as CarWithId;
+        if (!carA?.model) return 1;
+        if (!carB?.model) return -1;
+        return carA.model.localeCompare(carB.model);
+      },
     },
     {
       accessorKey: "startDateTime",
-      header: () => t("reservations.startDateTime"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("reservations.startDateTime")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const date = row.getValue("startDateTime") as Date;
         return format(date, getLocalizedFormats().dateTime);
       },
+      sortingFn: "datetime",
     },
     {
       accessorKey: "endDateTime",
-      header: () => t("reservations.endDateTime"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("reservations.endDateTime")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const date = row.getValue("endDateTime") as Date;
         return format(date, getLocalizedFormats().dateTime);
       },
+      sortingFn: "datetime",
     },
     {
       accessorKey: "status",
@@ -137,7 +197,18 @@ export function createAdminColumns({
     },
     {
       accessorKey: "driver",
-      header: () => t("reservations.driver"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("reservations.driver")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const driver = row.getValue("driver") as string;
         return driver || <span className="text-muted-foreground">-</span>;
@@ -145,7 +216,18 @@ export function createAdminColumns({
     },
     {
       accessorKey: "comments",
-      header: () => t("reservations.comments"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("reservations.comments")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const comments = row.getValue("comments") as string;
         return comments ? (
@@ -159,11 +241,23 @@ export function createAdminColumns({
     },
     {
       accessorKey: "createdAt",
-      header: () => t("reservations.createdOn"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("reservations.createdOn")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const date = row.getValue("createdAt") as Date;
         return format(date, getLocalizedFormats().dateShort);
       },
+      sortingFn: "datetime",
     },
     {
       id: "actions",

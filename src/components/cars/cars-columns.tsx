@@ -1,7 +1,7 @@
 "use client";
 
 import type { CarStatus, CarWithId } from "@/types/car";
-import { Edit, Eye, Trash2 } from "lucide-react";
+import { ArrowUpDown, Edit, Eye, Trash2 } from "lucide-react";
 import { format, getLocalizedFormats } from "@/lib/date-locale";
 import {
   Select,
@@ -75,7 +75,18 @@ export function createCarColumns({
     },
     {
       accessorKey: "licensePlate",
-      header: t("fleet.licensePlate"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("fleet.licensePlate")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => (
         <div className="font-mono font-medium">
           {row.getValue("licensePlate")}
@@ -84,21 +95,55 @@ export function createCarColumns({
     },
     {
       accessorKey: "model",
-      header: t("fleet.model"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("fleet.model")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => (
         <div className="font-medium">{row.getValue("model")}</div>
       ),
     },
     {
       accessorKey: "year",
-      header: t("fleet.year"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("fleet.year")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => (
         <div className="text-center">{row.getValue("year") || "-"}</div>
       ),
+      sortingFn: "alphanumeric",
     },
     {
       accessorKey: "color",
-      header: t("fleet.color"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("fleet.color")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const color = row.getValue("color") as string;
         const translatedColor = t(`fleet.colors.${color}`, {
@@ -117,10 +162,22 @@ export function createCarColumns({
     },
     {
       accessorKey: "seats",
-      header: t("fleet.seats"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("fleet.seats")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => (
         <div className="text-center">{row.getValue("seats")}</div>
       ),
+      sortingFn: "alphanumeric",
     },
     {
       accessorKey: "status",
@@ -163,11 +220,23 @@ export function createCarColumns({
     },
     {
       accessorKey: "createdAt",
-      header: t("fleet.addedOn"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("fleet.addedOn")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const date = row.getValue("createdAt") as Date;
         return format(date, getLocalizedFormats().dateShort);
       },
+      sortingFn: "datetime",
     },
     {
       id: "actions",

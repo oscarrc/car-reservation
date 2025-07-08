@@ -94,7 +94,18 @@ export const createUserColumns = ({
     },
     {
       accessorKey: "phone",
-      header: t("users.phone"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("users.phone")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const phone = row.getValue("phone") as string;
         return <div>{phone}</div>;
@@ -126,11 +137,23 @@ export const createUserColumns = ({
     },
     {
       accessorKey: "createdAt",
-      header: t("users.memberSince"),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-auto p-0 font-semibold hover:bg-transparent cursor-pointer"
+          >
+            {t("users.memberSince")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const date = row.getValue("createdAt") as Date;
         return format(date, getLocalizedFormats().dateShort);
       },
+      sortingFn: "datetime",
     },
 
     {
