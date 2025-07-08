@@ -3,9 +3,11 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { adminSidebarConfig, appSidebarConfig } from "./lib/sidebar-config";
 
 import ActionPage from "./pages/Auth/Action";
+import AdminFaq from "./pages/Admin/Faq";
 import AdminPage from "./pages/Admin";
 import AdminReservationPage from "./pages/Admin/Reservations/Reservation";
 import AllowedEmailsPage from "./pages/Admin/Users/AllowedEmails";
+import AppFaq from "./pages/App/Faq";
 import AppPage from "./pages/App";
 import AppReservationPage from "./pages/App/Reservations/Reservation";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -109,6 +111,10 @@ const App = () => {
           path: "settings",
           element: <SettingsPage />,
         },
+        {
+          path: "help",
+          element: <AdminFaq />,
+        },
       ],
     },
     {
@@ -134,6 +140,10 @@ const App = () => {
         {
           path: "browse",
           element: <UserFleetPage />,
+        },
+        {
+          path: "help",
+          element: <AppFaq />,
         },
       ],
     },

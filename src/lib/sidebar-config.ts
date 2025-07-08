@@ -1,4 +1,4 @@
-import { Calendar, CarFront, Home, Settings, Users, Mail } from "lucide-react"
+import { Calendar, CarFront, HelpCircle, Home, Mail, Settings, Users } from "lucide-react"
 
 import type { LucideIcon } from "lucide-react"
 
@@ -60,6 +60,11 @@ export const adminSidebarConfig: SidebarConfig = {
       title: "navigation.settings",
       url: "/admin/settings",
       icon: Settings
+    },
+    {
+      title: "navigation.help",
+      url: "/admin/help",
+      icon: HelpCircle
     }
   ]
 }
@@ -89,15 +94,10 @@ export const appSidebarConfig: SidebarConfig = {
       url: "/app/browse",
       icon: CarFront
     },
-    /* {
-      title: "navigation.history",
-      url: "/app/history",
-      icon: FileText
-    },
     {
-      title: "navigation.support",
-      url: "/app/support",
+      title: "navigation.help",
+      url: "/app/help",
       icon: HelpCircle
-    } */
+    }
   ]
 } 

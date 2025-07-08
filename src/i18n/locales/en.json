@@ -257,6 +257,7 @@
     "userPortal": "User portal",
     "logOut": "Log out",
     "company": "Car Reservation System",
+    "help": "Help",
     "admin": {
       "title": "Administration Portal",
       "description": "Manage fleet, reservations, users, and system settings"
@@ -879,5 +880,16 @@
   },
   "user": {
     "editUser": "Edit user"
+  },
+  "faq": {
+    "adminTitle": "Admin FAQ",
+    "adminSubtitle": "Frequently asked questions for administrators.",
+    "appTitle": "App FAQ",
+    "appSubtitle": "Frequently asked questions for users.",
+    "noFaqs": "No FAQs found.",
+    "searchPlaceholder": "Search FAQs...",
+    "noResults": "No results found",
+    "tryDifferentKeywords": "Try different keywords or check your spelling",
+    "searchResults": "{{count}} result found for \"{{query}}\""
   }
 }
