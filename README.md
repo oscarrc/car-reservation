@@ -160,6 +160,14 @@ Before getting started, ensure you have the following installed:
    - Click "Add project" and follow the setup wizard
    - Choose a unique project ID (e.g., `car-reservation-prod`)
 
+   ```bash
+    firebase projects:create
+    firebase use <project-id>
+    firebase init
+    firebase apps:create web <app-name>
+    firebase apps:sdkconfig web --out ./firebase-config.json
+   ```
+
    **Enable required Firebase services:**
 
    - **Authentication**: Go to Authentication → Sign-in method → Enable Email/Password
