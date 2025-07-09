@@ -8,20 +8,25 @@ A modern, full-featured car reservation management system built with React, Type
 
 - **Role-Based Authentication**: Secure login system with admin/teacher roles
 - **Fleet Management**: Complete car inventory management with status tracking
-- **Reservation System**: Advanced booking system with conflict detection
+- **Reservation System**: Advanced booking system with conflict detection and multiple status states
 - **Real-time Updates**: Live data synchronization via Firebase Firestore
-- **Multi-language Support**: English and Thai internationalization
+- **Multi-language Support**: English and Thai internationalization with i18next
 - **Responsive Design**: Mobile-first design that works on all devices
-- **Analytics Dashboard**: Comprehensive insights and reporting
+- **Analytics Dashboard**: Comprehensive insights and reporting with interactive charts
+- **PWA Support**: Installable progressive web app with offline capabilities
 
 ### Advanced Features
 
 - **Conflict Resolution**: Automatic detection and handling of booking conflicts
-- **Status Management**: Dynamic car availability tracking
-- **User Suspension**: Administrative control over user access
-- **Configurable Settings**: System-wide settings management
-- **Export Functionality**: Data export for reporting and analysis
-- **Progressive Web App**: Installable app experience
+- **Status Management**: Dynamic car availability tracking (available, maintenance, out_of_service)
+- **User Suspension**: Administrative control over user access and permissions
+- **Configurable Settings**: System-wide settings management with real-time updates
+- **Bulk Operations**: Batch actions for efficient data management
+- **Email Verification**: Secure email verification system with Firebase Auth
+- **FAQ System**: Dynamic FAQ management with markdown support
+- **Dark Mode**: Theme switching with system preference detection
+- **Search & Filtering**: Advanced search capabilities across all data entities
+- **Optimistic Updates**: Improved UX with optimistic UI updates
 
 ## 🏗️ Architecture Overview
 
@@ -66,62 +71,137 @@ A modern, full-featured car reservation management system built with React, Type
 car-reservation/
 ├── src/
 │   ├── components/              # Reusable UI components
-│   │   ├── ui/                 # Base UI components (Button, Input, etc.)
-│   │   ├── cars/               # Car-specific components
-│   │   ├── reservations/       # Reservation management components
-│   │   ├── dashboard/          # Analytics and dashboard components
-│   │   └── users/              # User management components
-│   ├── contexts/               # React context providers
-│   │   ├── AuthContext.tsx     # Authentication state management
-│   │   └── SettingsContext.tsx # Application settings
-│   ├── hooks/                  # Custom React hooks
-│   ├── i18n/                   # Internationalization setup
-│   │   ├── index.ts           # i18next configuration
-│   │   └── locales/           # Translation files
-│   │       ├── en.json        # English translations
-│   │       └── th.json        # Thai translations
-│   ├── layouts/                # Layout components
-│   │   ├── AdminLayout.tsx    # Admin panel layout
-│   │   └── AppLayout.tsx      # User application layout
-│   ├── lib/                    # Service layer and utilities
-│   │   ├── firebase.ts        # Firebase configuration and initialization
-│   │   ├── cars-service.ts    # Car management operations
-│   │   ├── reservations-service.ts # Reservation CRUD operations
-│   │   ├── users-service.ts   # User management operations
-│   │   ├── dashboard-service.ts # Analytics and reporting
-│   │   └── utils.ts           # Helper functions
-│   ├── pages/                  # Page components
-│   │   ├── Admin/             # Administrator pages
-│   │   │   ├── Dashboard.tsx  # Admin dashboard
-│   │   │   ├── Fleet.tsx      # Fleet management
-│   │   │   ├── Reservations.tsx # Reservation management
-│   │   │   ├── Users.tsx      # User administration
-│   │   │   └── Settings.tsx   # System settings
-│   │   ├── App/               # User application pages
-│   │   │   ├── index.tsx      # User dashboard
-│   │   │   ├── Cars.tsx       # Car browsing
-│   │   │   ├── Reservations.tsx # User reservations
-│   │   │   └── Profile.tsx    # User profile
-│   │   └── Auth/              # Authentication pages
-│   │       ├── Login.tsx      # Login page
-│   │       └── ForgotPassword.tsx # Password reset
-│   ├── types/                  # TypeScript type definitions
-│   │   ├── car.ts             # Car-related types
-│   │   ├── reservation.ts     # Reservation types
-│   │   ├── user.ts            # User profile types
-│   │   └── settings.ts        # Settings types
-│   ├── App.tsx                 # Main application component
-│   └── main.tsx               # Application entry point
-├── public/                     # Static assets
+│   │   ├── ui/                 # Base UI components (shadcn/ui)
+│   │   │   ├── button.tsx      # Button component
+│   │   │   ├── input.tsx       # Input component
+│   │   │   ├── table.tsx       # Table component
+│   │   │   ├── dialog.tsx      # Dialog component
+│   │   │   └── ...            # Other UI primitives
+│   │   ├── auth/              # Authentication components
+│   │   │   ├── EmailVerification.tsx
+│   │   │   ├── PasswordReset.tsx
+│   │   │   └── EmailChange.tsx
+│   │   ├── cars/              # Car-specific components
+│   │   │   ├── cars-table.tsx # Car data table
+│   │   │   ├── car-form-dialog.tsx
+│   │   │   └── car-info-card.tsx
+│   │   ├── reservations/      # Reservation components
+│   │   │   ├── reservations-table.tsx
+│   │   │   ├── reservation-form-dialog.tsx
+│   │   │   └── reservation-details-card.tsx
+│   │   ├── dashboard/         # Analytics components
+│   │   │   ├── fleet-status-chart.tsx
+│   │   │   └── reservations-chart.tsx
+│   │   ├── users/             # User management components
+│   │   │   ├── users-table.tsx
+│   │   │   ├── user-form-dialog.tsx
+│   │   │   └── user-info-card.tsx
+│   │   ├── admin/             # Admin-specific components
+│   │   │   ├── allowed-emails-table.tsx
+│   │   │   └── add-email-dialog.tsx
+│   │   ├── app-sidebar.tsx    # Main navigation sidebar
+│   │   ├── language-switcher.tsx
+│   │   ├── theme-toggle.tsx
+│   │   └── install-app.tsx    # PWA install prompt
+│   ├── contexts/              # React context providers
+│   │   ├── AuthContext.tsx    # Authentication state
+│   │   ├── SettingsContext.tsx # App settings
+│   │   ├── PWAContext.tsx     # PWA functionality
+│   │   └── ThemeContext.tsx   # Theme management
+│   ├── hooks/                 # Custom React hooks
+│   │   ├── useDebounced.ts    # Debounced search
+│   │   ├── useOptimizedSearch.ts # Optimized search
+│   │   └── use-mobile.ts      # Mobile detection
+│   ├── i18n/                  # Internationalization
+│   │   ├── index.ts          # i18next configuration
+│   │   └── locales/          # Translation files
+│   │       ├── en.json       # English translations
+│   │       └── th.json       # Thai translations
+│   ├── layouts/               # Layout components
+│   │   ├── Protected.tsx     # Protected route wrapper
+│   │   ├── Sidebar.tsx       # Sidebar layout
+│   │   └── Onboarding.tsx    # Onboarding flow
+│   ├── lib/                   # Service layer and utilities
+│   │   ├── firebase.ts       # Firebase configuration
+│   │   ├── cars-service.ts   # Car CRUD operations
+│   │   ├── reservations-service.ts # Reservation management
+│   │   ├── users-service.ts  # User operations
+│   │   ├── user-management-service.ts # User admin
+│   │   ├── dashboard-service.ts # Analytics
+│   │   ├── profile-service.ts # Profile management
+│   │   ├── allowed-emails-service.ts # Email management
+│   │   ├── settings-service.ts # Settings management
+│   │   ├── query-config.ts   # TanStack Query config
+│   │   ├── query-utils.ts    # Query utilities
+│   │   ├── search-utils.ts   # Search utilities
+│   │   ├── batch-utils.ts    # Batch operations
+│   │   ├── date-locale.ts    # Date formatting
+│   │   ├── sidebar-config.ts # Navigation config
+│   │   └── utils.ts          # General utilities
+│   ├── pages/                 # Page components
+│   │   ├── Admin/            # Administrator pages
+│   │   │   ├── index.tsx     # Admin dashboard
+│   │   │   ├── Fleet/        # Fleet management
+│   │   │   │   ├── index.tsx # Fleet overview
+│   │   │   │   └── Car.tsx   # Individual car details
+│   │   │   ├── Reservations/ # Reservation management
+│   │   │   │   ├── index.tsx # Reservations overview
+│   │   │   │   └── Reservation.tsx # Individual reservation
+│   │   │   ├── Users/        # User administration
+│   │   │   │   ├── index.tsx # Users overview
+│   │   │   │   ├── User.tsx  # Individual user
+│   │   │   │   └── AllowedEmails.tsx # Email management
+│   │   │   ├── Settings.tsx  # System settings
+│   │   │   └── Faq.tsx      # FAQ management
+│   │   ├── App/             # User application pages
+│   │   │   ├── index.tsx    # User dashboard
+│   │   │   ├── Fleet.tsx    # Car browsing
+│   │   │   ├── Reservations/ # User reservations
+│   │   │   │   ├── index.tsx # Reservations list
+│   │   │   │   └── Reservation.tsx # Reservation details
+│   │   │   └── Faq.tsx      # User FAQ
+│   │   ├── Auth/            # Authentication pages
+│   │   │   ├── Login.tsx    # Login page
+│   │   │   ├── Register.tsx # Registration
+│   │   │   ├── Forgot.tsx   # Password reset
+│   │   │   └── Action.tsx   # Email actions
+│   │   ├── Profile.tsx      # User profile
+│   │   ├── Faq.tsx         # General FAQ
+│   │   ├── NotFound.tsx    # 404 page
+│   │   ├── Error.tsx       # Error page
+│   │   └── Onboarding.tsx  # Onboarding flow
+│   ├── types/               # TypeScript definitions
+│   │   ├── car.ts          # Car types
+│   │   ├── reservation.ts  # Reservation types
+│   │   └── user.ts         # User types
+│   ├── faq/                # FAQ markdown files
+│   │   ├── admin/          # Admin FAQ
+│   │   │   ├── en.md       # English admin FAQ
+│   │   │   └── th.md       # Thai admin FAQ
+│   │   └── app/            # User FAQ
+│   │       ├── en.md       # English user FAQ
+│   │       └── th.md       # Thai user FAQ
+│   ├── App.tsx             # Main application component
+│   ├── main.tsx           # Application entry point
+│   └── index.css          # Global styles
+├── public/                 # Static assets
 │   ├── favicon.ico
-│   ├── manifest.json          # PWA manifest
-│   └── icons/                 # PWA icons
-├── firebase.json              # Firebase project configuration
-├── firestore.rules           # Firestore security rules
-├── firestore.indexes.json    # Firestore database indexes
-├── tailwind.config.js        # Tailwind CSS configuration
-├── vite.config.ts            # Vite build configuration
-└── package.json              # Dependencies and scripts
+│   ├── favicon.svg
+│   ├── icon_x192.png      # PWA icons
+│   ├── icon_x512.png
+│   ├── monochrome.svg
+│   ├── robots.txt
+│   └── assets/            # Additional assets
+│       └── FastCheapGood.webp
+├── firebase.json          # Firebase project configuration
+├── firestore.rules       # Firestore security rules
+├── firestore.indexes.json # Firestore database indexes
+├── vite.config.ts        # Vite build configuration
+├── tsconfig.json         # TypeScript configuration
+├── components.json       # shadcn/ui configuration
+├── eslint.config.js      # ESLint configuration
+├── CLAUDE.md            # Claude Code instructions
+└── package.json         # Dependencies and scripts
 ```
 
 ## 🛠️ Development Setup
@@ -215,14 +295,30 @@ Before getting started, ensure you have the following installed:
 
 ### Available Scripts
 
+**Development**
+
 - `npm run dev` - Start development server with hot reload
-- `npm run build` - Build for production
+- `npm run build` - Build for production (TypeScript check + Vite build)
 - `npm run preview` - Preview production build locally
 - `npm run lint` - Run ESLint for code quality checks
-- `npm run deploy` - Deploy to Firebase Hosting
+
+**Firebase Deployment**
+
+- `npm run deploy` - Deploy everything to Firebase
 - `npm run deploy:hosting` - Deploy only hosting
 - `npm run deploy:rules` - Deploy only Firestore rules
 - `npm run deploy:indexes` - Deploy only Firestore indexes
+
+**Firebase Setup**
+
+- `npm run init` - Initialize Firebase project
+
+**Development Notes**
+
+- TypeScript compilation is run before build (`tsc -b`)
+- ESLint is configured with modern rules
+- Vite provides fast development server with HMR
+- Firebase CLI tools are included for deployment
 
 ## 🔐 Firebase Configuration
 
@@ -293,9 +389,9 @@ The application uses the following Firestore collections:
   id: string;           // Document ID
   userId: string;       // Reference to user
   carId: string;        // Reference to car
-  startDateTime: Timestamp;  // Reservation start
-  endDateTime: Timestamp;    // Reservation end
-  status: 'pending' | 'confirmed' | 'cancelled' | 'cancellation_pending';
+  startDate: string;    // Reservation start date (ISO string)
+  endDate: string;      // Reservation end date (ISO string)
+  status: 'pending' | 'confirmed' | 'cancelled' | 'cancellation_pending' | 'rejected';
   purpose?: string;     // Reservation purpose
   notes?: string;       // Additional notes
   createdAt: Timestamp;
@@ -314,7 +410,22 @@ The application uses the following Firestore collections:
   defaultLanguage: "en" | "th";
   maxReservationDays: number;
   advanceBookingDays: number;
+  maxConcurrentReservations: number;
+  requireApproval: boolean;
+  allowWeekendReservations: boolean;
   // ... other configurable settings
+}
+```
+
+**Allowed Emails Collection (`allowedEmails`)**
+
+```typescript
+{
+  id: string; // Document ID
+  email: string; // Allowed email address
+  used: boolean; // Whether email has been used for registration
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 }
 ```
 
@@ -532,20 +643,55 @@ jobs:
 - Use TypeScript interfaces for all props
 - Implement proper error boundaries
 - Follow React best practices for hooks
+- Use shadcn/ui components for consistency
+- Organize components by feature/domain
 
 **State Management**
 
-- Use TanStack Query for server state
+- Use TanStack Query for server state management
 - Use React Context for global UI state
 - Implement proper loading and error states
-- Cache frequently accessed data
+- Cache frequently accessed data with proper invalidation
+- Use optimistic updates for better UX
 
 **Styling Guidelines**
 
-- Use Tailwind CSS utility classes
-- Create reusable component variants
+- Use Tailwind CSS v4 utility classes
+- Follow the design system established by shadcn/ui
+- Create reusable component variants with CVA
 - Maintain consistent spacing and typography
 - Implement responsive design patterns
+- Use CSS variables for theme support
+
+**Form Handling**
+
+- Use React Hook Form with Zod validation
+- Implement proper error handling and display
+- Use controlled components for complex forms
+- Validate on both client and server side
+
+### Architecture Patterns
+
+**Service Layer Pattern**
+
+- All Firebase operations go through service files
+- Services return properly typed data
+- Handle errors consistently across services
+- Use dependency injection for testability
+
+**Query Management**
+
+- Use TanStack Query for all server state
+- Implement proper cache invalidation strategies
+- Use query keys consistently across the app
+- Handle loading and error states uniformly
+
+**Component Composition**
+
+- Use composition over inheritance
+- Create reusable compound components
+- Implement proper prop drilling alternatives
+- Use render props and custom hooks
 
 ### Testing Strategy
 
@@ -555,6 +701,7 @@ jobs:
 - Test complex component logic
 - Mock Firebase services for testing
 - Use React Testing Library for component tests
+- Test custom hooks in isolation
 
 **Integration Testing**
 
@@ -562,6 +709,14 @@ jobs:
 - Test Firebase integration points
 - Verify role-based access control
 - Test form validation and submission
+- Test error scenarios and recovery
+
+**E2E Testing**
+
+- Test critical user paths
+- Test authentication flows
+- Test reservation workflows
+- Test admin operations
 
 ### Performance Optimization
 
@@ -571,6 +726,7 @@ jobs:
 - Lazy load heavy components
 - Use React.memo for expensive renders
 - Optimize bundle size with tree shaking
+- Use dynamic imports for large libraries
 
 **Data Optimization**
 
@@ -578,6 +734,38 @@ jobs:
 - Use Firestore query optimization
 - Cache frequently accessed data
 - Implement proper loading states
+- Use debounced search for better performance
+- Optimize images and assets
+
+**Memory Management**
+
+- Clean up subscriptions and timers
+- Use proper dependency arrays in hooks
+- Avoid memory leaks in long-running operations
+- Monitor bundle size regularly
+
+### Security Best Practices
+
+**Authentication & Authorization**
+
+- Validate user roles on every request
+- Use Firebase Security Rules properly
+- Implement proper session management
+- Handle token refresh gracefully
+
+**Data Validation**
+
+- Validate all input on client and server
+- Use Zod schemas for runtime validation
+- Sanitize user input properly
+- Implement proper error handling
+
+**Firestore Security**
+
+- Use least privilege principle
+- Implement proper security rules
+- Validate data structure in rules
+- Test security rules thoroughly
 
 ## 📊 Monitoring and Analytics
 
@@ -589,6 +777,8 @@ The application includes comprehensive error handling:
 - **Firebase error handling** with user-friendly messages
 - **Form validation errors** with clear feedback
 - **Network error handling** with retry mechanisms
+- **TanStack Query error handling** with proper error states
+- **Toast notifications** for user feedback using Sonner
 
 ### Performance Monitoring
 
@@ -598,6 +788,26 @@ Monitor application performance with:
 - **Lighthouse audits** for performance optimization
 - **Bundle analysis** for size optimization
 - **User experience metrics** for usability insights
+- **TanStack Query DevTools** for debugging
+- **React DevTools** for component performance
+
+### Analytics Dashboard
+
+The application includes built-in analytics:
+
+- **Fleet status charts** showing car availability
+- **Reservation trends** with interactive charts using Recharts
+- **User activity metrics** and engagement data
+- **System usage statistics** for administrative insights
+- **Real-time dashboard updates** with live data
+
+### Logging and Debugging
+
+- **Structured logging** for better debugging
+- **Development mode logging** with detailed information
+- **Production error logging** with essential information
+- **Query debugging** with TanStack Query DevTools
+- **Firebase emulator** for local development and testing
 
 ## 🤝 Contributing
 
