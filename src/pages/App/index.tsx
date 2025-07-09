@@ -1,4 +1,17 @@
-import { Building, Calendar, CarFront, Clock, Mail, Plus, Settings, CheckCircle, XCircle, Timer, Calendar as CalendarIcon, Users } from "lucide-react";
+import {
+  Building,
+  Calendar,
+  CalendarClock,
+  Calendar as CalendarIcon,
+  CarFront,
+  CheckCircle,
+  Clock,
+  Mail,
+  Plus,
+  Timer,
+  Users,
+  XCircle,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -369,135 +382,142 @@ export default function AppPage() {
             )}
 
           {/* Reservations Information Card */}
-          {settings && (() => {
-            const hasReservationSettings = 
-              (settings.advanceReservation > 0) ||
-              (settings.maxReservationDuration > 0) ||
-              (settings.maxConcurrentReservations > 0) ||
-              (settings.advanceCancellationTime > 0) ||
-              (!settings.autoReservation) ||
-              (!settings.autoCancelation) ||
-              (!settings.weekendReservations);
-            
-            return hasReservationSettings ? (
-              <Card className="w-full h-full lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Settings className="h-5 w-5" />
-                    {t("dashboard.reservationInfo")}
-                  </CardTitle>
-                  <CardDescription>
-                    {t("dashboard.reservationInfoDesc")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {/* First Row: Advance Booking and Advance Cancellation */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {settings.advanceReservation > 0 && (
-                      <div>
-                        <h4 className="font-semibold mb-1 flex items-center gap-2">
-                          <CalendarIcon className="h-4 w-4" />
-                          {t("dashboard.advanceReservation")}
-                        </h4>
-                        <p className="text-muted-foreground text-sm">
-                          {t("dashboard.advanceReservationValue", { days: settings.advanceReservation })}
-                        </p>
-                      </div>
-                    )}
+          {settings &&
+            (() => {
+              const hasReservationSettings =
+                settings.advanceReservation > 0 ||
+                settings.maxReservationDuration > 0 ||
+                settings.maxConcurrentReservations > 0 ||
+                settings.advanceCancellationTime > 0 ||
+                !settings.autoReservation ||
+                !settings.autoCancelation ||
+                !settings.weekendReservations;
 
-                    {settings.advanceCancellationTime > 0 && (
-                      <div>
-                        <h4 className="font-semibold mb-1 flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          {t("dashboard.advanceCancellation")}
-                        </h4>
-                        <p className="text-muted-foreground text-sm">
-                          {t("dashboard.advanceCancellationValue", { hours: settings.advanceCancellationTime })}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+              return hasReservationSettings ? (
+                <Card className="w-full h-full lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CalendarClock className="h-5 w-5" />
+                      {t("dashboard.reservationInfo")}
+                    </CardTitle>
+                    <CardDescription>
+                      {t("dashboard.reservationInfoDesc")}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {/* First Row: Advance Booking and Advance Cancellation */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {settings.advanceReservation > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-1 flex items-center gap-2">
+                            <CalendarIcon className="h-4 w-4" />
+                            {t("dashboard.advanceReservation")}
+                          </h4>
+                          <p className="text-muted-foreground text-sm">
+                            {t("dashboard.advanceReservationValue", {
+                              days: settings.advanceReservation,
+                            })}
+                          </p>
+                        </div>
+                      )}
 
-                  {/* Second Row: Maximum Duration and Concurrent Reservations */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {settings.maxReservationDuration > 0 && (
-                      <div>
-                        <h4 className="font-semibold mb-1 flex items-center gap-2">
-                          <Timer className="h-4 w-4" />
-                          {t("dashboard.maxReservationDuration")}
-                        </h4>
-                        <p className="text-muted-foreground text-sm">
-                          {t("dashboard.maxReservationDurationValue", { hours: settings.maxReservationDuration })}
-                        </p>
-                      </div>
-                    )}
-
-                    {settings.maxConcurrentReservations > 0 && (
-                      <div>
-                        <h4 className="font-semibold mb-1 flex items-center gap-2">
-                          <Users className="h-4 w-4" />
-                          {t("dashboard.maxConcurrentReservations")}
-                        </h4>
-                        <p className="text-muted-foreground text-sm">
-                          {t("dashboard.maxConcurrentReservationsValue", { count: settings.maxConcurrentReservations })}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Third Row: Reservation and Cancellation Approval (Always shown) */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="font-semibold mb-1 flex items-center gap-2">
-                        {settings.autoReservation ? (
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-orange-600" />
-                        )}
-                        {t("dashboard.autoApproval")}
-                      </h4>
-                      <p className="text-muted-foreground text-sm">
-                        {settings.autoReservation 
-                          ? t("dashboard.autoApprovalEnabled")
-                          : t("dashboard.autoApprovalDisabled")
-                        }
-                      </p>
+                      {settings.advanceCancellationTime > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-1 flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            {t("dashboard.advanceCancellation")}
+                          </h4>
+                          <p className="text-muted-foreground text-sm">
+                            {t("dashboard.advanceCancellationValue", {
+                              hours: settings.advanceCancellationTime,
+                            })}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
-                    <div>
-                      <h4 className="font-semibold mb-1 flex items-center gap-2">
-                        {settings.autoCancelation ? (
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-orange-600" />
-                        )}
-                        {t("dashboard.autoCancellation")}
-                      </h4>
-                      <p className="text-muted-foreground text-sm">
-                        {settings.autoCancelation 
-                          ? t("dashboard.autoCancellationEnabled")
-                          : t("dashboard.autoCancellationDisabled")
-                        }
-                      </p>
-                    </div>
-                  </div>
+                    {/* Second Row: Maximum Duration and Concurrent Reservations */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {settings.maxReservationDuration > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-1 flex items-center gap-2">
+                            <Timer className="h-4 w-4" />
+                            {t("dashboard.maxReservationDuration")}
+                          </h4>
+                          <p className="text-muted-foreground text-sm">
+                            {t("dashboard.maxReservationDurationValue", {
+                              hours: settings.maxReservationDuration,
+                            })}
+                          </p>
+                        </div>
+                      )}
 
-                  {/* Weekend Reservations (only if disabled) */}
-                  {!settings.weekendReservations && (
-                    <div>
-                      <h4 className="font-semibold mb-1 flex items-center gap-2">
-                        <XCircle className="h-4 w-4 text-red-600" />
-                        {t("dashboard.weekendReservations")}
-                      </h4>
-                      <p className="text-muted-foreground text-sm">
-                        {t("dashboard.weekendReservationsDisabled")}
-                      </p>
+                      {settings.maxConcurrentReservations > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-1 flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            {t("dashboard.maxConcurrentReservations")}
+                          </h4>
+                          <p className="text-muted-foreground text-sm">
+                            {t("dashboard.maxConcurrentReservationsValue", {
+                              count: settings.maxConcurrentReservations,
+                            })}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            ) : null;
-          })()}
+
+                    {/* Third Row: Reservation and Cancellation Approval (Always shown) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-semibold mb-1 flex items-center gap-2">
+                          {settings.autoReservation ? (
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-orange-600" />
+                          )}
+                          {t("dashboard.autoApproval")}
+                        </h4>
+                        <p className="text-muted-foreground text-sm">
+                          {settings.autoReservation
+                            ? t("dashboard.autoApprovalEnabled")
+                            : t("dashboard.autoApprovalDisabled")}
+                        </p>
+                      </div>
+
+                      <div>
+                        <h4 className="font-semibold mb-1 flex items-center gap-2">
+                          {settings.autoCancelation ? (
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-orange-600" />
+                          )}
+                          {t("dashboard.autoCancellation")}
+                        </h4>
+                        <p className="text-muted-foreground text-sm">
+                          {settings.autoCancelation
+                            ? t("dashboard.autoCancellationEnabled")
+                            : t("dashboard.autoCancellationDisabled")}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Weekend Reservations (only if disabled) */}
+                    {!settings.weekendReservations && (
+                      <div>
+                        <h4 className="font-semibold mb-1 flex items-center gap-2">
+                          <XCircle className="h-4 w-4 text-red-600" />
+                          {t("dashboard.weekendReservations")}
+                        </h4>
+                        <p className="text-muted-foreground text-sm">
+                          {t("dashboard.weekendReservationsDisabled")}
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : null;
+            })()}
         </div>
       </div>
 
