@@ -15,7 +15,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Link } from "react-router-dom";
 import { StatusSelect } from "@/components/ui/status-select";
 import type { UserProfileWithId } from "@/lib/users-service";
-import { format } from "date-fns";
+import { format, getLocalizedFormats } from "@/lib/date-locale";
 
 // Extended reservation type with car and user information
 export interface ReservationWithCarAndUser extends ReservationWithId {
@@ -117,10 +117,10 @@ export function createUserDetailsReservationColumns({
         const date = row.getValue("startDateTime") as Date;
         return (
           <div className="text-sm">
-            {format(date, "MMM dd, yyyy")}
+            {format(date, getLocalizedFormats().dateShort)}
             <br />
             <span className="text-muted-foreground">
-              {format(date, "HH:mm")}
+              {format(date, getLocalizedFormats().time)}
             </span>
           </div>
         );
@@ -145,10 +145,10 @@ export function createUserDetailsReservationColumns({
         const date = row.getValue("endDateTime") as Date;
         return (
           <div className="text-sm">
-            {format(date, "MMM dd, yyyy")}
+            {format(date, getLocalizedFormats().dateShort)}
             <br />
             <span className="text-muted-foreground">
-              {format(date, "HH:mm")}
+              {format(date, getLocalizedFormats().time)}
             </span>
           </div>
         );
@@ -234,7 +234,7 @@ export function createUserDetailsReservationColumns({
       },
       cell: ({ row }) => {
         const date = row.getValue("createdAt") as Date;
-        return format(date, "MMM dd, yyyy");
+        return format(date, getLocalizedFormats().dateShort);
       },
       sortingFn: "datetime",
     },

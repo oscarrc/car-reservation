@@ -81,7 +81,15 @@ export default function FleetPage() {
     isLoading: initialLoading,
     error: initialError,
   } = useQuery({
-    queryKey: ["cars", "fleet", pageIndex, pageSize, debouncedSearchTerm, statusFilter, seatsFilter],
+    queryKey: [
+      "cars",
+      "fleet",
+      pageIndex,
+      pageSize,
+      debouncedSearchTerm,
+      statusFilter,
+      seatsFilter,
+    ],
     queryFn: async () => {
       const cursor = cursors[pageIndex];
       const queryParams = {
@@ -194,8 +202,8 @@ export default function FleetPage() {
             </div>
 
             {/* Status Filter */}
-            <Select 
-              value={statusFilter} 
+            <Select
+              value={statusFilter}
               onValueChange={handleStatusFilterChange}
               disabled={initialLoading}
             >
@@ -204,7 +212,9 @@ export default function FleetPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("fleet.allStatuses")}</SelectItem>
-                <SelectItem value="available">{t("fleet.available")}</SelectItem>
+                <SelectItem value="available">
+                  {t("fleet.available")}
+                </SelectItem>
                 <SelectItem value="maintenance">
                   {t("fleet.maintenance")}
                 </SelectItem>
@@ -252,19 +262,16 @@ export default function FleetPage() {
               </Card>
             ))}
           </div>
-        ) : (initialError || countError) ? (
+        ) : initialError || countError ? (
           // Error state
           <ErrorDisplay
             error={initialError || countError}
             onRetry={() => window.location.reload()}
             title={t("browse.errorLoadingCars")}
-            description={t(
-              "browse.errorLoadingCarsDescription",
-              "Unable to load cars. Please try again."
-            )}
+            description={t("browse.errorLoadingCarsDescription")}
             homePath="/app"
           />
-                 ) : allCars.length === 0 ? (
+        ) : allCars.length === 0 ? (
           // No cars found
           <div className="text-center py-12">
             <CarFront className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -385,11 +392,7 @@ export default function FleetPage() {
             {/* Load More Button */}
             {hasNextPage && !initialLoading && (
               <div className="flex justify-center mt-8">
-                <Button
-                  onClick={handleLoadMore}
-                  variant="outline"
-                  size="lg"
-                >
+                <Button onClick={handleLoadMore} variant="outline" size="lg">
                   {t("browse.loadMore")}
                 </Button>
               </div>

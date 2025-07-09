@@ -14,7 +14,7 @@ import { Link } from "react-router-dom";
 import type { ReservationStatus } from "@/types/reservation";
 import type { ReservationWithCarAndUser } from "@/components/reservations/admin-reservations-columns";
 import { StatusSelect } from "@/components/ui/status-select";
-import { format } from "date-fns";
+import { format, getLocalizedFormats } from "@/lib/date-locale";
 
 interface CreateCarDetailsReservationColumnsProps {
   onStatusChange: (
@@ -105,10 +105,10 @@ export function createCarDetailsReservationColumns({
         const startDate = row.getValue("startDateTime") as Date;
         return (
           <div className="text-sm">
-            {format(startDate, "MMM dd, yyyy")}
+            {format(startDate, getLocalizedFormats().dateShort)}
             <br />
             <span className="text-muted-foreground">
-              {format(startDate, "HH:mm")}
+              {format(startDate, getLocalizedFormats().time)}
             </span>
           </div>
         );
@@ -133,10 +133,10 @@ export function createCarDetailsReservationColumns({
         const endDate = row.getValue("endDateTime") as Date;
         return (
           <div className="text-sm">
-            {format(endDate, "MMM dd, yyyy")}
+            {format(endDate, getLocalizedFormats().dateShort)}
             <br />
             <span className="text-muted-foreground">
-              {format(endDate, "HH:mm")}
+              {format(endDate, getLocalizedFormats().time)}
             </span>
           </div>
         );

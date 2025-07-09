@@ -37,7 +37,7 @@ import { BulkConfirmationDialog } from "@/components/ui/bulk-confirmation-dialog
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
+import { format, getLocalizedFormats } from "@/lib/date-locale";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -122,7 +122,7 @@ const createAllowedEmailsColumns = ({
       header: t("allowedEmails.addedDate"),
       cell: ({ row }) => {
         const createdAt = row.getValue("createdAt") as Date;
-        return <div>{format(createdAt, "PPP")}</div>;
+        return <div>{format(createdAt, getLocalizedFormats().dateLong)}</div>;
       },
     },
     {
@@ -130,7 +130,7 @@ const createAllowedEmailsColumns = ({
       header: t("allowedEmails.updatedDate"),
       cell: ({ row }) => {
         const updatedAt = row.getValue("updatedAt") as Date;
-        return <div>{format(updatedAt, "PPP")}</div>;
+        return <div>{format(updatedAt, getLocalizedFormats().dateLong)}</div>;
       },
     },
     {
