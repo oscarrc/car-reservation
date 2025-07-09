@@ -22,6 +22,7 @@ export interface DailyReservationData {
   pending: number;
   cancellation_pending: number;
   cancelled: number;
+  rejected: number;
 }
 
 export interface DashboardData {
@@ -95,11 +96,11 @@ export async function fetchDailyReservations(year?: number, month?: number): Pro
     const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
     
     // Initialize daily counts for all days of the month
-    const dailyCounts: Record<string, {confirmed: number, pending: number, cancellation_pending: number, cancelled: number}> = {};
+    const dailyCounts: Record<string, {confirmed: number, pending: number, cancellation_pending: number, cancelled: number, rejected: number}> = {};
     
     for (let day = 1; day <= daysInMonth; day++) {
       const dayStr = day.toString().padStart(2, '0');
-      dailyCounts[dayStr] = { confirmed: 0, pending: 0, cancellation_pending: 0, cancelled: 0 };
+      dailyCounts[dayStr] = { confirmed: 0, pending: 0, cancellation_pending: 0, cancelled: 0, rejected: 0 };
     }
 
     // Count reservations by day and status
@@ -110,7 +111,7 @@ export async function fetchDailyReservations(year?: number, month?: number): Pro
       const status = data.status as ReservationStatus;
       
       if (dailyCounts[day] && status in dailyCounts[day]) {
-        (dailyCounts[day])[status]++;
+        dailyCounts[day][status as keyof typeof dailyCounts[string]]++;
       }
     });
 
@@ -122,6 +123,7 @@ export async function fetchDailyReservations(year?: number, month?: number): Pro
         pending: counts.pending,
         cancellation_pending: counts.cancellation_pending,
         cancelled: counts.cancelled,
+        rejected: counts.rejected,
       }))
       .sort((a, b) => parseInt(a.day) - parseInt(b.day));
 
