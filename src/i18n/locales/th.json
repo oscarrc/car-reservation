@@ -556,7 +556,8 @@
     "bulkStatusUpdateError": "ไม่สามารถอัปเดตสถานะรถยนต์ได้",
     "noCarsSelected": "ไม่ได้เลือกรถยนต์",
     "deleteSelectedConfirm": "ลบรถยนต์ที่เลือก {{count}} คัน",
-    "deleteSelectedConfirmDesc": "การดำเนินการนี้จะลบรถยนต์ที่เลือกอย่างถาวร การดำเนินการนี้ไม่สามารถยกเลิกได้"
+    "deleteSelectedConfirmDesc": "การดำเนินการนี้จะลบรถยนต์ที่เลือกอย่างถาวร การดำเนินการนี้ไม่สามารถยกเลิกได้",
+    "outOfService": "ไม่ให้บริการ"
   },
   "browse": {
     "title": "เรียกดูยานพาหนะ",
@@ -575,7 +576,8 @@
       "people": "คน",
       "licensePlate": "ทะเบียนรถ",
       "description": "รายละเอียด"
-    }
+    },
+    "errorLoadingCarsDescription": "ไม่สามารถโหลดรถได้ \nโปรดลองอีกครั้ง"
   },
   "reservations": {
     "management": "การจัดการการจอง",
@@ -787,7 +789,10 @@
     "bulkRoleUpdateError": "ไม่สามารถอัปเดตบทบาทผู้ใช้ได้",
     "noUsersSelected": "ไม่ได้เลือกผู้ใช้",
     "suspendSelectedConfirmDesc": "การดำเนินการนี้จะระงับผู้ใช้ที่เลือก ป้องกันไม่ให้เข้าถึงระบบ",
-    "unsuspendSelectedConfirmDesc": "การดำเนินการนี้จะคืนสิทธิ์การเข้าถึงระบบให้กับผู้ใช้ที่เลือก"
+    "unsuspendSelectedConfirmDesc": "การดำเนินการนี้จะคืนสิทธิ์การเข้าถึงระบบให้กับผู้ใช้ที่เลือก",
+    "errorLoadingUsersDescription": "ไม่สามารถโหลดผู้ใช้ \nโปรดลองอีกครั้ง",
+    "bulkStatusUpdateError": "ไม่สามารถอัปเดตสถานะผู้ใช้",
+    "searchNoUsersFound": "ไม่พบผู้ใช้ที่ตรงกับการค้นหาของคุณ"
   },
   "settings": {
     "title": "การตั้งค่าแอปพลิเคชัน",

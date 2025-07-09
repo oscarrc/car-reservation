@@ -576,7 +576,8 @@
       "people": "people",
       "licensePlate": "License Plate",
       "description": "Description"
-    }
+    },
+    "errorLoadingCarsDescription": "Unable to load cars. Please try again."
   },
   "reservations": {
     "management": "Reservations Management",
