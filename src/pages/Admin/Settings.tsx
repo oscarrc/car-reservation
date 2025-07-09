@@ -57,7 +57,7 @@ const settingsSchema = z.object({
   autoCancelation: z.boolean(),
   maxReservationDuration: z.number().min(0),
   advanceCancellationTime: z.number().min(0), // max 1 week
-  maxConcurrentReservations: z.number().min(0).max(10),
+  maxConcurrentReservations: z.number().min(0),
 
   // System Configuration
   weekendReservations: z.boolean(),
@@ -238,7 +238,7 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                   <FormField
                     control={form.control}
                     name="advanceReservation"
@@ -251,7 +251,6 @@ export default function SettingsPage() {
                           <Input
                             type="number"
                             min="0"
-                            max="30"
                             {...field}
                             onChange={(e) =>
                               field.onChange(parseInt(e.target.value) || 0)
@@ -260,6 +259,8 @@ export default function SettingsPage() {
                         </FormControl>
                         <FormDescription>
                           {t("settings.advanceReservationDesc")}
+                          <br />
+                          (0 to disable)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -278,7 +279,6 @@ export default function SettingsPage() {
                           <Input
                             type="number"
                             min="0"
-                            max="30"
                             {...field}
                             onChange={(e) =>
                               field.onChange(parseInt(e.target.value) || 0)
@@ -287,6 +287,8 @@ export default function SettingsPage() {
                         </FormControl>
                         <FormDescription>
                           {t("settings.maxReservationDurationDesc")}
+                          <br />
+                          (0 to disable)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -305,7 +307,6 @@ export default function SettingsPage() {
                           <Input
                             type="number"
                             min="0"
-                            max="168"
                             {...field}
                             onChange={(e) =>
                               field.onChange(parseInt(e.target.value) || 0)
@@ -314,6 +315,8 @@ export default function SettingsPage() {
                         </FormControl>
                         <FormDescription>
                           {t("settings.advanceCancellationDesc")}
+                          <br />
+                          (0 to disable)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -330,7 +333,6 @@ export default function SettingsPage() {
                           <Input
                             type="number"
                             min="0"
-                            max="10"
                             {...field}
                             onChange={(e) =>
                               field.onChange(parseInt(e.target.value) || 0)
@@ -339,6 +341,8 @@ export default function SettingsPage() {
                         </FormControl>
                         <FormDescription>
                           {t("settings.maxConcurrentDesc")}
+                          <br />
+                          (0 to disable)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -527,7 +531,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               {/* Year Selector */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <label className="text-sm font-medium">
                   {t("settings.dataCleanup.selectYear")}
                 </label>
@@ -555,7 +559,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Record Count Display */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <label className="text-sm font-medium">
                   {t("settings.dataCleanup.estimatedRecords")}
                 </label>
