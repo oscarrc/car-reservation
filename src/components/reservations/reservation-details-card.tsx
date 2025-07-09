@@ -13,7 +13,7 @@ interface ReservationDetailsCardProps {
 }
 
 // Helper function to get status variant
-const getStatusVariant = (status: ReservationStatus): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "orange" => {
+const getStatusVariant = (status: ReservationStatus): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "orange" | "red" => {
   switch (status) {
     case "pending":
       return "warning";
@@ -23,6 +23,8 @@ const getStatusVariant = (status: ReservationStatus): "default" | "secondary" | 
       return "destructive";
     case "cancellation_pending":
       return "orange";
+    case "rejected":
+      return "red";
     default:
       return "outline";
   }

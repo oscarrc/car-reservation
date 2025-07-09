@@ -57,6 +57,10 @@ export function ReservationsChart({
       label: t("reservations.cancelled"),
       color: "var(--error)",
     },
+    rejected: {
+      label: t("reservations.rejected"),
+      color: "var(--red)",
+    },
   } satisfies ChartConfig;
 
   const {
@@ -176,6 +180,12 @@ export function ReservationsChart({
                 dataKey="cancelled"
                 stackId="a"
                 fill="var(--color-cancelled)"
+                radius={[0, 0, 0, 0]}
+              />
+              <Bar
+                dataKey="rejected"
+                stackId="a"
+                fill="var(--color-rejected)"
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>

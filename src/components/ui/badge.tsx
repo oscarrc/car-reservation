@@ -22,6 +22,9 @@ const badgeVariants = cva(
         orange:
           "border-transparent text-white [a&]:hover:opacity-90" + " " + 
           "[background-color:var(--orange)]",
+        red:
+          "border-transparent text-white [a&]:hover:opacity-90" + " " + 
+          "[background-color:var(--red)]",
         error:
           "border-transparent bg-error text-white [a&]:hover:bg-error/90",
         outline:

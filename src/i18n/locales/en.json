@@ -611,6 +611,7 @@
     "confirmed": "Confirmed",
     "cancelled": "Cancelled",
     "cancellation_pending": "Cancellation Pending",
+    "rejected": "Rejected",
     "filterByStatus": "Filter by status",
     "clearFilters": "Clear filters",
     "viewDetails": "View Details",

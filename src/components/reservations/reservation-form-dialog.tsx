@@ -102,7 +102,7 @@ const createReservationSchema = z
 
 const editReservationSchema = z.object({
   carId: z.string().min(1, "Car selection is required"),
-  status: z.enum(["pending", "confirmed", "cancelled", "cancellation_pending"]),
+  status: z.enum(["pending", "confirmed", "cancelled", "cancellation_pending", "rejected"]),
   driver: z.string().optional(),
   comments: z.string().optional(),
 });
@@ -883,6 +883,9 @@ function EditReservationForm({
                     </SelectItem>
                     <SelectItem value="cancellation_pending">
                       {t("reservations.cancellation_pending")}
+                    </SelectItem>
+                    <SelectItem value="rejected">
+                      {t("reservations.rejected")}
                     </SelectItem>
                   </SelectContent>
                 </Select>

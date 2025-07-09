@@ -610,6 +610,7 @@
     "confirmed": "ยืนยันแล้ว",
     "cancelled": "ยกเลิกแล้ว",
     "cancellation_pending": "รอยกเลิก",
+    "rejected": "ปฏิเสธ",
     "filterByStatus": "กรองตามสถานะ",
     "clearFilters": "ล้างตัวกรอง",
     "viewDetails": "ดูรายละเอียด",

@@ -259,6 +259,9 @@ export function ReservationsTable({
                 <SelectItem value="cancellation_pending">
                   {t("reservations.cancellation_pending")}
                 </SelectItem>
+                <SelectItem value="rejected">
+                  {t("reservations.rejected")}
+                </SelectItem>
               </SelectContent>
             </Select>
 

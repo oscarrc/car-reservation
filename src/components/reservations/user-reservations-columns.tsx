@@ -34,7 +34,8 @@ const getStatusVariant = (
   | "outline"
   | "success"
   | "warning"
-  | "orange" => {
+  | "orange"
+  | "red" => {
   switch (status) {
     case "pending":
       return "warning";
@@ -44,6 +45,8 @@ const getStatusVariant = (
       return "destructive";
     case "cancellation_pending":
       return "orange";
+    case "rejected":
+      return "red";
     default:
       return "outline";
   }

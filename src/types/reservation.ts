@@ -1,6 +1,6 @@
 import type { DocumentReference } from 'firebase/firestore';
 
-export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled' | 'cancellation_pending';
+export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled' | 'cancellation_pending' | 'rejected';
 
 export interface Reservation {
   userRef: DocumentReference;

@@ -173,6 +173,11 @@ export function createReservationBulkActions(
           label: t("reservations.cancellation_pending"),
           value: "cancellation_pending",
         },
+        {
+          id: "rejected",
+          label: t("reservations.rejected"),
+          value: "rejected",
+        },
       ],
       onStatusChange: (status: string) =>
         onStatusChange(status as ReservationStatus),

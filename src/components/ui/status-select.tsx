@@ -26,7 +26,8 @@ const getStatusVariant = (
   | "outline"
   | "success"
   | "warning"
-  | "orange" => {
+  | "orange"
+  | "red" => {
   switch (status) {
     case "pending":
       return "warning";
@@ -36,6 +37,8 @@ const getStatusVariant = (
       return "destructive";
     case "cancellation_pending":
       return "orange";
+    case "rejected":
+      return "red";
     default:
       return "outline";
   }
@@ -81,6 +84,11 @@ export function StatusSelect({
         <SelectItem value="cancellation_pending">
           <Badge variant={getStatusVariant("cancellation_pending")}>
             {t("reservations.cancellation_pending")}
+          </Badge>
+        </SelectItem>
+        <SelectItem value="rejected">
+          <Badge variant={getStatusVariant("rejected")}>
+            {t("reservations.rejected")}
           </Badge>
         </SelectItem>
       </SelectContent>

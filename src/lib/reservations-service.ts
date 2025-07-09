@@ -541,7 +541,7 @@ export async function checkReservationOverlap(
     const q = query(
       reservationsCollection,
       where('carRef', '==', doc(db, 'cars', carId)),
-      where('status', '==', 'confirmed'),
+      where('status', 'in', ['confirmed', 'pending', 'cancellation_pending']),
       where('startDateTime', '<', Timestamp.fromDate(endDateTime)),
       where('endDateTime', '>', Timestamp.fromDate(startDateTime))
     );
