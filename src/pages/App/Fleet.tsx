@@ -161,30 +161,7 @@ export default function FleetPage() {
     setSeatsFilter(value);
   };
 
-  // Filter cars based on current filters (for display)
-  const filteredCars = allCars.filter((car) => {
-    // Apply status filter
-    if (statusFilter !== "all" && car.status !== statusFilter) {
-      return false;
-    }
-
-    // Apply seats filter
-    if (seatsFilter !== "all" && car.seats !== parseInt(seatsFilter)) {
-      return false;
-    }
-
-    // Apply search filter (model and license plate)
-    if (debouncedSearchTerm.trim()) {
-      const searchLower = debouncedSearchTerm.toLowerCase();
-      const modelMatch = car.model.toLowerCase().includes(searchLower);
-      const licensePlateMatch = car.licensePlate.toLowerCase().includes(searchLower);
-      if (!modelMatch && !licensePlateMatch) {
-        return false;
-      }
-    }
-
-    return true;
-  });
+  // Server handles filtering, so we use allCars directly
 
   const getColorCircle = (color: string) => (
     <div
@@ -192,62 +169,6 @@ export default function FleetPage() {
       style={{ backgroundColor: color.toLowerCase() }}
     />
   );
-
-  // Show loading state first
-  if (initialLoading) {
-    return (
-      <>
-        <SectionHeader
-          title={t("browse.title")}
-          subtitle={t("browse.subtitle")}
-        />
-        <div className="px-4 lg:px-6">
-          {/* Loading skeleton */}
-          <div className="grid gap-6">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <Card key={index} className="w-full">
-                <CardHeader>
-                  <Skeleton className="h-6 w-48" />
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-4 w-28" />
-                  </div>
-                  <Skeleton className="h-4 w-full mt-4" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  if (initialError || countError) {
-    return (
-      <>
-        <SectionHeader
-          title={t("browse.title")}
-          subtitle={t("browse.subtitle")}
-        />
-        <div className="px-4 lg:px-6">
-          <ErrorDisplay
-            error={initialError || countError}
-            onRetry={() => window.location.reload()}
-            title={t("browse.errorLoadingCars")}
-            description={t(
-              "browse.errorLoadingCarsDescription",
-              "Unable to load cars. Please try again."
-            )}
-            homePath="/app"
-          />
-        </div>
-      </>
-    );
-  }
 
   return (
     <>
@@ -257,7 +178,7 @@ export default function FleetPage() {
       />
 
       <div className="px-4 lg:px-6">
-        {/* Filters Section */}
+        {/* Filters Section - Always visible but disabled during loading */}
         <div className="mb-6 space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
             {/* Search Input */}
@@ -268,11 +189,16 @@ export default function FleetPage() {
                 value={localSearchTerm}
                 onChange={(event) => handleSearchChange(event.target.value)}
                 className="pl-10 w-full"
+                disabled={initialLoading}
               />
             </div>
 
             {/* Status Filter */}
-            <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+            <Select 
+              value={statusFilter} 
+              onValueChange={handleStatusFilterChange}
+              disabled={initialLoading}
+            >
               <SelectTrigger className="w-full sm:w-[140px]">
                 <SelectValue placeholder={t("fleet.filterByStatus")} />
               </SelectTrigger>
@@ -300,11 +226,46 @@ export default function FleetPage() {
               className="w-full sm:w-[140px]"
               min="1"
               max="20"
+              disabled={initialLoading}
             />
           </div>
         </div>
 
-        {filteredCars.length === 0 ? (
+        {/* Content Area - Changes based on state */}
+        {initialLoading && allCars.length === 0 ? (
+          // Initial loading skeleton (only when no cars are loaded yet)
+          <div className="grid gap-6">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Card key={index} className="w-full">
+                <CardHeader>
+                  <Skeleton className="h-6 w-48" />
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+                  <Skeleton className="h-4 w-full mt-4" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (initialError || countError) ? (
+          // Error state
+          <ErrorDisplay
+            error={initialError || countError}
+            onRetry={() => window.location.reload()}
+            title={t("browse.errorLoadingCars")}
+            description={t(
+              "browse.errorLoadingCarsDescription",
+              "Unable to load cars. Please try again."
+            )}
+            homePath="/app"
+          />
+                 ) : allCars.length === 0 ? (
+          // No cars found
           <div className="text-center py-12">
             <CarFront className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-lg font-medium text-muted-foreground">
@@ -312,10 +273,11 @@ export default function FleetPage() {
             </p>
           </div>
         ) : (
+          // Cars grid and pagination
           <>
             {/* Cars Grid */}
             <div className="grid gap-6">
-              {filteredCars.map((car) => (
+              {allCars.map((car) => (
                 <Card
                   key={car.id}
                   className="w-full hover:shadow-lg transition-shadow"
@@ -398,23 +360,37 @@ export default function FleetPage() {
               ))}
             </div>
 
+            {/* Loading more cars skeleton (shown when loading additional pages) */}
+            {initialLoading && allCars.length > 0 && (
+              <div className="grid gap-6 mt-6">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <Card key={`loading-${index}`} className="w-full">
+                    <CardHeader>
+                      <Skeleton className="h-6 w-48" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-4 w-28" />
+                      </div>
+                      <Skeleton className="h-4 w-full mt-4" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
             {/* Load More Button */}
-            {hasNextPage && (
+            {hasNextPage && !initialLoading && (
               <div className="flex justify-center mt-8">
                 <Button
                   onClick={handleLoadMore}
-                  disabled={initialLoading}
                   variant="outline"
                   size="lg"
                 >
-                  {initialLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
-                      {t("common.loading")}
-                    </>
-                  ) : (
-                    t("browse.loadMore")
-                  )}
+                  {t("browse.loadMore")}
                 </Button>
               </div>
             )}
@@ -432,7 +408,7 @@ export default function FleetPage() {
             <div className="text-center mt-4 mb-8">
               <p className="text-xs text-muted-foreground">
                 {t("browse.viewingCars", {
-                  count: filteredCars.length,
+                  count: allCars.length,
                   total:
                     totalCount !== undefined
                       ? totalCount

@@ -46,9 +46,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  checkReservationOverlap,
   createReservation,
   updateReservation,
-  checkReservationOverlap,
 } from "@/lib/reservations-service";
 import {
   fetchAvailableCarsForDateRange,
@@ -56,7 +56,6 @@ import {
 } from "@/lib/cars-service";
 import { format, getLocalizedFormats } from "@/lib/date-locale";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { queryConfig } from "@/lib/query-config";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -66,6 +65,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { fetchUserById } from "@/lib/users-service";
 import { invalidateReservationQueries } from "@/lib/query-utils";
+import { queryConfig } from "@/lib/query-config";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
@@ -197,9 +197,9 @@ function CreateReservationForm({
           startDateTime,
           endDateTime
         );
-        
+
         if (hasOverlap) {
-          throw new Error('OVERLAP_ERROR');
+          throw new Error("OVERLAP_ERROR");
         }
       }
 
@@ -246,8 +246,8 @@ function CreateReservationForm({
     },
     onError: (error) => {
       console.error("Failed to create reservation:", error);
-      
-      if (error.message === 'OVERLAP_ERROR') {
+
+      if (error.message === "OVERLAP_ERROR") {
         toast.error(t("reservations.overlapError"), {
           description: t("reservations.overlapErrorDesc"),
         });
@@ -474,6 +474,7 @@ function CreateReservationForm({
                 <FormItem className="flex flex-col">
                   <FormLabel>{t("reservations.selectCar")}</FormLabel>
                   <Popover
+                    modal={true}
                     open={carDropdownOpen}
                     onOpenChange={setCarDropdownOpen}
                   >
@@ -720,19 +721,19 @@ function EditReservationForm({
   const updateMutation = useMutation({
     mutationFn: async (data: EditReservationFormData) => {
       // Check for overlap if confirming a reservation
-      if (data.status === 'confirmed') {
+      if (data.status === "confirmed") {
         const hasOverlap = await checkReservationOverlap(
           data.carId,
           reservation.startDateTime,
           reservation.endDateTime,
           reservation.id
         );
-        
+
         if (hasOverlap) {
-          throw new Error('OVERLAP_ERROR');
+          throw new Error("OVERLAP_ERROR");
         }
       }
-      
+
       return await updateReservation(reservation.id, {
         carRef: data.carId,
         status: data.status,
@@ -769,8 +770,8 @@ function EditReservationForm({
     },
     onError: (error) => {
       console.error("Failed to update reservation:", error);
-      
-      if (error.message === 'OVERLAP_ERROR') {
+
+      if (error.message === "OVERLAP_ERROR") {
         toast.error(t("reservations.overlapError"), {
           description: t("reservations.overlapErrorDesc"),
         });
