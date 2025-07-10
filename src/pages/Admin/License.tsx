@@ -4,9 +4,11 @@ import { Heart } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Link as RouterLink } from "react-router-dom";
 import { SectionHeader } from "@/components/ui/section-header";
+import { format } from "@/lib/date-locale";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
+import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 
 function useLicenseMarkdown(locale: string): string {
@@ -44,6 +46,7 @@ function MarkdownLink(props: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
 
 export function LicensePage() {
   const { i18n, t } = useTranslation();
+  const { userProfile } = useAuth();
   const locale = i18n.language.startsWith("th") ? "th" : "en";
   const markdown = useLicenseMarkdown(locale);
 
@@ -54,6 +57,23 @@ export function LicensePage() {
         subtitle={t("license.subtitle")}
       />
       <div className="flex flex-col gap-6 px-4 lg:px-6 flex-1">
+        {/* Acceptance Date Display */}
+        {userProfile?.acceptedTac && (
+          <div className="bg-muted/50 border rounded-lg p-4 mb-6">
+            <div className="text-sm text-muted-foreground">
+              {t("license.acceptedOn")}
+            </div>
+            <div className="text-base font-medium">
+              {format(
+                userProfile.acceptedTac instanceof Date
+                  ? userProfile.acceptedTac
+                  : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (userProfile.acceptedTac as any).toDate(),
+                "MMMM dd, yyyy HH:mm"
+              )}
+            </div>
+          </div>
+        )}
         {/* License Content */}
         {markdown ? (
           <div className="flex-1 px-2 lg:px-4">

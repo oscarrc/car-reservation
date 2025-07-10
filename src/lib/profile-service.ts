@@ -172,4 +172,20 @@ export async function updateDisplayName(user: User, displayName: string): Promis
     console.error('Error updating display name:', error);
     throw new Error('Failed to update display name');
   }
+}
+
+/**
+ * Accept terms and conditions - update acceptedTac timestamp
+ */
+export async function acceptTermsAndConditions(uid: string): Promise<void> {
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    await updateDoc(userDocRef, {
+      acceptedTac: new Date(),
+      updatedAt: new Date()
+    });
+  } catch (error) {
+    console.error('Error accepting terms and conditions:', error);
+    throw new Error('Failed to accept terms and conditions');
+  }
 } 

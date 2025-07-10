@@ -8,6 +8,7 @@ export interface UserProfile {
   searchKeywords?: string[];
   createdAt?: Date;
   updatedAt?: Date;
+  acceptedTac?: Date;
 }
 
 export interface AuthUser {

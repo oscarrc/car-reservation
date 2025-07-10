@@ -946,6 +946,18 @@
   "license": {
     "title": "License",
     "subtitle": "Terms and conditions for using the car reservation system",
-    "noContent": "No license content available"
+    "noContent": "No license content available",
+    "acceptedOn": "Terms accepted on"
+  },
+  "licenseDialog": {
+    "title": "Terms and Conditions",
+    "subtitle": "Please read and accept the terms and conditions to continue using the admin features.",
+    "selectLanguage": "Select Language",
+    "scrollToBottom": "Please scroll to the bottom to continue",
+    "acceptTerms": "I have read and agree to the terms and conditions",
+    "accept": "Accept Terms",
+    "accepting": "Accepting...",
+    "acceptanceSuccess": "Terms and conditions accepted successfully!",
+    "acceptanceError": "Failed to accept terms and conditions. Please try again."
   }
 }

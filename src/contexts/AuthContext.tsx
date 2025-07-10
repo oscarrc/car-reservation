@@ -18,9 +18,10 @@ import {
 
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import type { User } from "firebase/auth";
-import { completeEmailUpdate } from "@/lib/profile-service";
+import { completeEmailUpdate, acceptTermsAndConditions } from "@/lib/profile-service";
 import { saveLanguageToStorage } from "@/i18n";
 import { toast } from "sonner";
+import { LicenseDialog } from "@/components/ui/license-dialog";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -36,6 +37,7 @@ interface AuthContextType {
   sendVerificationEmail: () => Promise<void>;
   refreshUser: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  needsLicenseAcceptance: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -52,6 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isProfileComplete, setIsProfileComplete] = useState(false);
+  const [needsLicenseAcceptance, setNeedsLicenseAcceptance] = useState(false);
+  const [showLicenseDialog, setShowLicenseDialog] = useState(false);
 
   async function fetchUserProfile(uid: string): Promise<UserProfile | null> {
     try {
@@ -183,6 +187,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (profile && !profile.suspended) {
         setUserProfile(profile);
         setIsProfileComplete(!!(profile.name && profile.phone));
+        
+        // Check if admin user needs to accept license
+        const needsAcceptance = profile.role === "admin" && !profile.acceptedTac;
+        setNeedsLicenseAcceptance(needsAcceptance);
+        setShowLicenseDialog(needsAcceptance);
+        
         setAuthUser({
           uid: currentUser.uid,
           email: profile.email || currentUser.email || "",
@@ -191,6 +201,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("Error refreshing profile:", error);
+    }
+  }
+
+  async function handleLicenseAcceptance() {
+    if (!currentUser) return;
+
+    try {
+      await acceptTermsAndConditions(currentUser.uid);
+      setNeedsLicenseAcceptance(false);
+      setShowLicenseDialog(false);
+      
+      // Refresh profile to get updated acceptedTac field
+      await refreshProfile();
+      
+      toast.success(i18n.t("licenseDialog.acceptanceSuccess"));
+    } catch (error) {
+      console.error("Error accepting license:", error);
+      toast.error(i18n.t("licenseDialog.acceptanceError"));
     }
   }
 
@@ -248,6 +276,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Check if profile is complete (name and phone exist)
         setIsProfileComplete(!!(currentProfile.name && currentProfile.phone));
 
+        // Check if admin user needs to accept license
+        const needsAcceptance = currentProfile.role === "admin" && !currentProfile.acceptedTac;
+        setNeedsLicenseAcceptance(needsAcceptance);
+        setShowLicenseDialog(needsAcceptance);
+
         setAuthUser({
           uid: user.uid,
           email: currentProfile.email || user.email || "",
@@ -264,6 +297,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAuthUser(null);
         setIsEmailVerified(false);
         setIsProfileComplete(false);
+        setNeedsLicenseAcceptance(false);
+        setShowLicenseDialog(false);
       }
 
       setLoading(false);
@@ -286,6 +321,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     sendVerificationEmail,
     refreshUser,
     refreshProfile,
+    needsLicenseAcceptance,
   };
 
   return (
@@ -293,7 +329,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {loading ? (
         <LoadingScreen text={i18n.t("loading.authenticating")} />
       ) : (
-        children
+        <>
+          {children}
+          <LicenseDialog 
+            open={showLicenseDialog} 
+            onAccept={handleLicenseAcceptance}
+          />
+        </>
       )}
     </AuthContext.Provider>
   );
