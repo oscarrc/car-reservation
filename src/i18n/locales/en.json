@@ -258,6 +258,7 @@
     "userPortal": "User portal",
     "logOut": "Log out",
     "company": "Car Reservation System",
+    "license": "License",
     "help": "Help",
     "admin": {
       "title": "Administration Portal",
@@ -317,7 +318,7 @@
     "autoApproval": "Reservation Approval",
     "autoApprovalEnabled": "Automatic approval",
     "autoApprovalDisabled": "Reservations require admin approval",
-    "autoCancellation": "Cancellation Approval", 
+    "autoCancellation": "Cancellation Approval",
     "autoCancellationEnabled": "Direct cancellation allowed",
     "autoCancellationDisabled": "Cancellations require admin approval",
     "weekendReservations": "Weekend Reservations",
@@ -941,5 +942,10 @@
     "noResults": "No results found",
     "tryDifferentKeywords": "Try different keywords or check your spelling",
     "searchResults": "{{count}} result found for \"{{query}}\""
+  },
+  "license": {
+    "title": "License",
+    "subtitle": "Terms and conditions for using the car reservation system",
+    "noContent": "No license content available"
   }
 }

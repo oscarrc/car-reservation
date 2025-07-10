@@ -38,6 +38,7 @@ const AppReservationPage = lazy(
 );
 const CarPage = lazy(() => import("./pages/Admin/Fleet/Car"));
 const FleetPage = lazy(() => import("./pages/Admin/Fleet"));
+const LicensePage = lazy(() => import("./pages/Admin/License"));
 const NotFoundPage = lazy(() => import("./pages/NotFound"));
 const ReservationsPage = lazy(() => import("./pages/Admin/Reservations"));
 const SettingsPage = lazy(() => import("./pages/Admin/Settings"));
@@ -165,6 +166,14 @@ const App = () => {
           element: (
             <Suspense fallback={<LoadingScreen />}>
               <AdminFaq />
+            </Suspense>
+          ),
+        },
+        {
+          path: "license",
+          element: (
+            <Suspense fallback={<LoadingScreen />}>
+              <LicensePage />
             </Suspense>
           ),
         },

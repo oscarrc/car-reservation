@@ -1,4 +1,4 @@
-import { Calendar, CarFront, HelpCircle, Home, Mail, Settings, Users } from "lucide-react"
+import { Calendar, CarFront, Copyright, HelpCircle, Home, Mail, Settings, Users } from "lucide-react"
 
 import type { LucideIcon } from "lucide-react"
 
@@ -65,6 +65,11 @@ export const adminSidebarConfig: SidebarConfig = {
       title: "navigation.help",
       url: "/admin/help",
       icon: HelpCircle
+    },
+    {
+      title: "navigation.license",
+      url: "/admin/license",
+      icon: Copyright
     }
   ]
 }
