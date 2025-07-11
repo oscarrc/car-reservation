@@ -32,7 +32,10 @@ import { ColumnSelector } from "@/components/ui/column-selector";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { TablePagination } from "@/components/ui/table-pagination";
-import { BulkActions, createEmailBulkActions } from "@/components/ui/bulk-actions";
+import {
+  BulkActions,
+  createEmailBulkActions,
+} from "@/components/ui/bulk-actions";
 import { BulkConfirmationDialog } from "@/components/ui/bulk-confirmation-dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -175,10 +178,11 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
 
   // Bulk actions state
   const [isBulkActionsLoading, setIsBulkActionsLoading] = React.useState(false);
-  
+
   // Confirmation dialog state
   const [confirmationDialog, setConfirmationDialog] = React.useState<{
     open: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     action: any;
   }>({
     open: false,
@@ -253,17 +257,21 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["allowedEmails"] });
       queryClient.invalidateQueries({ queryKey: ["allowedEmails", "count"] });
-      
+
       if (result.successCount > 0) {
-        toast.success(t("allowedEmails.bulkDeleteSuccess", { count: result.successCount }));
+        toast.success(
+          t("allowedEmails.bulkDeleteSuccess", { count: result.successCount })
+        );
       }
       if (result.errorCount > 0) {
-        toast.error(t("allowedEmails.bulkDeletePartialError", { 
-          successCount: result.successCount, 
-          errorCount: result.errorCount 
-        }));
+        toast.error(
+          t("allowedEmails.bulkDeletePartialError", {
+            successCount: result.successCount,
+            errorCount: result.errorCount,
+          })
+        );
       }
-      
+
       // Clear selection
       setRowSelection({});
       setIsBulkActionsLoading(false);
@@ -293,19 +301,20 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
   };
 
   // Bulk action handlers
-    const handleBulkDelete = () => {
+  const handleBulkDelete = () => {
     const selectedEmails = table.getFilteredSelectedRowModel().rows;
-    const emailIds = selectedEmails.map(row => row.original.id);
-    
+    const emailIds = selectedEmails.map((row) => row.original.id);
+
     if (emailIds.length === 0) {
       toast.error(t("allowedEmails.noEmailsSelected"));
       return;
     }
-    
+
     bulkDeleteMutation.mutate(emailIds);
   };
 
   // Handle bulk action clicks with confirmation
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleBulkActionClick = (action: any) => {
     if (action.requiresConfirmation) {
       setConfirmationDialog({
@@ -410,9 +419,13 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
             selectedCount={table.getFilteredSelectedRowModel().rows.length}
             isLoading={isBulkActionsLoading}
             onActionClick={handleBulkActionClick}
-            {...createEmailBulkActions(t, handleBulkDelete, isBulkActionsLoading)}
+            {...createEmailBulkActions(
+              t,
+              handleBulkDelete,
+              isBulkActionsLoading
+            )}
           />
-          
+
           <ColumnSelector
             tableId="allowed-emails-table"
             columns={table.getAllColumns()}
@@ -550,21 +563,30 @@ export function AllowedEmailsTable({ onAddEmail }: AllowedEmailsTableProps) {
       {/* Bulk Confirmation Dialog */}
       <BulkConfirmationDialog
         open={confirmationDialog.open}
-        onOpenChange={(open) => setConfirmationDialog({ open, action: confirmationDialog.action })}
+        onOpenChange={(open) =>
+          setConfirmationDialog({ open, action: confirmationDialog.action })
+        }
         onConfirm={handleConfirmAction}
         title={
-          typeof confirmationDialog.action?.confirmationTitle === 'function'
-            ? confirmationDialog.action.confirmationTitle(table.getFilteredSelectedRowModel().rows.length)
+          typeof confirmationDialog.action?.confirmationTitle === "function"
+            ? confirmationDialog.action.confirmationTitle(
+                table.getFilteredSelectedRowModel().rows.length
+              )
             : confirmationDialog.action?.confirmationTitle || ""
         }
         description={
-          typeof confirmationDialog.action?.confirmationDescription === 'function'
-            ? confirmationDialog.action.confirmationDescription(table.getFilteredSelectedRowModel().rows.length)
+          typeof confirmationDialog.action?.confirmationDescription ===
+          "function"
+            ? confirmationDialog.action.confirmationDescription(
+                table.getFilteredSelectedRowModel().rows.length
+              )
             : confirmationDialog.action?.confirmationDescription || ""
         }
         confirmText={
-          typeof confirmationDialog.action?.confirmText === 'function'
-            ? confirmationDialog.action.confirmText(table.getFilteredSelectedRowModel().rows.length)
+          typeof confirmationDialog.action?.confirmText === "function"
+            ? confirmationDialog.action.confirmText(
+                table.getFilteredSelectedRowModel().rows.length
+              )
             : confirmationDialog.action?.confirmText
         }
         isLoading={isBulkActionsLoading}
