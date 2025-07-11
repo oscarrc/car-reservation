@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -8,11 +6,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { useEffect, useRef, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import ReactMarkdown from "react-markdown";
 import { Link as RouterLink } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
@@ -27,7 +28,7 @@ function useLicenseMarkdown(): string {
   const { i18n } = useTranslation();
   const locale = i18n.language.startsWith("th") ? "th" : "en";
   const [markdown, setMarkdown] = useState<string>("");
-  
+
   useEffect(() => {
     let cancelled = false;
     import(`../../license/${locale}.md?raw`)
@@ -71,7 +72,7 @@ export function LicenseDialog({ open, onAccept }: LicenseDialogProps) {
     const target = event.target as HTMLDivElement;
     const { scrollTop, scrollHeight, clientHeight } = target;
     const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
-    
+
     if (isAtBottom && !hasScrolledToBottom) {
       setHasScrolledToBottom(true);
     }
@@ -79,7 +80,7 @@ export function LicenseDialog({ open, onAccept }: LicenseDialogProps) {
 
   const handleAccept = async () => {
     if (!hasScrolledToBottom || !hasAcceptedTerms) return;
-    
+
     setIsAccepting(true);
     try {
       await onAccept();
@@ -103,12 +104,10 @@ export function LicenseDialog({ open, onAccept }: LicenseDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl h-[90dvh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{t("licenseDialog.title")}</DialogTitle>
-          <DialogDescription>
-            {t("licenseDialog.subtitle")}
-          </DialogDescription>
+          <DialogDescription>{t("licenseDialog.subtitle")}</DialogDescription>
         </DialogHeader>
 
         <div className="flex justify-center mb-4">
@@ -129,7 +128,10 @@ export function LicenseDialog({ open, onAccept }: LicenseDialogProps) {
                   components={{
                     a: MarkdownLink,
                     img: (props) => (
-                      <img {...props} className="max-w-full my-2 rounded shadow-sm" />
+                      <img
+                        {...props}
+                        className="max-w-full my-2 rounded shadow-sm"
+                      />
                     ),
                     video: (props) => (
                       <video
@@ -180,7 +182,9 @@ export function LicenseDialog({ open, onAccept }: LicenseDialogProps) {
             disabled={!canAccept || isAccepting}
             className="w-full"
           >
-            {isAccepting ? t("licenseDialog.accepting") : t("licenseDialog.accept")}
+            {isAccepting
+              ? t("licenseDialog.accepting")
+              : t("licenseDialog.accept")}
           </Button>
         </DialogFooter>
       </DialogContent>
