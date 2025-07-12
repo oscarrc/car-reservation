@@ -6,7 +6,7 @@
 **Software:** Car Reservation Management System  
 **Version:** 1.0  
 **Licensor:** Oscar R.C. (Developer)  
-**Licensee:** [Friend's Name/Organization] (Authorized User)
+**Licensee:** [Name/Organization] (Authorized User)
 
 ---
 

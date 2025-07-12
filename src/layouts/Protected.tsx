@@ -45,11 +45,11 @@ export default function Protected({
   }
 
   // Check if profile is complete (name and phone exist)
-  // Only check for app routes, not admin routes
+  // Redirect to onboarding if profile is incomplete, except for onboarding and auth pages
   if (
     !isProfileComplete &&
-    location.pathname.startsWith("/app") &&
-    location.pathname !== "/onboarding"
+    location.pathname !== "/onboarding" &&
+    !location.pathname.startsWith("/auth")
   ) {
     return <Navigate to="/onboarding" />;
   }

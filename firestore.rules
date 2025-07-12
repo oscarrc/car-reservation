@@ -23,7 +23,13 @@ service cloud.firestore {
     // AllowedEmails collection - anyone can read (for registration validation), only admins can write
     match /allowedEmails/{emailId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, delete: if isAdmin();
+      // Allow users to update status to 'registered' for their own email
+      allow update: if isAdmin() || 
+        (isAuthenticated() && 
+         request.auth.token.email == resource.data.email && 
+         request.resource.data.status == 'registered' &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']));
     }
 
     // Cars collection - only active users can read, only admins can write
@@ -78,6 +84,8 @@ service cloud.firestore {
       // Only active users can write to their own profile
       // Admins can write to any user profile (including suspended users, to manage them)
       allow write: if (isActiveUser() && request.auth.uid == userId) || isAdmin();
+      // Allow users to create its own profile
+      allow create: if isAuthenticated() && request.auth.uid == userId; 
     }
 
     // Catch-all rule to explicitly deny access to any other collections/documents
