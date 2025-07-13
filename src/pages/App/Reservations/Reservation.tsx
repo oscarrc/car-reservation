@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect } from "react";
 
 import { CancellationConfirmationDialog } from "@/components/ui/cancellation-confirmation-dialog";
 import { CarInfoCard } from "@/components/cars/car-info-card";
@@ -100,13 +99,6 @@ export default function AppReservationPage() {
   // Check if user owns this reservation
   const isOwner = reservation && reservation.userRef.id === currentUser?.uid;
 
-  // Redirect to unauthorized page if user doesn't own this reservation
-  useEffect(() => {
-    if (reservation && !isOwner) {
-      navigate("/unauthorized");
-    }
-  }, [reservation, isOwner, navigate]);
-
   // Check if user can cancel this reservation
   const canCancel =
     reservation &&
@@ -161,6 +153,27 @@ export default function AppReservationPage() {
         <div className="px-4 lg:px-6 space-y-6">
           <ReservationDetailsSkeleton />
           <CarInfoSkeleton />
+        </div>
+      </>
+    );
+  }
+
+  // Handle unauthorized access
+  if (reservation && !isOwner) {
+    return (
+      <>
+        <SectionHeader
+          title={t("reservations.reservationDetails")}
+          subtitle={t("reservations.reservationDetailsDesc")}
+        />
+        <div className="px-4 lg:px-6">
+          <ErrorDisplay
+            error={new Error("Unauthorized access")}
+            onRetry={() => navigate("/app/reservations")}
+            title={t("errors.unauthorized")}
+            description={t("error.unauthorizedDescription")}
+            showHomeButton={true}
+          />
         </div>
       </>
     );

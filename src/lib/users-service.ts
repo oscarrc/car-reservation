@@ -175,8 +175,8 @@ export async function fetchUsers(params: UsersQueryParams): Promise<UsersRespons
       users.push({
         id: doc.id,
         ...data as UserProfile,
-        createdAt: data.createdAt.toDate(),
-        updatedAt: data.updatedAt.toDate()
+        createdAt: data?.createdAt?.toDate() || new Date(),
+        updatedAt: data?.updatedAt?.toDate() || new Date(),
       });
     });
 

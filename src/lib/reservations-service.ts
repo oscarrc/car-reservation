@@ -221,8 +221,8 @@ export async function fetchReservations(params: ReservationsQueryParams): Promis
         ...data,
         startDateTime: data.startDateTime.toDate(),
         endDateTime: data.endDateTime.toDate(),
-        createdAt: data.createdAt.toDate(),
-        updatedAt: data.updatedAt.toDate(),
+        createdAt: data?.createdAt?.toDate() || new Date(),
+        updatedAt: data?.updatedAt?.toDate() || new Date(),
       } as ReservationWithId);
     });
 
@@ -310,8 +310,8 @@ export async function fetchReservationById(reservationId: string): Promise<Reser
       ...data,
       startDateTime: data.startDateTime.toDate(),
       endDateTime: data.endDateTime.toDate(),
-      createdAt: data.createdAt.toDate(),
-      updatedAt: data.updatedAt.toDate(),
+      createdAt: data?.createdAt?.toDate() || new Date(),
+      updatedAt: data?.updatedAt?.toDate() || new Date(),
     } as ReservationWithId;
   } catch (error) {
     console.error('Error fetching reservation:', error);

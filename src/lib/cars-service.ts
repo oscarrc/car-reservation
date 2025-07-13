@@ -164,8 +164,8 @@ export async function fetchCars(params: CarsQueryParams): Promise<CarsResponse> 
       cars.push({
         id: doc.id,        
         ...data as Car,        
-        createdAt: data.createdAt.toDate(),
-        updatedAt: data.updatedAt.toDate(),
+        createdAt: data?.createdAt?.toDate() || new Date(),
+        updatedAt: data?.updatedAt?.toDate() || new Date(),
       });
     });
 
