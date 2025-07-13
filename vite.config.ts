@@ -74,58 +74,75 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunks
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': [
-            '@radix-ui/react-alert-dialog',
-            '@radix-ui/react-avatar',
-            '@radix-ui/react-checkbox',
-            '@radix-ui/react-collapsible',
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-label',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-select',
-            '@radix-ui/react-separator',
-            '@radix-ui/react-slot',
-            '@radix-ui/react-switch',
-            '@radix-ui/react-tooltip'
-          ],
-          'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          'data-vendor': ['@tanstack/react-query', '@tanstack/react-table'],
-          'date-vendor': ['date-fns', 'react-day-picker'],
-          'chart-vendor': ['recharts'],
-          'i18n-vendor': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
-          'utils-vendor': ['lucide-react', 'clsx', 'tailwind-merge', 'class-variance-authority', 'sonner', 'cmdk', 'next-themes'],
-          
-          // Feature chunks
-          'admin-pages': [
-            './src/pages/Admin/index.tsx',
+          'react-core': ['react', 'react-dom'],          
+          'router': ['react-router-dom'],          
+          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],          
+          'radix-ui': [
+            "@radix-ui/react-accordion",
+            "@radix-ui/react-alert-dialog", 
+            "@radix-ui/react-avatar",
+            "@radix-ui/react-checkbox",
+            "@radix-ui/react-collapsible",
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-label",
+            "@radix-ui/react-popover",
+            "@radix-ui/react-scroll-area",
+            "@radix-ui/react-select",
+            "@radix-ui/react-separator",
+            "@radix-ui/react-slot",
+            "@radix-ui/react-switch",
+            "@radix-ui/react-tooltip",
+          ],          
+          'forms': ['react-hook-form', '@hookform/resolvers', 'zod'],          
+          'data': ['@tanstack/react-query', '@tanstack/react-table'],          
+          'dates': ['date-fns', 'react-day-picker'],          
+          'charts': ['recharts'],          
+          'i18n': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],          
+          'markdown': ['react-markdown', 'remark-gfm', 'rehype-raw', 'rehype-sanitize'],          
+          'utils': ['lucide-react', 'clsx', 'tailwind-merge', 'class-variance-authority', 'sonner', 'cmdk', 'next-themes'],          
+          'admin-dashboard': ['./src/pages/Admin/index.tsx'],
+          'admin-fleet': [
             './src/pages/Admin/Fleet/index.tsx',
-            './src/pages/Admin/Fleet/Car.tsx',
-            './src/pages/Admin/Reservations/index.tsx',
-            './src/pages/Admin/Reservations/Reservation.tsx',
+            './src/pages/Admin/Fleet/Car.tsx'
+          ],
+          'admin-reservations': [
+            './src/pages/Admin/Reservations/index.tsx', 
+            './src/pages/Admin/Reservations/Reservation.tsx'
+          ],
+          'admin-users': [
             './src/pages/Admin/Users/index.tsx',
             './src/pages/Admin/Users/User.tsx',
-            './src/pages/Admin/Users/AllowedEmails.tsx',
-            './src/pages/Admin/Settings.tsx'
+            './src/pages/Admin/Users/AllowedEmails.tsx'
           ],
-          'app-pages': [
-            './src/pages/App/index.tsx',
-            './src/pages/App/Fleet.tsx',
+          'admin-settings': [
+            './src/pages/Admin/Settings.tsx',
+            './src/pages/Admin/Faq.tsx',
+            './src/pages/Admin/License.tsx'
+          ],
+          'app-dashboard': ['./src/pages/App/index.tsx'],
+          'app-fleet': ['./src/pages/App/Fleet.tsx'],
+          'app-reservations': [
             './src/pages/App/Reservations/index.tsx',
-            './src/pages/App/Reservations/Reservation.tsx',
+            './src/pages/App/Reservations/Reservation.tsx'
           ],
-          'auth-pages': [
+          'app-info': ['./src/pages/App/Faq.tsx'],
+          'auth': [
             './src/pages/Auth/Login.tsx',
-            './src/pages/Auth/Register.tsx',
+            './src/pages/Auth/Register.tsx', 
             './src/pages/Auth/Forgot.tsx',
             './src/pages/Auth/Action.tsx'
           ],
-          'profile-pages': [
+          'user-profile': [
             './src/pages/Profile.tsx',
             './src/pages/Onboarding.tsx'
+          ],
+          'shared-info': [
+            './src/pages/Faq.tsx'
+          ],
+          'error-pages': [
+            './src/pages/NotFound.tsx',
+            './src/pages/Error.tsx'
           ],
         }
       }
