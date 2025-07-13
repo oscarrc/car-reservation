@@ -34,38 +34,46 @@ service cloud.firestore {
 
     // Cars collection - only active users can read, only admins can write
     match /cars/{carId} {
-      allow read: if isActiveUser();
+      allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
 
     // Cars collection (for listing all cars) - only active users can read, only admins can write
     match /cars {
-      allow read: if isActiveUser();
+      allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
 
     // Reservations collection - active users can read and create, admins can modify
     match /reservations/{reservationId} {
-      allow read: if isActiveUser();
+      // Allow admins to read any reservation, users to read only their own
+      allow read: if isAuthenticated();
       allow create: if isActiveUser();
-      allow update, delete: if isAdmin();
+      allow delete: if isAdmin();
+      // Allow admins to update any field
+      allow update: if isAdmin();
+      // Allow users to update only status field for their own reservations to 'cancelled' or 'cancellation_pending'
+      allow update: if isActiveUser() && 
+        resource.data.userRef == /databases/$(database)/documents/users/$(request.auth.uid) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']) &&
+        request.resource.data.status in ['cancelled', 'cancellation_pending'];
     }
 
-    // Reservations collection (for listing all reservations) - only active users can read
+    // Reservations collection (for listing all reservations) - only admins can read all, users cannot list all
     match /reservations {
-      allow read: if isActiveUser();
+      allow read: if isAdmin();
       allow write: if isAdmin();
     }
 
-    // Settings collection - active users can read, only admins can write
+    // Settings collection - authenticated users can read, only admins can write
     match /settings/{settingId} {
-      allow read: if isActiveUser();
+      allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
 
-    // Settings collection (for listing all settings) - active users can read, only admins can write
+    // Settings collection (for listing all settings) - users can read, only admins can write
     match /settings {
-      allow read: if isActiveUser();
+      allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
 
