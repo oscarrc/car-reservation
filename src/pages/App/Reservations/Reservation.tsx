@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
 
 import { CancellationConfirmationDialog } from "@/components/ui/cancellation-confirmation-dialog";
 import { CarInfoCard } from "@/components/cars/car-info-card";
@@ -96,11 +97,21 @@ export default function AppReservationPage() {
     },
   });
 
+  // Check if user owns this reservation
+  const isOwner = reservation && reservation.userRef.id === currentUser?.uid;
+
+  // Redirect to unauthorized page if user doesn't own this reservation
+  useEffect(() => {
+    if (reservation && !isOwner) {
+      navigate("/unauthorized");
+    }
+  }, [reservation, isOwner, navigate]);
+
   // Check if user can cancel this reservation
   const canCancel =
     reservation &&
     ["pending", "confirmed"].includes(reservation.status) &&
-    reservation.userRef.id === currentUser?.uid;
+    isOwner;
 
   // Handle cancel action
   const handleCancelAction = () => {

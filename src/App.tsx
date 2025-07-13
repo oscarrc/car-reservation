@@ -42,6 +42,7 @@ const LicensePage = lazy(() => import("./pages/Admin/License"));
 const NotFoundPage = lazy(() => import("./pages/NotFound"));
 const ReservationsPage = lazy(() => import("./pages/Admin/Reservations"));
 const SettingsPage = lazy(() => import("./pages/Admin/Settings"));
+const UnauthorizedPage = lazy(() => import("./pages/Unauthorized"));
 const UserFleetPage = lazy(() => import("./pages/App/Fleet"));
 const UserPage = lazy(() => import("./pages/Admin/Users/User"));
 const UserReservationsPage = lazy(() => import("./pages/App/Reservations"));
@@ -255,6 +256,14 @@ const App = () => {
           element: <OnboardingPage />,
         },
       ],
+    },
+    {
+      path: "/unauthorized",
+      element: (
+        <Suspense fallback={<LoadingScreen />}>
+          <UnauthorizedPage />
+        </Suspense>
+      ),
     },
     {
       path: "*",

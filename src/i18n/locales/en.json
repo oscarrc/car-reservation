@@ -385,6 +385,8 @@
     "unexpectedError": "There was an unexpected error",
     "userDescription": "We're sorry, but something went wrong. Please try again, and if the problem persists, contact support.",
     "goHome": "Go to Homepage",
+    "goBack": "Go Back",
+    "unauthorizedDescription": "You don't have permission to access this resource. Please contact an administrator if you believe this is an error.",
     "retry": "Try Again"
   },
   "loading": {
