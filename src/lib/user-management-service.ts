@@ -111,7 +111,7 @@ export async function updateUser(
       phone: userData.phone || '',
       role: userData.role,
       suspended: userData.suspended ?? currentProfile.suspended ?? false, // Use new suspended status or preserve existing
-      language: currentProfile.language // Preserve existing language preference
+      ...(currentProfile?.language ? { language: currentProfile.language } : {}), // Preserve existing language if it exists
     };
 
     // Generate search keywords for the updated user profile
