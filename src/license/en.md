@@ -6,7 +6,7 @@
 **Software:** Car Reservation Management System  
 **Version:** 1.0  
 **Licensor:** Oscar R.C. (Developer)  
-**Licensee:** [Name/Organization] (Authorized User)
+**Licensee:** Tamode School (Authorized User)
 
 ---
 
